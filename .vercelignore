@@ -1,0 +1,19 @@
+# Raw and processed third-party data must never be uploaded (NFR-08). The hosted
+# API builds the synthetic store at deploy time (see vercel.json).
+data/
+*.zip
+
+# Local environments and build output
+.venv/
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+graphify-out/
+.claude/
+.impeccable/review/
+
+# Not needed by either service
+notebooks/
+exports/
+*.pdf
