@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, StrictMode, Suspense } from "react";
+import { Fragment, lazy, StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { RouteErrorBoundary } from "./components/ErrorBoundary";
 import { Shell } from "./components/Shell";
 import { Loading } from "./components/ui";
+import { useLang } from "./lib/i18n";
 import "./styles.css";
 
 const Overview = lazy(() => import("./pages/Overview"));
@@ -25,15 +26,23 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWind
 
 // ECharts caches text widths; measuring with the fallback font clips axis labels
 // once Readex Pro arrives. Load the face first (never wait more than 1.5 s).
+// The Arabic and Latin faces are separate files (unicode-range), so both are loaded.
 const fontReady = Promise.race([
-  Promise.all(["400 12px", "500 12px"].map((w) => document.fonts?.load(`${w} "Readex Pro Variable"`))),
+  Promise.all(["400 12px", "500 12px"].flatMap((w) => ["Aa", "عر"].map((s) => document.fonts?.load(`${w} "Readex Pro Variable"`, s)))),
   new Promise((r) => setTimeout(r, 1500)),
 ]).catch(() => undefined);
+
+/** Switching language remounts the views so every string, number and chart is rebuilt in it. */
+function LangScope({ children }: { children: ReactNode }) {
+  const [lang] = useLang();
+  return <Fragment key={lang}>{children}</Fragment>;
+}
 
 await fontReady;
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <LangScope>
       <BrowserRouter>
         <Shell>
           <RouteErrorBoundary>
@@ -57,6 +66,7 @@ createRoot(document.getElementById("root")!).render(
           </RouteErrorBoundary>
         </Shell>
       </BrowserRouter>
+      </LangScope>
     </QueryClientProvider>
   </StrictMode>,
 );

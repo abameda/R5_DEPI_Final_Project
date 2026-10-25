@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { AlertTriangle, Download, Info, Table2, BarChart3, RefreshCw, SearchX } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { isRtl, t, tv } from "../lib/i18n";
 import type { ChartHandle } from "./Chart";
 
 export function PageHeader({ title, description, children }: { title: string; description: ReactNode; children?: ReactNode }) {
@@ -50,24 +51,26 @@ export function ChartPanel({ title, meta, info, table, children, className, extr
   const [asTable, setAsTable] = useState(false);
   const downloadPng = () => {
     const url = handle.current?.png();
-    if (url) save(url, `${slug(title)}.png`);
+    if (url) save(url, `${slug(title) || table?.filename || "chart"}.png`);
   };
   const downloadCsv = () => {
     if (!table) return;
-    const csv = [table.columns, ...table.rows].map((r) => r.map(csvCell).join(",")).join("\n")
-      + "\n# Aggregated from the Job Market Intelligence posting sample (not the whole labour market)\n";
+    // BOM so spreadsheet apps read Arabic labels as UTF-8
+    const csv = "﻿" + [table.columns, ...table.rows].map((r) => r.map((c) => csvCell(typeof c === "string" ? tv(c) : c)).join(",")).join("\n")
+      + t("\n# Aggregated from the Job Market Intelligence posting sample (not the whole labour market)\n",
+        "\n# مجمَّعة من عينة إعلانات ذكاء سوق العمل (وليست سوق العمل بأكمله)\n");
     save(URL.createObjectURL(new Blob([csv], { type: "text/csv" })), `${table.filename}.csv`);
   };
   return (
     <Panel id={id} title={title} meta={meta} info={info} className={className} actions={<>
       {extraActions}
       {table && (
-        <IconButton label={asTable ? "Show chart" : "Show as table"} onClick={() => setAsTable(!asTable)}>
+        <IconButton label={asTable ? t("Show chart", "عرض المخطط") : t("Show as table", "عرض كجدول")} onClick={() => setAsTable(!asTable)}>
           {asTable ? <BarChart3 size={15} /> : <Table2 size={15} />}
         </IconButton>
       )}
-      {!asTable && <IconButton label="Download chart as PNG" onClick={downloadPng}><Download size={15} /></IconButton>}
-      {asTable && table && <IconButton label="Download table as CSV" onClick={downloadCsv}><Download size={15} /></IconButton>}
+      {!asTable && <IconButton label={t("Download chart as PNG", "تنزيل المخطط بصيغة PNG")} onClick={downloadPng}><Download size={15} /></IconButton>}
+      {asTable && table && <IconButton label={t("Download table as CSV", "تنزيل الجدول بصيغة CSV")} onClick={downloadCsv}><Download size={15} /></IconButton>}
     </>}>
       {asTable && table ? <DataTable table={table} /> : children(handle)}
     </Panel>
@@ -78,13 +81,13 @@ function DataTable({ table }: { table: TableSpec }) {
   return (
     <div className="max-h-80 overflow-auto rounded border border-line">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 bg-panel-2 text-left text-ink-2">
+        <thead className="sticky top-0 bg-panel-2 text-start text-ink-2">
           <tr>{table.columns.map((c) => <th key={c} scope="col" className="px-3 py-1.5 font-medium">{c}</th>)}</tr>
         </thead>
         <tbody>
           {table.rows.map((r, i) => (
             <tr key={i} className="border-t border-line">
-              {r.map((c, j) => <td key={j} dir="auto" className={clsx("px-3 py-1.5", j > 0 && "text-right")}>{c ?? "—"}</td>)}
+              {r.map((c, j) => <td key={j} dir="auto" className={clsx("px-3 py-1.5", j > 0 && "text-end")}>{typeof c === "string" ? tv(c) : c ?? "—"}</td>)}
             </tr>
           ))}
         </tbody>
@@ -135,7 +138,7 @@ export function Button({ children, onClick, variant = "secondary", type = "butto
 export function InfoTip({ children }: { children: ReactNode }) {
   return (
     <Popover.Root>
-      <Popover.Trigger aria-label="How this is calculated" className="grid size-5 place-items-center rounded text-ink-3 hover:text-ink">
+      <Popover.Trigger aria-label={t("How this is calculated", "طريقة الحساب")} className="grid size-5 place-items-center rounded text-ink-3 hover:text-ink">
         <Info size={14} />
       </Popover.Trigger>
       <Popover.Portal>
@@ -156,7 +159,8 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
     <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-panel p-0.5"
       onKeyDown={(e) => {
         const i = options.findIndex((o) => o.value === value);
-        const next = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: options.length - 1 }[e.key];
+        const fwd = isRtl() ? -1 : 1; // arrows follow the visual order
+        const next = { ArrowRight: i + fwd, ArrowDown: i + 1, ArrowLeft: i - fwd, ArrowUp: i - 1, Home: 0, End: options.length - 1 }[e.key];
         if (next === undefined) return;
         e.preventDefault();
         const o = options[(next + options.length) % options.length];
@@ -194,25 +198,25 @@ export function Skeleton({ h = 240, className }: { h?: number; className?: strin
 }
 
 export function Loading({ h = 240 }: { h?: number }) {
-  return <div role="status" aria-label="Loading"><Skeleton h={h} /></div>;
+  return <div role="status" aria-label={t("Loading", "جارٍ التحميل")}><Skeleton h={h} /></div>;
 }
 
 export function ErrorState({ error, retry }: { error: Error | null; retry?: () => void }) {
   return (
     <div role="alert" className="flex flex-col items-start gap-2 rounded-md border border-crit/40 bg-crit-soft p-4 text-sm text-ink">
-      <p className="flex items-center gap-2 font-medium"><AlertTriangle size={16} className="text-crit" /> This view could not be loaded.</p>
-      <p className="text-ink-2">{error?.message ?? "Unknown error."}</p>
-      {retry && <Button onClick={retry}><RefreshCw size={14} /> Try again</Button>}
+      <p className="flex items-center gap-2 font-medium"><AlertTriangle size={16} className="text-crit" /> {t("This view could not be loaded.", "تعذّر تحميل هذا العرض.")}</p>
+      <p className="text-ink-2">{error?.message ?? t("Unknown error.", "خطأ غير معروف.")}</p>
+      {retry && <Button onClick={retry}><RefreshCw size={14} /> {t("Try again", "إعادة المحاولة")}</Button>}
     </div>
   );
 }
 
-export function Empty({ title = "No postings match these filters", hint, action }: { title?: string; hint?: ReactNode; action?: ReactNode }) {
+export function Empty({ title = t("No postings match these filters", "لا توجد إعلانات تطابق هذه الفلاتر"), hint, action }: { title?: string; hint?: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
       <SearchX size={22} className="text-ink-3" />
       <p className="font-medium text-ink">{title}</p>
-      <p className="max-w-md text-sm text-ink-2">{hint ?? "Remove a filter or widen the date range to bring postings back."}</p>
+      <p className="max-w-md text-sm text-ink-2">{hint ?? t("Remove a filter or widen the date range to bring postings back.", "أزِل أحد الفلاتر أو وسِّع نطاق التاريخ لإظهار الإعلانات.")}</p>
       {action}
     </div>
   );

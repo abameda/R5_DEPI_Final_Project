@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { t } from "../lib/i18n";
 
 /** One headline figure with its denominator. Flashes briefly when a filter change moves it. */
 export function Kpi({ label, value, sub, title }: { label: string; value: string; sub?: ReactNode; title?: string }) {
@@ -19,7 +20,7 @@ export function Kpi({ label, value, sub, title }: { label: string; value: string
     <div className="min-w-0 px-4 py-3" title={title}>
       <dt className="flex items-center gap-1.5 text-xs text-ink-3">
         <span className="truncate">{label}</span>
-        {changed && <span className="size-1.5 shrink-0 rounded-full bg-accent" title="Changed with your last filter edit"><span className="sr-only"> (changed)</span></span>}
+        {changed && <span className="size-1.5 shrink-0 rounded-full bg-accent" title={t("Changed with your last filter edit", "تغيّر مع آخر تعديل في الفلاتر")}><span className="sr-only">{t(" (changed)", " (تغيّر)")}</span></span>}
       </dt>
       <dd className="m-0">
         <span key={tick} className={clsx("kpi inline-block text-2xl font-semibold tracking-tight text-ink", tick > 0 && "changed")}>{value}</span>

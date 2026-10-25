@@ -118,6 +118,20 @@ test("theme choice persists across reloads", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("data-theme", now);
 });
 
+test("Arabic switches the interface to right-to-left and persists", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "العربية" }).click();
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("lang", "ar");
+  await expect(html).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("link", { name: "نظرة عامة", exact: true })).toBeVisible();
+  await page.reload();
+  await expect(html).toHaveAttribute("dir", "rtl");
+  await page.getByRole("button", { name: "English" }).click();
+  await expect(html).toHaveAttribute("dir", "ltr");
+  await expect(page.getByRole("link", { name: "Overview", exact: true })).toBeVisible();
+});
+
 test("the provenance switch changes how skills are counted", async ({ page }) => {
   await page.goto("/skills");
   await page.getByRole("radio", { name: "Written in posting" }).click();

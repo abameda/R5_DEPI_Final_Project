@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
+import { t } from "../lib/i18n";
 import { ErrorState } from "./ui";
 
 class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -15,7 +16,7 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
 
   render() {
     if (this.state.error) {
-      return <ErrorState error={new Error("This view hit an unexpected error. Change a filter or reload the page.")}
+      return <ErrorState error={new Error(t("This view hit an unexpected error. Change a filter or reload the page.", "حدث خطأ غير متوقع في هذا العرض. غيِّر أحد الفلاتر أو أعِد تحميل الصفحة."))}
         retry={() => this.setState({ error: null })} />;
     }
     return this.props.children;

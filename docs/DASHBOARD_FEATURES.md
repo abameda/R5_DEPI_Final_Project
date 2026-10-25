@@ -39,6 +39,13 @@ unique postings are in view, their collection mix and how skills are being count
   retry, empty state with a recovery hint, small-sample flags, a route-level error boundary.
 * **Themes**: light and dark, each designed (not inverted); remembers the choice; follows
   the OS by default. Reduced motion respected (CSS and charts).
+* **Languages**: English and Arabic, switched from the rail footer; remembers the choice and
+  follows the browser language by default. Arabic lays the whole interface out right-to-left
+  and mirrors every chart (value axes run from the right, category labels sit on the right).
+  Interface text and categorical values (roles, seniority, countries, skill categories,
+  sources) are translated; skill names, job titles and employers are shown as written.
+  Numbers keep Latin digits. Strings live inline as `t("English", "العربية")` pairs
+  (`frontend/src/lib/i18n.ts`); data values go through `tv()`.
 * **Responsive**: rail becomes a menu, facets fold behind "Filters" on phones, tables become
   lists, the lattice scrolls sideways with sticky row labels.
 

@@ -74,6 +74,48 @@ export function axisStyle(t: Tokens) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Opt = Record<string, any>;
+const SIDE: Record<string, string> = { left: "right", right: "left", insideLeft: "insideRight", insideRight: "insideLeft" };
+const each = (x: unknown, fn: (o: Opt) => Opt) => (x == null ? x : Array.isArray(x) ? x.map(fn) : fn(x as Opt));
+/** Swap a component's left/right offsets ("center" stays put). */
+function flipBox(b: Opt): Opt {
+  const out: Opt = { ...b };
+  delete out.left;
+  delete out.right;
+  if (b.left === "center") out.left = "center";
+  else if (b.left !== undefined) out.right = b.left;
+  if (b.right !== undefined) out.left = b.right;
+  return out;
+}
+
+/**
+ * Right-to-left version of a chart option: horizontal axes run from the right,
+ * vertical axes and category labels sit on the right, and left/right label
+ * positions and corner radii swap. One rule for every chart, so builders stay
+ * written left-to-right.
+ */
+export function mirror(o: Opt): Opt {
+  const out: Opt = { ...o };
+  for (const k of ["grid", "legend", "visualMap", "dataZoom"]) if (o[k]) out[k] = each(o[k], flipBox);
+  out.xAxis = each(o.xAxis, (a) => ({ ...a, inverse: !a.inverse }));
+  out.yAxis = each(o.yAxis, (a) => ({
+    ...a, position: a.position === "right" ? "left" : "right",
+    ...(a.axisLabel?.align && { axisLabel: { ...a.axisLabel, align: SIDE[a.axisLabel.align] ?? a.axisLabel.align } }),
+  }));
+  out.series = each(o.series, (s) => {
+    const r = s.itemStyle?.borderRadius;
+    return {
+      ...s,
+      ...(s.label?.position && { label: { ...s.label, position: SIDE[s.label.position] ?? s.label.position } }),
+      ...(Array.isArray(r) && { itemStyle: { ...s.itemStyle, borderRadius: [r[1], r[0], r[3], r[2]] } }),
+    };
+  });
+  if (o.xAxis === undefined) delete out.xAxis;
+  if (o.yAxis === undefined) delete out.yAxis;
+  return out;
+}
+
 /** Escape text before it goes into an HTML tooltip (data comes from job postings). */
 export function esc(s: unknown): string {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);

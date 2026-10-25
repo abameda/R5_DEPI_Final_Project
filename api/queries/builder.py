@@ -51,8 +51,8 @@ class BuilderRequest(BaseModel):
     filters: Filters = Field(default_factory=Filters)
 
 
-def validate(req: BuilderRequest) -> list[str]:
-    """Reject nonsensical combinations; return warnings for legitimate-but-risky ones."""
+def validate(req: BuilderRequest) -> list[tuple[str, str]]:
+    """Reject nonsensical combinations; return (code, text) warnings for legitimate-but-risky ones."""
     if req.dimension not in DIMENSIONS:
         raise HTTPException(422, f"Unsupported dimension: {req.dimension}")
     if req.split_by is not None and req.split_by not in DIMENSIONS:
@@ -69,14 +69,14 @@ def validate(req: BuilderRequest) -> list[str]:
     warnings = []
     if "posted_month" in (req.dimension, req.split_by) or "posted_year" in (req.dimension, req.split_by):
         if req.filters.cohort != ["kaggle_2023"] and req.filters.cohort != ["collected_2026"]:
-            warnings.append("Time axis spans two collection cohorts (2023 archive and 2024–26 collection). "
-                            "Filter on one cohort before reading a trend.")
+            warnings.append(("mixed_cohorts", "Time axis spans two collection cohorts (2023 archive and 2024–26 collection). "
+                                             "Filter on one cohort before reading a trend."))
     if req.metric == "median_salary":
-        warnings.append(f"Advertised salaries only, annualized to USD at fixed approximate rates; "
-                        f"groups with fewer than {MIN_SALARY_N} salaries are hidden.")
+        warnings.append(("advertised_salary_only", f"Advertised salaries only, annualized to USD at fixed approximate rates; "
+                                                   f"groups with fewer than {MIN_SALARY_N} salaries are hidden."))
     if skill_dims and req.filters.provenance == "all":
-        warnings.append("Skill counts include skills the team added after collection; switch provenance to "
-                        "'observed' for posting-written skills only.")
+        warnings.append(("team_added_skills", "Skill counts include skills the team added after collection; switch provenance to "
+                                              "'observed' for posting-written skills only."))
     return warnings
 
 
@@ -131,6 +131,7 @@ def run(store: Store, req: BuilderRequest) -> dict:
         GROUP BY {group}""", [*params, req.limit, *split_params])
 
     metric_label = METRICS[req.metric]
+    share_within = None
     if req.metric == "share":
         # Denominator = the posting-level group the share is read within:
         #  * skill dimension + posting dimension -> that group's postings with skills
@@ -147,6 +148,7 @@ def run(store: Store, req: BuilderRequest) -> dict:
             metric_label = "Share of postings that list skills" if skill_join else "Share of postings"
         else:
             e = exprs[group_i]
+            share_within = dims[group_i]
             dens = {d["k"]: d["n"] for d in store.rows(
                 f"{cte} SELECT {e} AS k, count(*) AS n FROM f WHERE {cond} AND {e} IS NOT NULL GROUP BY 1", params)}
             for r in rows:
@@ -169,9 +171,12 @@ def run(store: Store, req: BuilderRequest) -> dict:
     return {
         "dimension": req.dimension, "split_by": req.split_by, "metric": req.metric,
         "metric_label": metric_label,
+        # the posting-level dimension a share is read within (None: all postings)
+        "share_within": share_within,
         "dimension_label": DIMENSION_LABELS[req.dimension],
         "split_label": DIMENSION_LABELS.get(req.split_by) if req.split_by else None,
-        "rows": rows, "warnings": warnings, "hidden_small_salary_groups": hidden,
+        "rows": rows, "warnings": [text for _, text in warnings],
+        "warning_codes": [code for code, _ in warnings], "hidden_small_salary_groups": hidden,
         "filters": f.active(),
     }
 
@@ -221,14 +226,16 @@ def insights(store: Store, f: Filters) -> list[dict]:
                     "text": f"{a['skill']} appears in {_pct(a['share'])} of the {d:,} selected postings that list "
                             f"skills ({prov}).",
                     "value": a["share"], "n": a["postings"], "denominator": d,
-                    "drill": {"path": "/skills", "params": {"skill": a["skill"]}}})
+                    "drill": {"path": "/skills", "params": {"skill": a["skill"]}},
+                    "args": {"skill": a["skill"], "share": a["share"], "denominator": d}})
         if len(ts["rows"]) > 1:
             b = ts["rows"][1]
             out.append({"id": "top_two", "kind": "skills",
                         "text": f"{a['skill']} is requested more often than {b['skill']} "
                                 f"({_pct(a['share'])} vs {_pct(b['share'])}).",
                         "value": a["share"] - b["share"], "n": d, "denominator": d,
-                        "drill": {"path": "/compare", "params": {"a.skill": a["skill"], "b.skill": b["skill"]}}})
+                        "drill": {"path": "/compare", "params": {"a.skill": a["skill"], "b.skill": b["skill"]}},
+                        "args": {"a": a["skill"], "b": b["skill"], "a_share": a["share"], "b_share": b["share"]}})
         added = sum(r["added"] for r in ts["rows"])
         mentions = sum(r["postings"] for r in ts["rows"])
         if f.provenance == "all" and mentions:
@@ -236,7 +243,8 @@ def insights(store: Store, f: Filters) -> list[dict]:
                         "text": f"{_pct(added / mentions)} of the mentions of these 10 skills were added by the "
                                 f"team after collection, not written in the posting data.",
                         "value": added / mentions, "n": mentions, "denominator": mentions,
-                        "drill": {"path": "/quality", "params": {}}})
+                        "drill": {"path": "/quality", "params": {}},
+                        "args": {"share": added / mentions}})
     cte, params = f.cte()
     role = store.one(f"{cte} SELECT role_category AS key, count(*) AS n FROM f GROUP BY 1 ORDER BY n DESC LIMIT 1",
                      params)
@@ -245,13 +253,15 @@ def insights(store: Store, f: Filters) -> list[dict]:
                     "text": f"{role['key']} is the most common role category: {role['n']:,} of {n:,} postings "
                             f"({_pct(share(role['n'], n))}).",
                     "value": share(role["n"], n), "n": role["n"], "denominator": n,
-                    "drill": {"path": "/explorer", "params": {"role": role["key"]}}})
+                    "drill": {"path": "/explorer", "params": {"role": role["key"]}},
+                    "args": {"role": role["key"], "n": role["n"], "total": n, "share": share(role["n"], n)}})
     if not f.market or "Remote" in f.market:
         out.append({"id": "remote", "kind": "market",
                     "text": f"{_pct(share(k['remote'], n))} of the selected postings are remote "
                             f"({k['remote']:,} of {n:,}).",
                     "value": share(k["remote"], n), "n": k["remote"], "denominator": n,
-                    "drill": {"path": "/explorer", "params": {"market": "Remote"}}})
+                    "drill": {"path": "/explorer", "params": {"market": "Remote"}},
+                    "args": {"share": share(k["remote"], n), "n": k["remote"], "total": n}})
     sal = salary_summary(store, f, None, "advertised", None)["overall"]
     if (sal.get("n") or 0) >= MIN_SALARY_N:
         out.append({"id": "salary", "kind": "salary",
@@ -260,13 +270,15 @@ def insights(store: Store, f: Filters) -> list[dict]:
                             + (f", converted from {sal['currencies']} currencies at fixed rates" if sal["currencies"] > 1 else "")
                             + ").",
                     "value": sal["median"], "n": sal["n"], "denominator": n,
-                    "drill": {"path": "/salary", "params": {}}})
+                    "drill": {"path": "/salary", "params": {}},
+                    "args": {"n": sal["n"], "median": sal["median"], "currencies": sal["currencies"]}})
     else:
         out.append({"id": "salary", "kind": "salary",
                     "text": f"Only {sal.get('n') or 0} selected postings advertise a salary — too few for a "
                             f"reliable median (minimum {MIN_SALARY_N}).",
                     "value": None, "n": sal.get("n") or 0, "denominator": n,
-                    "drill": {"path": "/salary", "params": {}}})
+                    "drill": {"path": "/salary", "params": {}},
+                    "args": {"n": sal.get("n") or 0, "min": MIN_SALARY_N}})
     geo = countries(store, f)
     if geo["countries"] and geo["located"] >= MIN_GROUP_POSTINGS:
         top3 = ", ".join(c["country"] for c in geo["countries"][:3])
@@ -274,7 +286,9 @@ def insights(store: Store, f: Filters) -> list[dict]:
                     "text": f"The top 3 countries ({top3}) hold {_pct(geo['concentration']['top3_share'])} of "
                             f"postings with a known country — the sample is geographically concentrated.",
                     "value": geo["concentration"]["top3_share"], "n": geo["located"], "denominator": geo["located"],
-                    "drill": {"path": "/geography", "params": {}}})
+                    "drill": {"path": "/geography", "params": {}},
+                    "args": {"countries": [c["country"] for c in geo["countries"][:3]],
+                             "share": geo["concentration"]["top3_share"]}})
     # pairs come from skills written in the postings: team-added skills were
     # appended as fixed blocks and would manufacture strong "pairs"
     co = cooccurrence(store, f.model_copy(update={"provenance": "observed"}), limit=15)
@@ -285,13 +299,15 @@ def insights(store: Store, f: Filters) -> list[dict]:
                     "text": f"{best['a']} and {best['b']} are written together {best['lift']:.1f}× as often as if they "
                             f"were independent ({best['together']:,} postings; skills written in the posting only).",
                     "value": best["lift"], "n": best["together"], "denominator": co["denominator"],
-                    "drill": {"path": "/skills", "params": {"skill": best["a"]}}})
+                    "drill": {"path": "/skills", "params": {"skill": best["a"]}},
+                    "args": {"a": best["a"], "b": best["b"], "lift": best["lift"], "together": best["together"]}})
     kag = store.scalar(f"{cte} SELECT count(*) FROM f WHERE cohort = 'kaggle_2023'", params) or 0
     out.append({"id": "cohort_mix", "kind": "provenance",
                 "text": f"{_pct(share(kag, n))} of the selected postings come from the 2023 Kaggle archive; the rest "
                         f"were collected in 2024–26. Read time differences with care.",
                 "value": share(kag, n), "n": kag, "denominator": n,
-                "drill": {"path": "/trends", "params": {}}})
+                "drill": {"path": "/trends", "params": {}},
+                "args": {"share": share(kag, n)}})
     for i in out:
         i["filters"] = f.active()
         i["provenance"] = f.provenance

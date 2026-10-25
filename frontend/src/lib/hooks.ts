@@ -3,6 +3,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiGet } from "./api";
 import { EMPTY_FILTERS, filterParams, isFilterKey, parseFilters, type Filters, type ListKey } from "./filters";
+import { getLang } from "./i18n";
 import type { Meta } from "./types";
 
 /** URL parameters that hold a page number (reset whenever the filters change). */
@@ -74,14 +75,48 @@ export function useMeta() {
   return useQuery<Meta>({ queryKey: ["meta"], queryFn: () => apiGet<Meta>("/meta"), staleTime: Infinity });
 }
 
-/** Label helpers that read the API's label tables (single source of truth). */
+/** Arabic twins of the API's label tables (api/labels.py), by the same keys. */
+const AR_LABELS = {
+  source: {
+    kaggle_2023_international: "أرشيف Kaggle لوظائف البيانات 2023 (دولي)",
+    kaggle_2023_arab_search: "أرشيف Kaggle لوظائف البيانات 2023 (بحث في مواقع عربية)",
+    jooble_careerjet_foreign: "واجهات Jooble وCareerjet",
+    all_tech_jobs: "مجموعة الفريق من الواجهات والمواقع",
+    startup_jobs: "startup.jobs",
+    remote_boards: "مواقع الوظائف عن بُعد",
+    arab_jobs: "مواقع الوظائف العربية ومجموعة ArabJobs",
+    cybersecurity_manual: "جمع يدوي لوظائف الأمن السيبراني",
+  } as Record<string, string>,
+  cohort: {
+    kaggle_2023: "أرشيف Kaggle لعام 2023",
+    collected_2026: "مجموعة 2024–26 من الواجهات والمواقع",
+  } as Record<string, string>,
+  cohortNote: {
+    kaggle_2023: "إعلانات Google Jobs لوظائف البيانات، نُشرت بين يناير وديسمبر 2023 (مجموعة بيانات Kaggle).",
+    collected_2026: "إعلانات جمعها الفريق من واجهات برمجية ومواقع توظيف، معظمها بين سبتمبر وأكتوبر 2026.",
+  } as Record<string, string>,
+  dimension: {
+    role_category: "الدور", country: "الدولة", region: "المنطقة", market_type: "السوق", seniority: "مستوى الخبرة",
+    job_type: "نوع التوظيف", work_mode: "نمط العمل", source_dataset: "مصدر البيانات", cohort: "دفعة الجمع",
+    language: "اللغة", posted_month: "شهر النشر", posted_year: "سنة النشر", company: "جهة التوظيف",
+    skill: "المهارة", skill_category: "فئة المهارة",
+  } as Record<string, string>,
+};
+
+/** Label helpers that read the API's label tables (single source of truth), in the current language. */
 export function useLabels() {
   const { data } = useMeta();
-  return useMemo(() => ({
-    source: (k: string) => data?.labels.source[k] ?? k,
-    cohort: (k: string) => data?.labels.cohort[k] ?? k,
-    dim: (k: string) => data?.labels.dimension[k] ?? k,
-  }), [data]);
+  return useMemo(() => {
+    const ar = getLang() === "ar";
+    const pick = (table: Record<string, string>, api: Record<string, string> | undefined) => (k: string) =>
+      (ar ? table[k] : undefined) ?? api?.[k] ?? k;
+    return {
+      source: pick(AR_LABELS.source, data?.labels.source),
+      cohort: pick(AR_LABELS.cohort, data?.labels.cohort),
+      cohortNote: pick(AR_LABELS.cohortNote, data?.labels.cohort_notes),
+      dim: pick(AR_LABELS.dimension, data?.labels.dimension),
+    };
+  }, [data]);
 }
 
 // --- theme --------------------------------------------------------------------

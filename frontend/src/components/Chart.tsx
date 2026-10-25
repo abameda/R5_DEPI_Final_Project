@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useTheme } from "../lib/hooks";
-import { echarts, readTokens, type Tokens } from "../lib/echarts";
+import { echarts, mirror, readTokens, type Tokens } from "../lib/echarts";
+import { isRtl } from "../lib/i18n";
 
 type Handler = (p: { name: string; seriesName?: string; data?: unknown; dataIndex: number; value?: unknown }) => void;
 
@@ -36,7 +37,7 @@ export function Chart({ build, height = 280, onClick, label, handleRef, deps }: 
   }, [handleRef]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const option = useMemo(() => build(readTokens()), [...deps, theme]);
+  const option = useMemo(() => (isRtl() ? mirror : (o: Record<string, unknown>) => o)(build(readTokens())), [...deps, theme]);
 
   useEffect(() => {
     chart.current?.setOption(option, { notMerge: true });

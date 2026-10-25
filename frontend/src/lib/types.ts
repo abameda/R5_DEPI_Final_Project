@@ -93,4 +93,6 @@ export interface Geo { countries: CountryRow[]; no_country: number; located: num
 export interface Insight {
   id: string; kind: string; text: string; value: number | null; n: number; denominator: number;
   drill: { path: string; params: Record<string, string> }; filters: Record<string, unknown>; provenance: string;
+  /** The values the sentence is built from (used to render it in Arabic). */
+  args?: Record<string, unknown>;
 }
