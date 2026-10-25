@@ -1,4 +1,4 @@
-import { axisStyle, baseOption, esc, HUE, type Tokens } from "../lib/echarts";
+import { axisStyle, baseOption, categorical, esc, HUE, type Tokens } from "../lib/echarts";
 import { fmtCompact, fmtInt, fmtMonth, fmtPct, fmtUsd } from "../lib/format";
 import { Chart, type ChartHandle } from "./Chart";
 import type { SkillRow } from "../lib/types";
@@ -154,7 +154,7 @@ export function CohortMonths({ months, cohortLabel, handle, min = 30 }: {
                 tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { dataIndex: number }[]) =>
                   `<b>${fmtMonth(p.shown[ps[0].dataIndex].month)}</b><br/>${fmtInt(p.shown[ps[0].dataIndex].n)} postings` },
                 series: [{ type: "bar", data: p.shown.map((m) => m.n), barMaxWidth: 22,
-                  itemStyle: { color: t.series[i === 0 ? HUE.source : HUE.skill], borderRadius: [3, 3, 0, 0] } }],
+                  itemStyle: { color: i === 0 ? t.series[HUE.source] : t.s4Soft, borderColor: t.series[HUE.source], borderWidth: i === 0 ? 0 : 1, borderRadius: [3, 3, 0, 0] } }],
               })} />
           ) : <p className="py-6 text-sm text-ink-3">No month reaches {min} postings.</p>}
           {p.hidden.length > 0 && (
@@ -180,7 +180,7 @@ export function MonthLines({ series, label, handle, yFmt = fmtInt, yName, height
     <Chart label={label} handleRef={handle} height={height} deps={[series, markArea]}
       build={(t) => ({
         ...baseOption(t),
-        color: t.series,
+        color: categorical(t),
         grid: { left: 8, right: 24, top: series.length > 1 ? 34 : 16, bottom: 8, containLabel: true },
         legend: series.length > 1 ? { top: 0, left: 0, itemWidth: 14, itemHeight: 3, textStyle: { color: t.ink2, fontSize: 11 } } : undefined,
         xAxis: { type: "category", data: xs, boundaryGap: false, ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: string) => fmtMonth(v) } },

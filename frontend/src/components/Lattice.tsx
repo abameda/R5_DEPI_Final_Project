@@ -87,11 +87,11 @@ export function Lattice({ matrix, rowLabel, onSelect, caption, rowName = (k) => 
                     aria-label={`${s} in ${rowName(g.key)}: ${fmtPct(v.share)} of ${fmtInt(g.denominator)} postings`}
                     onMouseEnter={() => setActive([r, c])} onFocus={() => { setActive([r, c]); setStop([r, c]); }} onKeyDown={(e) => onKey(e, r, c)}
                     onClick={() => onSelect?.(g.key, s)}
-                    className={clsx("relative grid aspect-square place-items-center border-[3px] border-[var(--rail)] bg-[var(--rail-2)] shadow-[0_0_0_1px_var(--rail)] transition-opacity duration-200",
+                    className={clsx("relative grid min-h-8 place-items-center border-[3px] sm:aspect-square border-[var(--rail)] bg-[var(--rail-2)] shadow-[0_0_0_1px_var(--rail)] transition-opacity duration-200",
                       g.small_sample && "border-dashed", dim && "opacity-35", "focus-visible:z-10 focus-visible:outline-offset-0")}>
                     <span aria-hidden className="block rounded-full transition-transform duration-200"
                       style={{
-                        width: `${Math.max(8, Math.sqrt(lit) * 86)}%`, height: `${Math.max(8, Math.sqrt(lit) * 86)}%`,
+                        width: `${Math.max(8, Math.sqrt(lit) * 86)}%`, aspectRatio: "1", maxHeight: "86%",
                         background: `color-mix(in oklab, var(--accent) ${Math.round(18 + lit * 82)}%, var(--rail-2))`,
                         boxShadow: lit > 0.5 ? "0 0 0 1px color-mix(in oklab, var(--accent) 40%, transparent)" : undefined,
                         transform: active?.[0] === r && active?.[1] === c ? "scale(1.08)" : undefined,

@@ -97,7 +97,7 @@ export default function Salary() {
                     data: g.map((x) => ({ value: [x.p10, x.p25, x.median, x.p75, x.p90],
                       itemStyle: x.confidence === "low"
                         ? { color: t.panel, borderColor: t.series[bench ? HUE.source : HUE.pay], borderType: "dashed", borderWidth: 1.5 }
-                        : { color: t.accentSoft, borderColor: t.series[bench ? HUE.source : HUE.pay], borderWidth: 1.5 } })),
+                        : { color: t.panel2, borderColor: t.series[bench ? HUE.source : HUE.pay], borderWidth: 1.5 } })),
                   }, {
                     type: "scatter", symbolSize: 0, data: g.map((x) => [x.p90, g.indexOf(x)]),
                     label: { show: true, position: "right", color: t.ink3, fontSize: 11, formatter: (p: { dataIndex: number }) => `n=${fmtInt(g[p.dataIndex].n)}` },

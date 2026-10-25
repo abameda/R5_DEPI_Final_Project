@@ -63,6 +63,7 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
           </Guard>
         </>)}
       </ChartPanel>
+      <div className="grid content-start gap-4">
       <ChartPanel title="Skill categories" meta="Share of postings listing at least one skill in the category"
         info="Categories come from the Kaggle dataset's own skill grouping (programming, cloud, libraries…) where it exists, otherwise from a documented curated list. 'Uncategorized' skills are not guessed."
         table={cats.data ? { columns: ["Category", "Postings", "Share", "Distinct skills"], filename: "skill-categories",
@@ -71,7 +72,7 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
           data={d.rows.map((r) => ({ label: r.category, value: r.postings, share: r.share, note: `${r.skills} distinct skills${r.is_technical ? "" : " · non-technical"}` }))}
           onSelect={(c) => setCategory(c)} />}</Guard>}
       </ChartPanel>
-      <ChartPanel className="xl:col-start-2" title="Soft skills and languages"
+      <ChartPanel title="Soft skills and languages"
         meta={soft.data ? `Non-technical skills · share of ${fmtInt(soft.data.denominator)} postings with skill data` : undefined}
         info="Soft skills and spoken languages are mostly added by the team from descriptions and role knowledge; the hatched part shows how much."
         table={soft.data ? { columns: ["Skill", "Postings", "Share", "Written in posting"], filename: "soft-skills",
@@ -80,6 +81,7 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
           {(d) => <SkillBars handle={h} rows={d.rows} denominator={d.denominator} observedOnly={filters.provenance === "observed"} onSelect={onPick} />}
         </Guard>}
       </ChartPanel>
+      </div>
     </div>
   );
 }
@@ -214,7 +216,7 @@ export function SkillProfile({ skill, onClose }: { skill: string; onClose: () =>
               <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2">
                 <p><span className="kpi text-2xl font-semibold text-ink">{fmtPct(d.share)}</span> <span className="text-ink-2">of {fmtInt(d.denominator)} postings with skill data list {skill}</span></p>
                 <p className="text-sm text-ink-2">{fmtInt(d.observed_postings)} written in the posting · {fmtInt(added)} added by the team
-                  {d.postings > 0 && added / d.postings > 0.5 && <Pill tone="warn" title="Most mentions of this skill were added after collection">mostly team-added</Pill>}</p>
+                  {d.postings > 0 && added / d.postings > 0.5 && <Pill tone="added" title="Most mentions of this skill were added after collection">mostly team-added</Pill>}</p>
                 <TextLink to={drillHref("/explorer", filters, { skill })}>See the {fmtInt(d.postings)} postings</TextLink>
                 <TextLink to={drillHref("/career", filters, {}, { have: skill })}>Plan a career with it</TextLink>
               </div>

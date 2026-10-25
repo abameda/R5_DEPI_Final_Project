@@ -230,13 +230,14 @@ export function Callout({ tone = "info", children, title }: { tone?: "info" | "w
   );
 }
 
-export function Pill({ children, tone = "neutral", title }: { children: ReactNode; tone?: "neutral" | "accent" | "warn" | "good"; title?: string }) {
+export function Pill({ children, tone = "neutral", title }: { children: ReactNode; tone?: "neutral" | "accent" | "warn" | "good" | "added"; title?: string }) {
   return (
     <span title={title} className={clsx("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
       tone === "neutral" && "bg-panel-2 text-ink-2 ring-1 ring-line",
       tone === "accent" && "bg-accent-soft text-accent-ink",
       tone === "warn" && "bg-warn-soft text-warn",
-      tone === "good" && "bg-panel-2 text-good ring-1 ring-line")}>
+      tone === "good" && "bg-panel-2 text-good ring-1 ring-line",
+      tone === "added" && "border border-dashed border-ink-3 text-ink-2")}>
       {children}
     </span>
   );

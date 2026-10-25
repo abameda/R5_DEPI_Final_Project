@@ -130,7 +130,7 @@ export default function TrendsPage() {
                             <li key={r.skill} className="flex items-center gap-2 text-sm">
                               <span className="tnum w-5 text-ink-3">{i + 1}</span>
                               <span className="w-32 truncate">{r.skill}</span>
-                              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full" style={{ width: `${(r.share ?? 0) * 100}%`, background: c === "kaggle_2023" ? "var(--s4)" : "var(--s3)" }} /></span>
+                              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full" style={{ width: `${(r.share ?? 0) * 100}%`, background: c === "kaggle_2023" ? "var(--s4)" : "var(--s4-soft)" }} /></span>
                               <span className="tnum w-12 text-right text-ink-2">{fmtPct(r.share, 0)}</span>
                             </li>
                           ))}

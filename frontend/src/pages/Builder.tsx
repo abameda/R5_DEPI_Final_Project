@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Chart } from "../components/Chart";
 import { Button, Callout, ChartPanel, Guard, PageHeader, Panel, Select } from "../components/ui";
 import { apiGet, usePost } from "../lib/api";
-import { axisStyle, baseOption, esc } from "../lib/echarts";
+import { axisStyle, baseOption, categorical, esc } from "../lib/echarts";
 import { filterBody } from "../lib/filters";
 import { fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
 import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
@@ -123,7 +123,7 @@ function BuilderChart({ r, handle, line, fmt, name }: { r: Result; handle: React
         const valAxis = { type: "value", ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: number) => fmt(v) } };
         return {
           ...baseOption(t),
-          color: t.series,
+          color: categorical(t),
           grid: { left: 8, right: 60, top: splits.length > 1 ? 34 : 10, bottom: 8, containLabel: true },
           legend: splits.length > 1 ? { top: 0, left: 0, textStyle: { color: t.ink2, fontSize: 11 }, itemWidth: 12, itemHeight: 10 } : undefined,
           xAxis: horizontal ? valAxis : catAxis,

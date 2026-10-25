@@ -137,7 +137,7 @@ function Results({ g }: { g: Gap }) {
                 <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
                   <span className="font-medium text-ink">{s.skill}</span>
                   <span className="text-xs text-ink-3">{s.category}</span>
-                  {addedShare > 0.5 && <Pill tone="warn" title={`${fmtPct(addedShare, 0)} of these mentions were added by the team, not written in postings`}>mostly team-added</Pill>}
+                  {addedShare > 0.5 && <Pill tone="added" title={`${fmtPct(addedShare, 0)} of these mentions were added by the team, not written in postings`}>mostly team-added</Pill>}
                 </span>
                 <TextLink to={drillHref("/explorer", filters, { role: g.role, skill: s.skill })}>Postings</TextLink>
                 <span className="col-span-2 flex items-center gap-3">

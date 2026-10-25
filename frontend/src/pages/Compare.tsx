@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Chart } from "../components/Chart";
 import { Callout, ChartPanel, Guard, PageHeader, Panel, Pill, Segmented, Select } from "../components/ui";
 import { useApi, usePost } from "../lib/api";
-import { axisStyle, baseOption, esc } from "../lib/echarts";
+import { axisStyle, baseOption, categorical, esc } from "../lib/echarts";
 import { EMPTY_FILTERS, filterBody, LIST_KEYS, type Filters, type ListKey } from "../lib/filters";
 import { fmtInt, fmtPct, fmtPp, fmtUsd } from "../lib/format";
 import { useLabels, useMeta } from "../lib/hooks";
@@ -112,9 +112,9 @@ function SegmentEditor({ which, f, name, onChange }: { which: "a" | "b"; f: Filt
   const labels = useLabels();
   const skills = useApi<TopSkills>("/skills/top", null, { limit: 60 });
   return (
-    <section aria-label={`Segment ${which.toUpperCase()}`} className={clsx("rounded-lg border bg-panel p-4", which === "a" ? "border-s1" : "border-s2")}>
+    <section aria-label={`Segment ${which.toUpperCase()}`} className={clsx("rounded-lg border bg-panel p-4", which === "a" ? "border-s1" : "border-s3")}>
       <h2 className="flex items-center gap-2 text-base font-semibold">
-        <span className={clsx("grid size-6 place-items-center rounded text-xs font-bold text-white", which === "a" ? "bg-s1" : "bg-s2")}>{which.toUpperCase()}</span>
+        <span className={clsx("grid size-6 place-items-center rounded text-xs font-bold text-white", which === "a" ? "bg-s1" : "bg-s3")}>{which.toUpperCase()}</span>
         <span className="truncate" dir="auto">{name}</span>
       </h2>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -163,7 +163,7 @@ function MetricsTable({ r, nameA, nameB }: { r: Result; nameA: string; nameB: st
         <thead className="text-left text-xs text-ink-3">
           <tr><th scope="col" className="py-1.5 font-medium">Measure</th>
             <th scope="col" className="py-1.5 text-right font-medium"><span className="text-s1">A</span> <span className="hidden sm:inline">{nameA}</span></th>
-            <th scope="col" className="py-1.5 text-right font-medium"><span className="text-s2">B</span> <span className="hidden sm:inline">{nameB}</span></th>
+            <th scope="col" className="py-1.5 text-right font-medium"><span className="text-s3">B</span> <span className="hidden sm:inline">{nameB}</span></th>
             <th scope="col" className="py-1.5 text-right font-medium">Difference</th></tr>
         </thead>
         <tbody>
@@ -209,7 +209,7 @@ function Dumbbell({ rows, handle }: { rows: Result["skills"]; handle: React.Muta
               return { type: "line", shape: { x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1] }, style: { stroke: t.lineStrong, lineWidth: 2 } };
             } },
           { name: "A", type: "scatter", symbolSize: 10, data: r.map((x) => x.a_share), itemStyle: { color: t.series[0], borderColor: t.panel, borderWidth: 2 } },
-          { name: "B", type: "scatter", symbol: "diamond", symbolSize: 11, data: r.map((x) => x.b_share), itemStyle: { color: t.series[1], borderColor: t.panel, borderWidth: 2 } },
+          { name: "B", type: "scatter", symbol: "diamond", symbolSize: 11, data: r.map((x) => x.b_share), itemStyle: { color: categorical(t)[1], borderColor: t.panel, borderWidth: 2 } },
         ],
       })} />
   );
@@ -225,11 +225,11 @@ function MixPanel({ title, a, b }: { title: string; a: Count[]; b: Count[] }) {
         {keys.map((k) => (
           <li key={k}>
             <div className="flex justify-between"><span className="text-ink-2">{k}</span>
-              <span className="tnum text-ink-3"><span className="text-s1">A</span> {fmtPct(sa(k), 0)} · <span className="text-s2">B</span> {fmtPct(sb(k), 0)}
+              <span className="tnum text-ink-3"><span className="text-s1">A</span> {fmtPct(sa(k), 0)} · <span className="text-s3">B</span> {fmtPct(sb(k), 0)}
                 {Math.abs(sa(k) - sb(k)) >= 0.1 && <> <Pill tone="accent">{fmtPp(100 * (sa(k) - sb(k)))}</Pill></>}</span></div>
             <div className="mt-1 grid gap-0.5">
               <span className="block h-1.5 rounded-full bg-s1" style={{ width: `${sa(k) * 100}%` }} />
-              <span className="block h-1.5 rounded-full bg-s2" style={{ width: `${sb(k) * 100}%` }} />
+              <span className="block h-1.5 rounded-full bg-s3" style={{ width: `${sb(k) * 100}%` }} />
             </div>
           </li>
         ))}

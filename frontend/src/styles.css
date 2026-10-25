@@ -37,8 +37,9 @@
   --s1-soft: #b9c9ec;
   --s3-soft: #b3e0dc;
   --good: #2b7a32;
-  --warn: #9a5c00;
-  --warn-soft: #fdf1dc;
+  --warn: #a4471c;
+  --warn-soft: #fbe6dc;
+  --s4-soft: #cbbbe3;
   --crit: #b3262f;
   --crit-soft: #fbe7e8;
   --info-soft: #e7eefb;
@@ -76,8 +77,9 @@
   --s1-soft: #2c3d66;
   --s3-soft: #12423d;
   --good: #6cc070;
-  --warn: #e9a53f;
-  --warn-soft: #33250f;
+  --warn: #f08a5d;
+  --warn-soft: #3a2015;
+  --s4-soft: #4a3a6a;
   --crit: #f07a80;
   --crit-soft: #3a1a1c;
   --info-soft: #1d2740;
