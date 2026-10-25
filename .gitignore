@@ -1,0 +1,12 @@
+# Data is NOT committed: raw third-party data must not be redistributed (NFR-08)
+# and the files are larger than GitHub's 100 MB limit. Share them via Drive.
+data/raw/
+data/processed/
+*.zip
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
