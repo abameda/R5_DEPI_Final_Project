@@ -74,9 +74,11 @@ export function FilterBar() {
 
 function KeywordSearch({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [text, setText] = useState(value);
-  useEffect(() => setText(value), [value]);
+  // take outside changes (chip removed, back button) without undoing a trailing space being typed
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (value !== text.trim()) setText(value); }, [value]);
   useEffect(() => {
-    if (text === value) return;
+    if (text.trim() === value) return;
     const t = setTimeout(() => onChange(text.trim()), 350);
     return () => clearTimeout(t);
   }, [text, value, onChange]);
@@ -107,7 +109,7 @@ function Facet({ label, selected, options, onToggle, onClear, grouped }: {
 }) {
   return (
     <Popover.Root>
-      <Popover.Trigger aria-label={`Filter by ${label.toLowerCase()}`}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
+      <Popover.Trigger aria-label={`Filter by ${label.toLowerCase()}${selected.length ? `, ${selected.length} selected` : ""}`}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={6} collisionPadding={12}
           className="z-50 w-72 rounded-lg border border-line-strong bg-panel shadow-panel">
@@ -174,7 +176,7 @@ function AsyncFacet({ label, selected, onToggle, kind }: { label: string; select
   const merged = [...selected.filter((s) => !options.some((o) => o.value === s)).map((s) => ({ value: s, label: s })), ...options];
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger aria-label={`Filter by ${label.toLowerCase()}`}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
+      <Popover.Trigger aria-label={`Filter by ${label.toLowerCase()}${selected.length ? `, ${selected.length} selected` : ""}`}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={6} collisionPadding={12} className="z-50 w-72 rounded-lg border border-line-strong bg-panel shadow-panel">
           <Command label={`${label} options`} shouldFilter={false} className="flex max-h-[min(420px,70vh)] flex-col">
@@ -301,6 +303,7 @@ function Population() {
         {all != null && total !== all && <> of {fmtInt(all)}</>} unique postings
       </span>
       {mix && <span className="text-ink-3">{mix}</span>}
+      {(filters.date_from || filters.date_to) && <span className="text-ink-3">Undated postings are excluded while a date is set</span>}
       <span className="text-ink-3">
         Skills: {filters.provenance === "observed" ? "only those written in the posting data" : "includes skills the team added after collection"}
       </span>

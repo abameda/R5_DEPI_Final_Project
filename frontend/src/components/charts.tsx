@@ -1,4 +1,4 @@
-import { axisStyle, baseOption, esc, type Tokens } from "../lib/echarts";
+import { axisStyle, baseOption, esc, HUE, type Tokens } from "../lib/echarts";
 import { fmtCompact, fmtInt, fmtMonth, fmtPct, fmtUsd } from "../lib/format";
 import { Chart, type ChartHandle } from "./Chart";
 import type { SkillRow } from "../lib/types";
@@ -87,15 +87,15 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
           const observed = {
             name: "Written in posting", type: "bar", stack: "s", barMaxWidth: 16, barCategoryGap: "38%",
             data: r.map((x) => x.observed / denominator), emphasis: { focus: "series" },
-            itemStyle: { color: t.series[0], borderRadius: observedOnly ? [0, 4, 4, 0] : 0 },
+            itemStyle: { color: t.series[HUE.skill], borderRadius: observedOnly ? [0, 4, 4, 0] : 0 },
             label: observedOnly ? endLabel : undefined,
           };
           if (observedOnly) return [observed];
           return [observed, {
             name: "Added by team", type: "bar", stack: "s", barMaxWidth: 16,
             data: r.map((x) => x.added / denominator), emphasis: { focus: "series" },
-            itemStyle: { color: t.s1Soft, borderColor: t.series[0], borderWidth: 1, borderRadius: [0, 4, 4, 0],
-              decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: t.series[0] } },
+            itemStyle: { color: t.s3Soft, borderColor: t.series[HUE.skill], borderWidth: 1, borderRadius: [0, 4, 4, 0],
+              decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: t.series[HUE.skill] } },
             label: endLabel,
           }];
         })(),
@@ -104,7 +104,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
 }
 
 /** Vertical bars for a distribution (e.g. salary histogram). */
-export function Histogram({ bins, binWidth, cap, label, handle, color = 0 }: {
+export function Histogram({ bins, binWidth, cap, label, handle, color = HUE.pay }: {
   bins: { bin: number; n: number }[]; binWidth: number; cap: number; label: string; handle?: Handle; color?: number;
 }) {
   const cats = bins.map((b) => (b.bin >= cap ? `${fmtUsd(cap)}+` : `${fmtUsd(b.bin)}`));
@@ -154,7 +154,7 @@ export function CohortMonths({ months, cohortLabel, handle, min = 30 }: {
                 tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { dataIndex: number }[]) =>
                   `<b>${fmtMonth(p.shown[ps[0].dataIndex].month)}</b><br/>${fmtInt(p.shown[ps[0].dataIndex].n)} postings` },
                 series: [{ type: "bar", data: p.shown.map((m) => m.n), barMaxWidth: 22,
-                  itemStyle: { color: t.series[i === 0 ? 0 : 2], borderRadius: [3, 3, 0, 0] } }],
+                  itemStyle: { color: t.series[i === 0 ? HUE.source : HUE.skill], borderRadius: [3, 3, 0, 0] } }],
               })} />
           ) : <p className="py-6 text-sm text-ink-3">No month reaches {min} postings.</p>}
           {p.hidden.length > 0 && (

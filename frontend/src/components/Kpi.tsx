@@ -3,17 +3,27 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /** One headline figure with its denominator. Flashes briefly when a filter change moves it. */
 export function Kpi({ label, value, sub, title }: { label: string; value: string; sub?: ReactNode; title?: string }) {
-  const prev = useRef(value);
+  // The figure the visitor saw before their last filter edit; when the value
+  // differs, a dot stays next to it (the flash is only an extra cue).
+  const shown = useRef(value);
+  const [changed, setChanged] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
-    if (prev.current !== value) { prev.current = value; setTick((t) => t + 1); }
+    if (shown.current !== value) {
+      shown.current = value;
+      setChanged(true);
+      setTick((t) => t + 1);
+    }
   }, [value]);
   return (
     <div className="min-w-0 px-4 py-3" title={title}>
-      <dt className="truncate text-xs text-ink-3">{label}</dt>
+      <dt className="flex items-center gap-1.5 text-xs text-ink-3">
+        <span className="truncate">{label}</span>
+        {changed && <span className="size-1.5 shrink-0 rounded-full bg-accent" title="Changed with your last filter edit"><span className="sr-only"> (changed)</span></span>}
+      </dt>
       <dd className="m-0">
         <span key={tick} className={clsx("kpi inline-block text-2xl font-semibold tracking-tight text-ink", tick > 0 && "changed")}>{value}</span>
-        {sub && <span className="mt-0.5 block truncate text-xs text-ink-3">{sub}</span>}
+        {sub && <span className="mt-0.5 block text-xs leading-4 text-ink-3 [overflow-wrap:anywhere]">{sub}</span>}
       </dd>
     </div>
   );

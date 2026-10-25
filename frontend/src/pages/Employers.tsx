@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HBar, SkillBars } from "../components/charts";
 import { Kpi, KpiStrip } from "../components/Kpi";
-import { Button, Callout, ChartPanel, Empty, Guard, IconButton, PageHeader, Panel, Pill, Select, TextLink } from "../components/ui";
+import { Button, Callout, ChartPanel, Empty, ErrorState, Guard, IconButton, PageHeader, Panel, Pill, Select, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
+import { HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
 import { fmtDate, fmtInt, fmtUsd } from "../lib/format";
 import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
@@ -27,6 +28,9 @@ export default function Employers() {
   const page = Math.max(1, +pageStr || 1);
   const q = useApi<{ total: number; rows: Row[] }>("/companies", filters, { search: search || undefined, page, page_size: 25, sort, include_placeholders: boards === "1" });
   const pages = q.data ? Math.max(1, Math.min(400, Math.ceil(q.data.total / 25))) : 1;
+  useEffect(() => {
+    if (q.data && !q.isFetching && page > pages) update({ epage: pages > 1 ? String(pages) : null });
+  }, [q.data, q.isFetching, page, pages, update]);
 
   return (
     <>
@@ -100,7 +104,8 @@ function EmployerProfile({ name, onClose }: { name: string; onClose: () => void 
   return (
     <Panel className="mb-4 border-accent-line" title={<span dir="auto">{name}</span>} meta="Employer profile within the current filters"
       actions={<IconButton label="Close employer profile" onClick={onClose}><X size={16} /></IconButton>}>
-      {q.error ? <Empty title="No postings for this employer with the current filters" /> : (
+      {q.error?.status === 404 ? <Empty title="No postings for this employer with the current filters" />
+        : q.error ? <ErrorState error={q.error} retry={() => q.refetch()} /> : (
         <Guard q={q} h={360}>
           {(p) => (
             <div className="grid gap-4">
@@ -118,11 +123,11 @@ function EmployerProfile({ name, onClose }: { name: string; onClose: () => void 
                   {(h) => <HBar handle={h} label="Titles" maxLabel={34} data={p.titles.map((t) => ({ label: t.key, value: t.n }))} />}
                 </ChartPanel>
                 <ChartPanel title="Where" table={{ columns: ["Country", "Postings"], filename: "employer-countries", rows: p.countries.map((t) => [t.key ?? "No country", t.n]) }}>
-                  {(h) => <HBar handle={h} label="Countries" color={2} data={p.countries.map((t) => ({ label: t.key ?? "No country", value: t.n, share: t.share }))}
+                  {(h) => <HBar handle={h} label="Countries" color={HUE.place} data={p.countries.map((t) => ({ label: t.key ?? "No country", value: t.n, share: t.share }))}
                     onSelect={(c) => c !== "No country" && nav(drillHref("/explorer", filters, { company: name, country: c }))} />}
                 </ChartPanel>
                 <ChartPanel title="Seniority" table={{ columns: ["Seniority", "Postings"], filename: "employer-seniority", rows: p.seniority.map((t) => [t.key, t.n]) }}>
-                  {(h) => <HBar handle={h} label="Seniority" color={3} data={p.seniority.map((t) => ({ label: t.key, value: t.n, share: t.share, muted: t.key === "Not specified" }))} />}
+                  {(h) => <HBar handle={h} label="Seniority" data={p.seniority.map((t) => ({ label: t.key, value: t.n, share: t.share, muted: t.key === "Not specified" }))} />}
                 </ChartPanel>
               </div>
               <ChartPanel title="Skills this employer asks for" meta={`Share of its ${fmtInt(p.top_skills.denominator)} postings that list skills`}>

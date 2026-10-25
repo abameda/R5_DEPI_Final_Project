@@ -69,11 +69,17 @@ export function isFilterKey(k: string): k is FilterKey {
   return (LIST_KEYS as readonly string[]).includes(k) || (SCALAR_KEYS as readonly string[]).includes(k);
 }
 
-/** Build "path?params" for a drilldown, merging new filter values into the current ones. */
+/**
+ * Build "path?params" for a drilldown into one value. List facets are OR
+ * within the facet, so the drilled facet is narrowed to that value; skills
+ * are AND (postings must list all), so a drilled skill is added.
+ */
 export function drillHref(path: string, current: Filters, add: Partial<Record<ListKey, string>>, extra: Record<string, string> = {}): string {
   const next: Filters = { ...current };
   for (const [k, v] of Object.entries(add) as [ListKey, string][]) {
-    if (v && !next[k].includes(v)) next[k] = [...next[k], v];
+    if (!v) continue;
+    if (k === "skill") { if (!next.skill.includes(v)) next.skill = [...next.skill, v]; }
+    else next[k] = [v];
   }
   const sp = new URLSearchParams(filterParams(next));
   for (const [k, v] of Object.entries(extra)) sp.set(k, v);

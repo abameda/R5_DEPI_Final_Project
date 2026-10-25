@@ -32,7 +32,7 @@ export function Chart({ build, height = 280, onClick, label, handleRef, deps }: 
     const ro = new ResizeObserver(() => c.resize());
     ro.observe(el.current);
     if (handleRef) handleRef.current = { png: () => c.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: readTokens().panel }) };
-    return () => { ro.disconnect(); c.dispose(); chart.current = null; };
+    return () => { ro.disconnect(); c.dispose(); chart.current = null; if (handleRef) handleRef.current = null; };
   }, [handleRef]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,10 +40,6 @@ export function Chart({ build, height = 280, onClick, label, handleRef, deps }: 
 
   useEffect(() => {
     chart.current?.setOption(option, { notMerge: true });
-    // Label widths are measured with the web font; re-lay out once it has loaded.
-    let live = true;
-    document.fonts?.ready.then(() => { if (live) chart.current?.setOption(option, { notMerge: true }); });
-    return () => { live = false; };
   }, [option]);
 
   return <div ref={el} role="img" aria-label={label} style={{ height, width: "100%" }} />;

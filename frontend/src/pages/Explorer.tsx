@@ -20,11 +20,16 @@ export default function Explorer() {
   const update = useUpdateParams();
   const [pageStr, setPage] = useParam("page", "1");
   const [selected, setSelected] = useParam("job", "");
-  const page = Math.max(1, Number.parseInt(pageStr, 10) || 1);
+  // never request beyond the browsable window (the API serves the first 10,000 results)
+  const page = Math.min(Math.max(1, Number.parseInt(pageStr, 10) || 1), Math.floor(10_000 / PAGE_SIZE) + 1);
   const q = useApi<JobPage>("/jobs", filters, { page, page_size: PAGE_SIZE, sort });
   const pages = q.data ? Math.max(1, Math.ceil(q.data.total / PAGE_SIZE)) : 1;
   const maxPage = Math.min(pages, Math.floor(10_000 / PAGE_SIZE) + 1);
   const top = useRef<HTMLDivElement>(null);
+  // a shared link or a narrower filter can point past the last page
+  useEffect(() => {
+    if (q.data && !q.isFetching && page > maxPage) update({ page: maxPage > 1 ? String(maxPage) : null });
+  }, [q.data, q.isFetching, page, maxPage, update]);
   useEffect(() => { top.current?.scrollIntoView({ block: "nearest" }); }, [page]);
 
   return (
@@ -79,7 +84,7 @@ function JobTable({ rows, selected, onSelect }: { rows: Job[]; selected: string;
               <td className="px-4 py-2.5">
                 <button type="button" onClick={(e) => { e.stopPropagation(); onSelect(j.job_id); }} aria-expanded={selected === j.job_id}
                   className="block w-full text-left font-medium text-ink hover:underline" dir="auto">{j.title}</button>
-                <span className="block truncate text-ink-2" dir="auto">{j.company ?? "Employer not given"}{j.company_is_placeholder && <span className="text-ink-3"> · job board / hidden employer</span>}</span>
+                <span className="block truncate text-ink-2"><bdi>{j.company ?? "Employer not given"}</bdi>{j.company_is_placeholder && <span className="text-ink-3"> · job board / hidden employer</span>}</span>
                 <SkillChips skills={j.skill_list} max={6} />
               </td>
               <td className="px-2 py-2.5 text-ink-2">
@@ -104,7 +109,7 @@ function JobTable({ rows, selected, onSelect }: { rows: Job[]; selected: string;
           <li key={j.job_id}>
             <button type="button" onClick={() => onSelect(j.job_id)} className={clsx("block w-full px-4 py-3 text-left", selected === j.job_id && "bg-accent-soft")}>
               <span className="block font-medium text-ink" dir="auto">{j.title}</span>
-              <span className="block text-sm text-ink-2" dir="auto">{j.company ?? "Employer not given"} · {j.country ?? "No single country"}</span>
+              <span className="block text-sm text-ink-2"><bdi>{j.company ?? "Employer not given"}</bdi> · <bdi>{j.country ?? "No single country"}</bdi></span>
               <span className="mt-1 flex flex-wrap gap-x-3 text-xs text-ink-3"><span>{j.role_category}</span><span>{fmtDate(j.posted_date)}</span><Salary j={j} /></span>
             </button>
           </li>
@@ -127,7 +132,7 @@ export function SkillChips({ skills, max }: { skills: SkillChip[]; max?: number 
     <span className="mt-1.5 flex flex-wrap gap-1">
       {shown.map((s) => (
         <span key={s.skill} title={s.observed ? `${s.skill} — written in the posting data` : `${s.skill} — added by the team after collection`}
-          className={clsx("rounded px-1.5 py-px text-xs", s.observed ? "bg-info-soft text-ink ring-1 ring-[var(--s1-soft)]" : "border border-dashed border-line-strong text-ink-3")}>
+          className={clsx("rounded px-1.5 py-px text-xs", s.observed ? "bg-[color-mix(in_oklab,var(--s3-soft)_55%,transparent)] text-ink ring-1 ring-[var(--s3-soft)]" : "border border-dashed border-line-strong text-ink-3")}>
           {s.skill}{!s.observed && <span className="sr-only"> (added by team)</span>}
         </span>
       ))}
@@ -152,16 +157,29 @@ function JobDetail({ id, onClose }: { id: string; onClose: () => void }) {
   const labels = useLabels();
   const q = useApi<Job>(`/jobs/${encodeURIComponent(id)}`, null);
   const j = q.data;
+  const ref = useRef<HTMLElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  // below xl the detail renders after the list: bring it into view and move focus there
+  useEffect(() => {
+    if (!matchMedia("(min-width: 1280px)").matches) ref.current?.scrollIntoView({ block: "start" });
+    heading.current?.focus({ preventScroll: true });
+  }, [id]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
-    <aside aria-label="Posting details" className="h-fit rounded-lg border border-line bg-panel xl:sticky xl:top-36">
+    <aside ref={ref} aria-label="Posting details"
+      className="h-fit scroll-mt-4 rounded-lg border border-line bg-panel xl:sticky xl:top-[calc(var(--filters-h,0px)+1rem)] xl:max-h-[calc(100vh-var(--filters-h,0px)-2rem)] xl:overflow-auto">
       <div className="flex items-start justify-between gap-2 border-b border-line px-4 py-3">
-        <h2 className="text-lg font-semibold text-ink" dir="auto">{j?.title ?? "Posting"}</h2>
+        <h2 ref={heading} tabIndex={-1} className="text-lg font-semibold text-ink focus:outline-none" dir="auto">{j?.title ?? "Posting"}</h2>
         <button type="button" onClick={onClose} aria-label="Close details" className="grid size-7 shrink-0 place-items-center rounded-md text-ink-3 hover:bg-panel-2 hover:text-ink"><X size={16} /></button>
       </div>
       <div className="px-4 py-3">
         {q.error ? <ErrorState error={q.error} /> : !j ? <Loading h={260} /> : (
           <div className="space-y-4 text-sm">
-            <p className="text-ink-2" dir="auto">{j.company ?? "Employer not given"} · {j.location ?? j.country ?? "No location"}</p>
+            <p className="text-ink-2"><bdi>{j.company ?? "Employer not given"}</bdi> · <bdi>{j.location ?? j.country ?? "No location"}</bdi></p>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
               {[["Role", j.role_category], ["Seniority", j.seniority], ["Market", j.market_type], ["Work mode", j.work_mode],
                 ["Employment", j.job_type], ["Posted", fmtDate(j.posted_date)], ["Collection", labels.cohort(j.cohort)], ["Language", j.language]]

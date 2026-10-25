@@ -103,6 +103,7 @@ function save(url: string, name: string) {
   a.href = url;
   a.download = name;
   a.click();
+  if (url.startsWith("blob:")) setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function IconButton({ label, onClick, children, active }: { label: string; onClick: () => void; children: ReactNode; active?: boolean }) {
@@ -152,9 +153,19 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-panel p-0.5">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-panel p-0.5"
+      onKeyDown={(e) => {
+        const i = options.findIndex((o) => o.value === value);
+        const next = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: options.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        const o = options[(next + options.length) % options.length];
+        onChange(o.value);
+        (e.currentTarget.querySelector(`[data-value="${CSS.escape(o.value)}"]`) as HTMLElement | null)?.focus();
+      }}>
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
+          data-value={o.value} tabIndex={value === o.value ? 0 : -1}
           className={clsx("h-7 rounded px-2.5 text-sm transition-colors",
             value === o.value ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:text-ink")}>
           {o.label}

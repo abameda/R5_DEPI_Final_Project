@@ -65,7 +65,9 @@ export default function Builder() {
           <Select label="Chart" value={view} onChange={setView} options={[{ value: "bar", label: "Bars" }, { value: "line", label: "Line (time only)" }, { value: "table", label: "Table" }]} />
           <Button onClick={downloadCsv} disabled={!valid}><Download size={14} /> CSV</Button>
         </div>
-        {!valid && <p className="mt-3 text-sm text-crit">This measure is defined per posting and cannot be split by skill. Choose another measure.</p>}
+        {!valid && <p className="mt-3 text-sm text-crit">{split && !splitOk(split)
+          ? "Only one skill dimension per view (skill × skill is the co-occurrence view on the Skills page). Choose another split."
+          : "This measure is defined per posting and cannot be computed per skill. Choose another measure."}</p>}
         <p className="mt-3 text-xs text-ink-3">Uses the filters in the bar above. CSV exports contain aggregates only, never raw postings.</p>
       </Panel>
       <Guard q={q} h={420} empty={(r) => !r.rows.length}>
@@ -128,12 +130,17 @@ function BuilderChart({ r, handle, line, fmt, name }: { r: Result; handle: React
           yAxis: horizontal ? catAxis : valAxis,
           tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { seriesName: string; dataIndex: number; value: number | null; color: string }[]) =>
             `<b>${esc(name(r.dimension, shown[ps[0].dataIndex]))}</b><br/>` + ps.map((p) => `${splits.length > 1 ? `${esc(p.seriesName)}: ` : ""}<b>${fmt(p.value)}</b>`).join("<br/>") },
-          series: splits.slice(0, 8).map((s) => ({
+          series: splits.map((s) => ({
             name: r.split_by ? name(r.split_by, s) : r.metric_label, type: line ? "line" : "bar",
             barMaxWidth: 14, emphasis: { focus: "series" }, showSymbol: true,
             itemStyle: horizontal ? { borderRadius: [0, 3, 3, 0] } : undefined,
             label: splits.length === 1 && horizontal ? { show: true, position: "right", color: t.ink2, fontSize: 11, formatter: (p: { value: number | null }) => fmt(p.value) } : undefined,
-            data: shown.map((c) => val(c, s)),
+            data: shown.map((c) => {
+              const row = r.rows.find((x) => x.d0 === c && (x.d1 ?? "") === s);
+              return row?.small_sample
+                ? { value: val(c, s), itemStyle: { decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: t.panel } } }
+                : val(c, s);
+            }),
           })),
         };
       }} />

@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { CohortMonths, HBar, Histogram, SkillBars } from "../components/charts";
 import { Kpi, KpiStrip } from "../components/Kpi";
 import { Lattice } from "../components/Lattice";
-import { Callout, ChartPanel, Empty, Guard, PageHeader, Panel, TextLink } from "../components/ui";
+import { ChartPanel, Empty, Guard, PageHeader, Panel, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
+import { HUE } from "../lib/echarts";
 import { drillHref, filterParams } from "../lib/filters";
 import { fmtDate, fmtInt, fmtPct } from "../lib/format";
 import { useFilters, useLabels } from "../lib/hooks";
-import type { Count, Insight, Matrix, Overview as OverviewData } from "../lib/types";
+import type { Count, Matrix, Overview as OverviewData } from "../lib/types";
 
 export default function Overview() {
   const { filters } = useFilters();
@@ -16,7 +17,6 @@ export default function Overview() {
   const labels = useLabels();
   const q = useApi<OverviewData>("/overview", filters);
   const lattice = useApi<Matrix>("/skills/matrix", filters, { dim: "role_category", groups: 10, top: 16 });
-  const insights = useApi<Insight[]>("/insights", filters);
   const go = (path: string, add: Record<string, string>, extra: Record<string, string> = {}) => nav(drillHref(path, filters, add, extra));
   const qs = new URLSearchParams(filterParams(filters)).toString();
   const link = (p: string) => (qs ? `${p}?${qs}` : p);
@@ -41,27 +41,11 @@ export default function Overview() {
             </KpiStrip>
 
             {kaggle > 0.5 && (
-              <div className="mt-4">
-                <Callout tone="info" title="Read with the sample in mind">
-                  {fmtPct(kaggle, 0)} of these postings come from the 2023 Kaggle archive, which was collected for data roles
-                  (analyst, engineer, scientist). Role and skill rankings reflect that focus; filter the 2024–26 collection for software, security and other tracks.{" "}
-                  <TextLink to="/quality">How the data was built</TextLink>
-                </Callout>
-              </div>
+              <p className="mt-3 text-sm text-ink-2">
+                {fmtPct(kaggle, 0)} of these postings come from the 2023 Kaggle archive, which covers data roles only — so data roles and
+                data skills lead the rankings below. <TextLink to="/quality">How the data was built</TextLink>
+              </p>
             )}
-
-            <Guard q={insights} h={64}>
-              {(ins) => (
-                <ul className="mt-4 grid gap-2 md:grid-cols-3" aria-label="Key findings">
-                  {ins.slice(0, 3).map((i) => (
-                    <li key={i.id} className="rounded-lg border border-line bg-panel px-4 py-3 text-sm text-ink-2">
-                      {i.text}
-                      {i.n !== i.denominator && <span className="mt-1 block text-xs text-ink-3">n = {fmtInt(i.n)} of {fmtInt(i.denominator)}</span>}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Guard>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
               <ChartPanel title="Postings by role" meta={`Share of ${fmtInt(k.postings)} postings · role from title rules`}
@@ -83,7 +67,7 @@ export default function Overview() {
       </Guard>
 
       <Panel className="mt-4" title="Which skills each role asks for"
-        meta="Rows: the 10 largest roles. Columns: the 16 most requested skills. Select an opening to list those postings."
+        meta="The 10 largest roles × the 16 most requested skills"
         info="Share = postings in the role that list the skill ÷ postings in the role that list any skill. Rows with fewer than 30 such postings are framed with a dashed line.">
         <Guard q={lattice} h={420} empty={(m) => !m.groups.length}>
           {(m) => <Lattice matrix={m} rowLabel="Role" caption="Share of each role's postings that list each skill"
@@ -97,28 +81,28 @@ export default function Overview() {
             <ChartPanel title="Top countries" className="xl:col-span-1" meta={`${fmtInt(d.kpis.no_country)} postings have no single country (remote or unknown)`}
               table={countTable(d.countries, "Country", "countries")}
               extraActions={<TextLink to={link("/geography")}>Map</TextLink>}>
-              {(h) => <HBar label="Postings by country" handle={h} data={d.countries.map((r) => ({ label: r.key ?? "No country", value: r.n, share: r.share }))}
+              {(h) => <HBar label="Postings by country" handle={h} color={HUE.place} data={d.countries.map((r) => ({ label: r.key ?? "No country", value: r.n, share: r.share }))}
                 onSelect={(country) => country !== "No country" && go("/explorer", { country })} />}
             </ChartPanel>
             <div className="grid gap-4">
               <ChartPanel title="Market type" meta="Remote > Arab League country > other country" table={countTable(d.markets, "Market", "markets")}
                 info="Documented rule (FR-04): a posting is Remote if marked remote or from a remote board; otherwise Arab if located in an Arab League country; otherwise International.">
-                {(h) => <HBar label="Postings by market type" handle={h} color={2} data={d.markets.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
+                {(h) => <HBar label="Postings by market type" handle={h} color={HUE.place} data={d.markets.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
                   onSelect={(market) => go("/explorer", { market })} />}
               </ChartPanel>
               <ChartPanel title="Work mode" table={countTable(d.work_mode, "Work mode", "work-mode")}
                 meta="Hybrid is rarely stated in the sources">
-                {(h) => <HBar label="Postings by work mode" handle={h} color={2} data={d.work_mode.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
+                {(h) => <HBar label="Postings by work mode" handle={h} color={HUE.place} data={d.work_mode.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
                   onSelect={(work_mode) => go("/explorer", { work_mode })} />}
               </ChartPanel>
             </div>
             <div className="grid gap-4">
               <ChartPanel title="Seniority" meta="From title keywords; most titles state none" table={countTable(d.seniority, "Seniority", "seniority")}>
-                {(h) => <HBar label="Postings by seniority" handle={h} color={3} data={d.seniority.map((r) => ({ label: r.key, value: r.n, share: r.share, muted: r.key === "Not specified" }))}
+                {(h) => <HBar label="Postings by seniority" handle={h} data={d.seniority.map((r) => ({ label: r.key, value: r.n, share: r.share, muted: r.key === "Not specified" }))}
                   onSelect={(seniority) => go("/explorer", { seniority })} />}
               </ChartPanel>
               <ChartPanel title="Employment type" table={countTable(d.job_type, "Employment type", "employment-type")}>
-                {(h) => <HBar label="Postings by employment type" handle={h} color={3} data={d.job_type.map((r) => ({ label: r.key, value: r.n, share: r.share, muted: r.key === "Unknown" }))}
+                {(h) => <HBar label="Postings by employment type" handle={h} data={d.job_type.map((r) => ({ label: r.key, value: r.n, share: r.share, muted: r.key === "Unknown" }))}
                   onSelect={(job_type) => go("/explorer", { job_type })} />}
               </ChartPanel>
             </div>
@@ -145,13 +129,18 @@ export default function Overview() {
             <ChartPanel title="Skill categories" meta={`Share of ${fmtInt(d.skill_categories.denominator)} postings listing at least one skill in the category`}
               info="Categories come from the Kaggle dataset's own skill grouping where it exists, otherwise from a documented curated list. Soft skills and spoken languages are the non-technical groups."
               table={{ columns: ["Category", "Postings", "Share", "Distinct skills"], filename: "skill-categories", rows: d.skill_categories.rows.map((r) => [r.category, r.postings, fmtPct(r.share), r.skills]) }}>
-              {(h) => <HBar label="Skill categories" handle={h} color={3} maxLabel={30}
-                data={d.skill_categories.rows.map((r) => ({ label: r.category, value: r.postings, share: r.share, note: r.is_technical ? undefined : "Non-technical" }))} />}
+              {(h) => (<>
+                <HBar label="Skill categories" handle={h} color={HUE.skill} maxLabel={30}
+                  data={d.skill_categories.rows.slice(0, 10).map((r) => ({ label: r.category, value: r.postings, share: r.share, note: r.is_technical ? undefined : "Non-technical" }))} />
+                {d.skill_categories.rows.length > 10 && (
+                  <p className="mt-1 text-xs text-ink-3">{d.skill_categories.rows.length - 10} smaller categories (each under {fmtPct(d.skill_categories.rows[10].share, 0)}) are in the table view.</p>
+                )}
+              </>)}
             </ChartPanel>
             <ChartPanel title="Data sources" meta="Unique postings kept after cross-source de-duplication"
               table={countTable(d.sources.map((s) => ({ ...s, key: labels.source(s.key) })), "Source", "sources")}
               extraActions={<TextLink to="/quality">Methodology</TextLink>}>
-              {(h) => <HBar label="Postings by data source" handle={h} maxLabel={34}
+              {(h) => <HBar label="Postings by data source" handle={h} color={HUE.source} maxLabel={34}
                 data={d.sources.map((r) => ({ label: labels.source(r.key), value: r.n, share: r.share }))} />}
             </ChartPanel>
           </div>

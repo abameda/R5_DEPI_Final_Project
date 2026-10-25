@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { filterBody, filterParams, type Filters } from "./filters";
+import { filterParams, type Filters } from "./filters";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -66,4 +66,3 @@ export function usePost<T>(path: string, body: unknown, enabled = true) {
   });
 }
 
-export { filterBody };

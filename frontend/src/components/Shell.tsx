@@ -3,7 +3,7 @@ import {
   BarChart3, Briefcase, Building2, Compass, FlaskConical, GitCompareArrows, Globe2, Lightbulb, LineChart,
   Menu, Moon, ShieldCheck, Sparkles, Sun, Wallet, X,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { filterParams } from "../lib/filters";
 import { fmtDate } from "../lib/format";
@@ -41,6 +41,16 @@ export function Shell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   useEffect(() => setOpen(false), [loc.pathname]);
   const { data: meta } = useMeta();
+  // sticky side panels (posting detail, career plan) sit just below the filter bar
+  const filterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = filterRef.current;
+    const root = document.documentElement;
+    if (!el) { root.style.setProperty("--filters-h", "0px"); return; }
+    const ro = new ResizeObserver(() => root.style.setProperty("--filters-h", `${el.offsetHeight}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [loc.pathname]);
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[236px_1fr]">
@@ -65,7 +75,7 @@ export function Shell({ children }: { children: ReactNode }) {
             Synthetic demo data — generated for testing. These numbers are not research results.
           </div>
         )}
-        {!NO_FILTERS.has(loc.pathname) && <div className="z-20 lg:sticky lg:top-0"><FilterBar /></div>}
+        {!NO_FILTERS.has(loc.pathname) && <div ref={filterRef} className="z-20 lg:sticky lg:top-0"><FilterBar /></div>}
         <main id="main" className="mx-auto max-w-[1480px] px-4 py-5 lg:px-6 lg:py-6">{children}</main>
       </div>
     </div>
@@ -98,12 +108,11 @@ function Nav() {
           <ul>
             {g.items.map((it) => (
               <li key={it.to}>
-                <NavLink to={{ pathname: it.to, search: it.filters === false || !qs ? "" : `?${qs}` }} end={it.to === "/"}
+                <NavLink to={{ pathname: it.to, search: qs ? `?${qs}` : "" }} end={it.to === "/"}
                   className={({ isActive }) => clsx("group flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
-                    isActive ? "bg-rail-2 font-medium text-rail-ink" : "text-rail-ink-2 hover:bg-rail-2/60 hover:text-rail-ink")}>
+                    isActive ? "bg-rail-2 font-medium text-rail-ink ring-1 ring-rail-line" : "text-rail-ink-2 hover:bg-rail-2/60 hover:text-rail-ink")}>
                   {({ isActive }) => (<>
-                    <span aria-hidden className={clsx("h-4 w-[3px] rounded-full", isActive ? "bg-accent" : "bg-transparent")} />
-                    <it.icon size={16} strokeWidth={1.75} aria-hidden />
+                    <it.icon size={16} strokeWidth={1.75} aria-hidden className={isActive ? "text-accent" : undefined} />
                     {it.label}
                   </>)}
                 </NavLink>

@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { Chart } from "../components/Chart";
 import { MonthLines } from "../components/charts";
@@ -56,7 +57,7 @@ export default function TrendsPage() {
           return (<>
             <ChartPanel className="mt-4" title={`Monthly skill share in the ${labels.cohort("kaggle_2023")}`}
               meta={`Share of each month's postings with skill data · months with fewer than ${t.min_group} such postings are left out`}
-              extraActions={<Select label="Add skill" value="" onChange={(v) => v && setSeries([...(series.length ? series : t.skills), v])}
+              extraActions={<Select label="Add skill" value="" onChange={(v) => v && setSeries([...(series.length ? series : t.skills).filter((x) => x !== v).slice(-5), v])}
                 options={[{ value: "", label: "Choose…" }, ...(pool.data?.rows ?? []).filter((r) => !t.skills.includes(r.skill)).map((r) => ({ value: r.skill, label: r.skill }))]} />}
               table={{ columns: ["Skill", "Month", "Share", "Postings with skills"], filename: "skill-trend-2023",
                 rows: lines.flatMap((l) => l.points.map((p) => [l.name, p.x, fmtPct(p.y), p.n ?? null])) }}>
@@ -64,7 +65,7 @@ export default function TrendsPage() {
                 <div className="mb-2 flex flex-wrap gap-1.5">
                   {t.skills.map((s) => (
                     <button key={s} type="button" onClick={() => setSeries(t.skills.filter((x) => x !== s))} aria-label={`Remove ${s} from the chart`}
-                      className="rounded-md bg-panel-2 px-2 py-0.5 text-sm text-ink-2 ring-1 ring-line hover:text-ink">{s} ×</button>
+                      className="inline-flex items-center gap-1 rounded-md bg-panel-2 py-0.5 pl-2 pr-1 text-sm text-ink-2 ring-1 ring-line hover:text-ink">{s} <X size={13} aria-hidden /></button>
                   ))}
                 </div>
                 {lines.some((l) => l.points.length) ? <MonthLines handle={h} label="Monthly share of postings listing each skill, 2023" series={lines} yName="" yFmt={(v) => fmtPct(v, 0)} height={300} />
@@ -129,7 +130,7 @@ export default function TrendsPage() {
                             <li key={r.skill} className="flex items-center gap-2 text-sm">
                               <span className="tnum w-5 text-ink-3">{i + 1}</span>
                               <span className="w-32 truncate">{r.skill}</span>
-                              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full" style={{ width: `${(r.share ?? 0) * 100}%`, background: c === "kaggle_2023" ? "var(--s1)" : "var(--s3)" }} /></span>
+                              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full" style={{ width: `${(r.share ?? 0) * 100}%`, background: c === "kaggle_2023" ? "var(--s4)" : "var(--s3)" }} /></span>
                               <span className="tnum w-12 text-right text-ink-2">{fmtPct(r.share, 0)}</span>
                             </li>
                           ))}

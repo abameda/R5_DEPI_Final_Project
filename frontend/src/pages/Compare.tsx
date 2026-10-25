@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Chart } from "../components/Chart";
-import { Callout, ChartPanel, Guard, PageHeader, Panel, Pill, Select } from "../components/ui";
+import { Callout, ChartPanel, Guard, PageHeader, Panel, Pill, Segmented, Select } from "../components/ui";
 import { useApi, usePost } from "../lib/api";
 import { axisStyle, baseOption, esc } from "../lib/echarts";
 import { EMPTY_FILTERS, filterBody, LIST_KEYS, type Filters, type ListKey } from "../lib/filters";
@@ -42,7 +42,7 @@ function readSegment(sp: URLSearchParams, p: "a" | "b"): Filters {
 
 export default function Compare() {
   const [sp, setSp] = useSearchParams();
-  const fresh = ![...sp.keys()].some((k) => k.startsWith("a.") || k.startsWith("b."));
+  const fresh = !sp.has("cmp");  // explicit marker: two empty segments mean "all vs all", not "start over"
   const a = fresh ? { ...EMPTY_FILTERS, ...PRESETS[0].a } : readSegment(sp, "a");
   const b = fresh ? { ...EMPTY_FILTERS, ...PRESETS[0].b } : readSegment(sp, "b");
   const body = useMemo(() => ({ a: filterBody(a), b: filterBody(b) }), [JSON.stringify(a), JSON.stringify(b)]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -52,11 +52,13 @@ export default function Compare() {
     const parts = LIST_KEYS.flatMap((k) => f[k].map((v) => (k === "cohort" ? labels.cohort(v) : k === "skill" ? `lists ${v}` : v)));
     return parts.length ? parts.join(" · ") : "All postings";
   };
+  // Segments live under a./b.; the global filters stay in the URL untouched
+  // (ignored here) so they are still there when the visitor goes back.
   const write = (na: Partial<Filters>, nb: Partial<Filters>) => setSp((prev) => {
     const next = new URLSearchParams();
+    prev.forEach((v, k) => { if (!k.startsWith("a.") && !k.startsWith("b.") && k !== "cmp") next.append(k, v); });
+    next.set("cmp", "1");
     for (const [p, seg] of [["a", na], ["b", nb]] as const) LIST_KEYS.forEach((k) => (seg[k] ?? []).forEach((v) => next.append(`${p}.${k}`, v)));
-    const prov = prev.get("provenance");
-    if (prov) next.set("provenance", prov);
     return next;
   });
   const setSeg = (p: "a" | "b", f: Partial<Filters>) => (p === "a" ? write(f, b) : write(a, f));
@@ -66,6 +68,9 @@ export default function Compare() {
   return (
     <>
       <PageHeader title="Compare markets" description="Put two segments side by side. Every figure is normalized within its own segment, and the comparison flags small samples and mismatched collections.">
+        <Segmented label="Which skills to count" value={sp.get("provenance") === "observed" ? "observed" : "all"}
+          onChange={(v) => setSp((prev) => { const n = new URLSearchParams(prev); if (v === "all") n.delete("provenance"); else n.set("provenance", v); return n; })}
+          options={[{ value: "all", label: "All skills" }, { value: "observed", label: "Written in posting" }]} />
         <Select label="Preset" value="" onChange={(v) => { const p = PRESETS[+v]; if (p) write(p.a, p.b); }}
           options={[{ value: "", label: "Choose a comparison…" }, ...PRESETS.map((p, i) => ({ value: String(i), label: p.label }))]} />
       </PageHeader>

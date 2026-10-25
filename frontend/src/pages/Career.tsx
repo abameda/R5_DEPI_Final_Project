@@ -45,7 +45,7 @@ export default function Career() {
       <PageHeader title="Career planner"
         description="Pick a target role and market, add the skills you already have, and see which commonly requested skills to learn next — ranked from the postings themselves." />
       <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <Panel title="Your plan" className="h-fit lg:sticky lg:top-36">
+        <Panel title="Your plan" className="h-fit lg:sticky lg:top-[calc(var(--filters-h,0px)+1rem)]">
           <div className="space-y-4">
             <Select label="Target role" value={target} onChange={setRole} options={roles.map((r) => ({ value: r, label: r }))} className="w-full justify-between" />
             <div>
@@ -53,9 +53,10 @@ export default function Career() {
               <Segmented label="Market" value={filters.market.length === 1 ? filters.market[0] : "any"}
                 onChange={(v) => set("market", v === "any" ? [] : [v])}
                 options={[{ value: "any", label: "Any" }, { value: "Arab", label: "Arab" }, { value: "International", label: "Int’l" }, { value: "Remote", label: "Remote" }]} />
-              {(filters.country.length > 0 || filters.seniority.length > 0 || filters.cohort.length > 0) && (
-                <p className="mt-1.5 text-xs text-ink-3">Also using filter-bar selections: {[...filters.country, ...filters.seniority, ...filters.cohort.map(labels.cohort)].join(", ")}</p>
-              )}
+              {[filters.country, filters.region, filters.seniority, filters.job_type, filters.work_mode, filters.source, filters.cohort, filters.company, filters.skill].some((x) => x.length > 0) || filters.q ? (
+                <p className="mt-1.5 text-xs text-ink-3">Also using filter-bar selections: {[...filters.country, ...filters.region, ...filters.seniority, ...filters.job_type, ...filters.work_mode, ...filters.source.map(labels.source), ...filters.cohort.map(labels.cohort), ...filters.company, ...filters.skill.map((s) => `lists ${s}`), ...(filters.q ? [`“${filters.q}”`] : [])].join(", ")}</p>
+              ) : null}
+              {filters.role.length > 0 && <p className="mt-1 text-xs text-ink-3">The Role filter is replaced by the target role above.</p>}
             </div>
             <div>
               <p className="mb-1.5 text-sm text-ink-2">Skills you have ({have.length})</p>
@@ -106,7 +107,7 @@ function Results({ g }: { g: Gap }) {
         <p className="mt-2"><span className="kpi text-3xl font-semibold text-ink">{fmtPct(a.score, 0)}</span>
           <span className="ml-2 text-ink-2">of the demand weight of the top {a.top_k} skills</span></p>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel-2" role="img" aria-label={`Alignment ${fmtPct(a.score, 0)}`}>
-          <div className="h-full rounded-full bg-accent" style={{ width: `${a.score * 100}%` }} />
+          <div className="h-full rounded-full bg-s3" style={{ width: `${a.score * 100}%` }} />
         </div>
         <p className="mt-2 text-sm text-ink-2">{a.matched_top.length ? <>You have {a.matched_top.join(", ")}.</> : "Add skills on the left to see your alignment."}</p>
       </div>
@@ -124,8 +125,8 @@ function Results({ g }: { g: Gap }) {
       </div>
     </section>
 
-    <Panel title="What to learn next" meta="Missing skills ranked by how reliably often they are requested for this role"
-      info="Rank = the lower bound of the 95% Wilson interval of the skill's share. It favours skills that are frequent AND measured on enough postings, so a share from a handful of postings cannot jump the queue.">
+    <Panel title="What to learn next" meta="Missing skills, most requested first"
+      info="Ranked by the share of this role's postings (with skill data) that list the skill. “At least X%” is the lower bound of the 95% Wilson interval: with the role's sample size, the true share in comparable postings is very likely above it.">
       {g.priorities.length === 0 ? <p className="text-sm text-ink-2">You already have every skill in the top 40 for this role.</p> : (
         <ol className="divide-y divide-line">
           {g.priorities.map((s, i) => {
@@ -140,7 +141,7 @@ function Results({ g }: { g: Gap }) {
                 </span>
                 <TextLink to={drillHref("/explorer", filters, { role: g.role, skill: s.skill })}>Postings</TextLink>
                 <span className="col-span-2 flex items-center gap-3">
-                  <span className="h-1.5 max-w-80 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full bg-s1" style={{ width: `${(s.share ?? 0) * 100}%` }} /></span>
+                  <span className="h-1.5 max-w-80 flex-1 overflow-hidden rounded-full bg-panel-2"><span className="block h-full bg-s3" style={{ width: `${(s.share ?? 0) * 100}%` }} /></span>
                   <span className="tnum text-sm text-ink">{fmtPct(s.share, 0)}</span>
                   <span className="text-xs text-ink-3">of postings ({fmtInt(s.postings)}) · at least {fmtPct(s.wilson_lower, 0)} with 95% confidence</span>
                 </span>
@@ -191,8 +192,8 @@ function Results({ g }: { g: Gap }) {
         {g.postings.map((p) => (
           <li key={p.job_id} className="flex flex-wrap items-start justify-between gap-3 py-2.5 text-sm">
             <div className="min-w-0">
-              <TextLink to={`/explorer?job=${encodeURIComponent(p.job_id)}`}>{p.title}</TextLink>
-              <p className="text-ink-2" dir="auto">{p.company ?? "Employer not given"} · {p.country ?? "No single country"} · {fmtDate(p.posted_date)}</p>
+              <TextLink to={`/explorer?job=${encodeURIComponent(p.job_id)}`}><bdi>{p.title}</bdi></TextLink>
+              <p className="text-ink-2"><bdi>{p.company ?? "Employer not given"}</bdi> · <bdi>{p.country ?? "No single country"}</bdi> · {fmtDate(p.posted_date)}</p>
               {p.missing && p.missing.length > 0 && <p className="text-xs text-ink-3">Missing: {p.missing.slice(0, 8).join(", ")}{p.missing.length > 8 ? "…" : ""}</p>}
             </div>
             <Pill tone={p.matched === p.listed ? "good" : "neutral"}>{p.matched}/{p.listed} skills</Pill>

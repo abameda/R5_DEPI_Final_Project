@@ -3,7 +3,7 @@ import { HBar, Histogram } from "../components/charts";
 import { Kpi, KpiStrip } from "../components/Kpi";
 import { Callout, ChartPanel, Empty, Guard, PageHeader, Segmented, Select } from "../components/ui";
 import { useApi } from "../lib/api";
-import { axisStyle, baseOption, esc } from "../lib/echarts";
+import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { fmtInt, fmtPct, fmtUsd, fmtUsdFull } from "../lib/format";
 import { useFilters, useLabels, useParam } from "../lib/hooks";
 import type { SalarySummary } from "../lib/types";
@@ -96,8 +96,8 @@ export default function Salary() {
                     type: "boxplot", boxWidth: [8, 16],
                     data: g.map((x) => ({ value: [x.p10, x.p25, x.median, x.p75, x.p90],
                       itemStyle: x.confidence === "low"
-                        ? { color: t.panel, borderColor: t.series[bench ? 1 : 0], borderType: "dashed", borderWidth: 1.5 }
-                        : { color: t.s1Soft, borderColor: t.series[bench ? 1 : 0], borderWidth: 1.5 } })),
+                        ? { color: t.panel, borderColor: t.series[bench ? HUE.source : HUE.pay], borderType: "dashed", borderWidth: 1.5 }
+                        : { color: t.accentSoft, borderColor: t.series[bench ? HUE.source : HUE.pay], borderWidth: 1.5 } })),
                   }, {
                     type: "scatter", symbolSize: 0, data: g.map((x) => [x.p90, g.indexOf(x)]),
                     label: { show: true, position: "right", color: t.ink3, fontSize: 11, formatter: (p: { dataIndex: number }) => `n=${fmtInt(g[p.dataIndex].n)}` },
@@ -111,14 +111,14 @@ export default function Salary() {
         <div className="grid gap-4">
           <ChartPanel title="Distribution" meta={`${bench ? "Benchmark" : "Advertised"} annual salary, USD (approx.)`}
             table={hist.data ? { columns: ["From (USD/yr)", "Postings"], filename: "salary-distribution", rows: hist.data.bins.map((b) => [b.bin, b.n]) } : undefined}>
-            {(h) => <Guard q={hist} h={240} empty={(d) => !d.bins.length}>{(d) => <Histogram handle={h} label="Salary distribution" bins={d.bins} binWidth={d.bin_width} cap={d.cap} color={bench ? 1 : 0} />}</Guard>}
+            {(h) => <Guard q={hist} h={240} empty={(d) => !d.bins.length}>{(d) => <Histogram handle={h} label="Salary distribution" bins={d.bins} binWidth={d.bin_width} cap={d.cap} color={bench ? HUE.source : HUE.pay} />}</Guard>}
           </ChartPanel>
           <ChartPanel title="Original currencies" meta="Before conversion to USD" table={cov.data ? { columns: ["Currency", "Postings"], filename: "salary-currencies",
             rows: cov.data.currencies.filter((c) => c.kind === kind).map((c) => [c.currency, c.n]) } : undefined}>
             {(h) => <Guard q={cov} h={200}>{(c) => {
               const rows = c.currencies.filter((x) => x.kind === kind);
               const tot = rows.reduce((a, r) => a + r.n, 0);
-              return rows.length ? <HBar handle={h} label="Salaries by original currency" color={bench ? 1 : 2}
+              return rows.length ? <HBar handle={h} label="Salaries by original currency" color={bench ? HUE.source : HUE.pay}
                 data={rows.slice(0, 10).map((r) => ({ label: r.currency, value: r.n, share: r.n / tot }))} /> : <Empty title="No salaries" hint="No postings in this selection carry this kind of salary." />;
             }}</Guard>}
           </ChartPanel>
@@ -129,7 +129,7 @@ export default function Salary() {
         <ChartPanel title="Salary coverage by source" meta="Share of each source's postings with an advertised salary"
           table={cov.data ? { columns: ["Source", "Postings", "Advertised", "Benchmark"], filename: "salary-coverage",
             rows: cov.data.by_source.map((s) => [labels.source(s.source), s.postings, s.advertised, s.benchmark]) } : undefined}>
-          {(h) => <Guard q={cov} h={240}>{(c) => <HBar handle={h} label="Advertised salary coverage by source" maxLabel={34}
+          {(h) => <Guard q={cov} h={240}>{(c) => <HBar handle={h} by="share" label="Advertised salary coverage by source" color={HUE.source} maxLabel={34}
             data={c.by_source.map((s) => ({ label: labels.source(s.source), value: s.advertised, share: s.postings ? s.advertised / s.postings : 0, note: `${fmtInt(s.postings)} postings · ${fmtInt(s.benchmark)} benchmarks` }))} />}</Guard>}
         </ChartPanel>
         <ChartPanel title="How salaries were stated" meta="Pay period in the original posting"
@@ -137,7 +137,7 @@ export default function Salary() {
           {(h) => <Guard q={cov} h={200}>{(c) => {
             const rows = c.periods.filter((x) => x.kind === kind);
             const tot = rows.reduce((a, r) => a + r.n, 0);
-            return <HBar handle={h} label="Salaries by stated period" color={3} data={rows.map((r) => ({ label: `per ${r.period}`, value: r.n, share: r.n / tot }))} />;
+            return <HBar handle={h} label="Salaries by stated period" color={HUE.pay} data={rows.map((r) => ({ label: `per ${r.period}`, value: r.n, share: r.n / tot }))} />;
           }}</Guard>}
         </ChartPanel>
       </div>

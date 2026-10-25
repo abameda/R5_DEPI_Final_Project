@@ -14,10 +14,18 @@ echarts.use([
 
 export { echarts };
 
+/**
+ * One stained-glass hue per kind of thing, the same in every module:
+ * posting attributes (role, seniority, employment) cobalt, skills turquoise,
+ * places (country, market, work mode) emerald, pay amber, data sources and
+ * collections violet. Index into Tokens.series.
+ */
+export const HUE = { posting: 0, pay: 1, skill: 2, source: 3, alert: 4, place: 5 } as const;
+
 /** Chart colours come from the CSS tokens so light/dark are each selected, not flipped. */
 export interface Tokens {
   ink: string; ink2: string; ink3: string; line: string; lineStrong: string; panel: string; panel2: string;
-  accent: string; accentInk: string; accentSoft: string; series: string[]; s1Soft: string;
+  accent: string; accentInk: string; accentSoft: string; series: string[]; s1Soft: string; s3Soft: string;
   lattice0: string; lattice1: string; crit: string; warn: string; good: string; dark: boolean;
 }
 
@@ -28,7 +36,7 @@ export function readTokens(): Tokens {
     ink: v("--ink"), ink2: v("--ink-2"), ink3: v("--ink-3"), line: v("--line"), lineStrong: v("--line-strong"),
     panel: v("--panel"), panel2: v("--panel-2"), accent: v("--accent"), accentInk: v("--accent-ink"),
     accentSoft: v("--accent-soft"), series: ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"].map(v),
-    s1Soft: v("--s1-soft"), lattice0: v("--lattice-0"), lattice1: v("--lattice-1"), crit: v("--crit"),
+    s1Soft: v("--s1-soft"), s3Soft: v("--s3-soft"), lattice0: v("--lattice-0"), lattice1: v("--lattice-1"), crit: v("--crit"),
     warn: v("--warn"), good: v("--good"), dark: document.documentElement.dataset.theme === "dark",
   };
 }
@@ -36,10 +44,13 @@ export function readTokens(): Tokens {
 /** Shared chart chrome: recessive axes and grid, text in ink tokens, tooltip on panel. */
 export function baseOption(t: Tokens) {
   return {
+    animation: !matchMedia("(prefers-reduced-motion: reduce)").matches,
     animationDuration: 250,
     animationDurationUpdate: 250,
     textStyle: { fontFamily: "Readex Pro Variable, Segoe UI, sans-serif", color: t.ink2, fontSize: 12 },
-    aria: { enabled: true, decal: { show: false } },
+    // the container carries a written label and every panel has a table view;
+    // ECharts' generated description would replace that label with raw numbers
+    aria: { enabled: false },
     tooltip: {
       backgroundColor: t.panel, borderColor: t.lineStrong, borderWidth: 1, padding: [8, 10],
       textStyle: { color: t.ink, fontSize: 12 }, extraCssText: "box-shadow: var(--shadow); border-radius: 6px;",

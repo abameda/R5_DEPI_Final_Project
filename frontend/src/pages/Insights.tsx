@@ -23,9 +23,10 @@ export default function Insights() {
             {items.map((i) => {
               const sp = new URLSearchParams(base);
               for (const [k, v] of Object.entries(i.drill.params)) sp.append(k, v);
-              const to = i.drill.path === "/skills" && i.drill.params.skill
+              const path = /^\/(?![/\\])/.test(i.drill.path) ? i.drill.path : "/";
+              const to = path === "/skills" && i.drill.params.skill
                 ? `/skills?${new URLSearchParams([...base, ["view", i.drill.params.skill]]).toString()}`
-                : `${i.drill.path}${sp.toString() ? `?${sp}` : ""}`;
+                : `${path}${sp.toString() ? `?${sp}` : ""}`;
               return (
                 <li key={i.id} className="rounded-lg border border-line bg-panel p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">

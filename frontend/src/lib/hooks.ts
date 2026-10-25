@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiGet } from "./api";
 import { EMPTY_FILTERS, filterParams, isFilterKey, parseFilters, type Filters, type ListKey } from "./filters";
 import type { Meta } from "./types";
+
+/** URL parameters that hold a page number (reset whenever the filters change). */
+export const PAGE_KEYS = ["page", "epage"];
 
 /** Global filters from the URL + setters that keep page-local params intact. */
 export function useFilters() {
@@ -14,7 +17,7 @@ export function useFilters() {
     setParams((prev) => {
       const sp = new URLSearchParams(filterParams(next));
       // keep page-local state (tab, sort ...) but reset pagination: the population changed
-      prev.forEach((v, k) => { if (!isFilterKey(k) && k !== "page") sp.append(k, v); });
+      prev.forEach((v, k) => { if (!isFilterKey(k) && !PAGE_KEYS.includes(k)) sp.append(k, v); });
       return sp;
     });
   }, [setParams]);
@@ -95,25 +98,4 @@ export function setTheme(t: Theme) {
 export function useTheme(): [Theme, (t: Theme) => void] {
   const theme = useSyncExternalStore((cb) => { listeners.add(cb); return () => listeners.delete(cb); }, getTheme);
   return [theme, setTheme];
-}
-
-/** Remembers a value across renders so a figure can flash when it changes. */
-export function useChanged(value: unknown): boolean {
-  const key = JSON.stringify(value);
-  const [state, setState] = useState({ key, changed: false });
-  useEffect(() => {
-    if (key !== state.key) setState({ key, changed: true });
-  }, [key, state.key]);
-  return state.changed && state.key === key;
-}
-
-export function useMediaQuery(q: string): boolean {
-  const [m, setM] = useState(() => matchMedia(q).matches);
-  useEffect(() => {
-    const mq = matchMedia(q);
-    const on = () => setM(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, [q]);
-  return m;
 }

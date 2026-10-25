@@ -7,7 +7,7 @@ import { HBar } from "../components/charts";
 import { Kpi, KpiStrip } from "../components/Kpi";
 import { Callout, ChartPanel, Guard, Loading, PageHeader, Panel, Pill, Segmented, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
-import { axisStyle, baseOption, esc } from "../lib/echarts";
+import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
 import { fmtInt, fmtPct, fmtUsd, fmtUsdFull } from "../lib/format";
 import { useFilters, useParam } from "../lib/hooks";
@@ -71,7 +71,7 @@ export default function Geography() {
         <ChartPanel title="Arab League countries" meta="Share of the Arab-region postings located in each member state"
           table={q.data ? { columns: ["Country", "Postings", "Remote", "Median salary"], filename: "arab-countries",
             rows: q.data.countries.filter((c) => c.region === "Arab").map((c) => [c.country, c.n, c.remote, c.salary_median]) } : undefined}>
-          {(h) => <Guard q={q} h={360}>{(g) => { const arab = g.countries.filter((c) => c.region === "Arab"); const tot = arab.reduce((a, c) => a + c.n, 0); return <HBar handle={h} label="Postings in Arab League countries" color={2}
+          {(h) => <Guard q={q} h={360}>{(g) => { const arab = g.countries.filter((c) => c.region === "Arab"); const tot = arab.reduce((a, c) => a + c.n, 0); return <HBar handle={h} label="Postings in Arab League countries" color={HUE.place}
             data={arab.map((c) => ({ label: c.country, value: c.n, share: tot ? c.n / tot : null, note: c.small_sample ? "Small sample" : undefined }))}
             onSelect={toExplorer} />; }}</Guard>}
         </ChartPanel>
@@ -126,7 +126,7 @@ function WorldMap({ rows, metric, handle, onPick }: { rows: CountryRow[]; metric
         visualMap: {
           min: metric === "n" ? 0 : Math.min(...vals), max: metric === "n" ? Math.log10(Math.max(...vals, 10)) : Math.max(...vals, 1),
           left: 8, bottom: 8, itemHeight: 120, calculable: false, text: metric === "n" ? ["more", "fewer (log scale)"] : undefined,
-          inRange: { color: [t.dark ? "#3a2d1c" : "#fbe9c6", t.dark ? "#f6c86f" : "#7a4a06"] },
+          inRange: { color: [t.lattice0, t.lattice1] },
           textStyle: { color: t.ink2, fontSize: 11 },
           formatter: (v: number) => (metric === "n" ? fmtInt(10 ** v) : metric === "remote" ? fmtPct(v, 0) : fmtUsd(v)),
         },

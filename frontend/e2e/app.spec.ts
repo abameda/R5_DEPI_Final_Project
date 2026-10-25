@@ -85,7 +85,7 @@ test("explorer paginates, sorts and opens a posting", async ({ page }) => {
   await page.locator("tbody tr").first().getByRole("button").first().click();
   const detail = page.getByRole("complementary", { name: "Posting details" });
   await expect(detail.getByText(/written in posting/)).toBeVisible();
-  await expect(detail.getByText("Salary")).toBeVisible();
+  await expect(detail.getByRole("heading", { name: "Salary" })).toBeVisible();
   await detail.getByRole("button", { name: "Close details" }).click();
   await expect(detail).toHaveCount(0);
 });
@@ -142,6 +142,47 @@ test("career planner ranks missing skills for a role", async ({ page }) => {
   await expect(page.getByText(/of the demand weight of the top 15 skills/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "What to learn next" })).toBeVisible();
   await expect(page.getByText("You have SQL.")).toBeVisible();
+});
+
+test("compare keeps global filters and allows all-vs-all", async ({ page }) => {
+  await page.goto("/compare?country=Egypt");
+  await page.getByLabel("Country").first().selectOption("");
+  await page.getByLabel("Country").nth(1).selectOption("");
+  await expect(page).toHaveURL(/cmp=1/);
+  await expect(page).not.toHaveURL(/a\.country/);
+  await expect(page).toHaveURL(/country=Egypt/);
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills" }).click();
+  await expect(page).toHaveURL(/\/skills\?country=Egypt/);
+});
+
+test("the lattice survives a filter change while a cell is focused", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  const cells = page.getByRole("grid", { name: /Share of each role/ }).getByRole("gridcell");
+  await cells.first().focus();
+  for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowDown");
+  await page.getByRole("button", { name: /^Filter by role/ }).click();
+  await page.getByRole("option").first().click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("heading", { level: 1, name: "Market overview" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("search keeps spaces typed after a pause", async ({ page }) => {
+  await page.goto("/explorer");
+  const box = page.getByPlaceholder("Search titles or employers");
+  await box.pressSequentially("data ");
+  await page.waitForTimeout(700);
+  await box.pressSequentially("engineer");
+  await expect(page).toHaveURL(/q=data\+engineer/);
+  await expect(box).toHaveValue("data engineer");
+});
+
+test("out-of-range pages snap back to the last page", async ({ page }) => {
+  await page.goto("/explorer?page=99999");
+  await expect(page.getByText(/postings · page \d+ of \d+/)).toBeVisible();
+  await expect(page.locator("tbody tr").first()).toBeVisible();
 });
 
 test("compare presets define both segments", async ({ page }) => {

@@ -5,7 +5,7 @@ import { HBar, MonthLines, SkillBars } from "../components/charts";
 import { Lattice } from "../components/Lattice";
 import { Callout, ChartPanel, Guard, IconButton, PageHeader, Panel, Pill, Segmented, Select, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
-import { axisStyle, baseOption, esc } from "../lib/echarts";
+import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
 import { fmtInt, fmtPct, fmtUsd } from "../lib/format";
 import { useFilters, useLabels, useMeta, useParam } from "../lib/hooks";
@@ -43,8 +43,9 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
   const technical = kind === "all" ? undefined : kind === "technical";
   const q = useApi<TopSkills>("/skills/top", filters, { limit: 30, category: category || undefined, technical });
   const cats = useApi<{ denominator: number; rows: { category: string; postings: number; share: number | null; is_technical: boolean; skills: number }[] }>("/skills/categories", filters);
+  const soft = useApi<TopSkills>("/skills/top", filters, { limit: 10, technical: false });
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <ChartPanel title="Most requested skills"
         meta={q.data ? `Share of ${fmtInt(q.data.denominator)} postings with skill data${category ? ` · ${category}` : ""}` : undefined}
         info="Solid = written in the posting data as collected; hatched = added by the team afterwards. Switch 'Written in posting' in the filter bar to rank by posting-written skills only."
@@ -66,9 +67,18 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
         info="Categories come from the Kaggle dataset's own skill grouping (programming, cloud, libraries…) where it exists, otherwise from a documented curated list. 'Uncategorized' skills are not guessed."
         table={cats.data ? { columns: ["Category", "Postings", "Share", "Distinct skills"], filename: "skill-categories",
           rows: cats.data.rows.map((r) => [r.category, r.postings, fmtPct(r.share), r.skills]) } : undefined}>
-        {(h) => <Guard q={cats} h={500}>{(d) => <HBar handle={h} label="Skill categories" color={3} maxLabel={30}
+        {(h) => <Guard q={cats} h={500}>{(d) => <HBar handle={h} label="Skill categories" color={HUE.skill} maxLabel={30}
           data={d.rows.map((r) => ({ label: r.category, value: r.postings, share: r.share, note: `${r.skills} distinct skills${r.is_technical ? "" : " · non-technical"}` }))}
           onSelect={(c) => setCategory(c)} />}</Guard>}
+      </ChartPanel>
+      <ChartPanel className="xl:col-start-2" title="Soft skills and languages"
+        meta={soft.data ? `Non-technical skills · share of ${fmtInt(soft.data.denominator)} postings with skill data` : undefined}
+        info="Soft skills and spoken languages are mostly added by the team from descriptions and role knowledge; the hatched part shows how much."
+        table={soft.data ? { columns: ["Skill", "Postings", "Share", "Written in posting"], filename: "soft-skills",
+          rows: soft.data.rows.map((r) => [r.skill, r.postings, fmtPct(r.share), r.observed]) } : undefined}>
+        {(h) => <Guard q={soft} h={260} empty={(d) => !d.rows.length}>
+          {(d) => <SkillBars handle={h} rows={d.rows} denominator={d.denominator} observedOnly={filters.provenance === "observed"} onSelect={onPick} />}
+        </Guard>}
       </ChartPanel>
     </div>
   );
@@ -137,9 +147,9 @@ function Pairings({ onPick }: { onPick: (s: string) => void }) {
                 visualMap: diverging
                   ? { type: "piecewise", orient: "horizontal", left: "center", bottom: 0, itemWidth: 14, textStyle: { color: t.ink2, fontSize: 11 },
                       pieces: [{ lt: 0.8, color: t.series[4], label: "< 0.8 (avoid each other)" }, { gte: 0.8, lt: 1.25, color: t.panel2, label: "0.8–1.25 (no link)" },
-                        { gte: 1.25, lt: 2, color: t.s1Soft, label: "1.25–2" }, { gte: 2, color: t.series[0], label: "≥ 2 (strong pair)" }] }
+                        { gte: 1.25, lt: 2, color: t.s3Soft, label: "1.25–2" }, { gte: 2, color: t.series[HUE.skill], label: "≥ 2 (strong pair)" }] }
                   : { min: 0, max: Math.max(...vals, 0.01), orient: "horizontal", left: "center", bottom: 0, itemHeight: 140, calculable: false,
-                      inRange: { color: [t.panel2, t.series[0]] }, textStyle: { color: t.ink2, fontSize: 11 }, formatter: (v: number) => fmtPct(v, 0) },
+                      inRange: { color: [t.panel2, t.series[HUE.skill]] }, textStyle: { color: t.ink2, fontSize: 11 }, formatter: (v: number) => fmtPct(v, 0) },
                 tooltip: { ...baseOption(t).tooltip, formatter: (p: { data: [number, number, number | null] }) => {
                   const [x, y, v] = p.data;
                   const l = d.links.find((k) => (k.a === names[y] && k.b === names[x]) || (k.a === names[x] && k.b === names[y]));
@@ -171,7 +181,7 @@ function Pairings({ onPick }: { onPick: (s: string) => void }) {
                   blur: { itemStyle: { opacity: 0.25 }, lineStyle: { opacity: 0.08 } },
                   lineStyle: { color: t.lineStrong, curveness: 0.1 },
                   data: d.nodes.map((n) => ({ name: n.skill, value: n.postings, symbolSize: 10 + 34 * Math.sqrt(n.postings / maxN),
-                    itemStyle: { color: n.is_technical ? t.series[0] : t.series[2], borderColor: t.panel, borderWidth: 2 } })),
+                    itemStyle: { color: n.is_technical ? t.series[HUE.skill] : t.series[HUE.source], borderColor: t.panel, borderWidth: 2 } })),
                   links: edges.map((l) => ({ source: l.a, target: l.b, lift: l.lift, together: l.together,
                     lineStyle: { width: Math.min(6, 0.6 + (l.lift ?? 1)), opacity: 0.55 } })),
                 }],
@@ -213,14 +223,14 @@ export function SkillProfile({ skill, onClose }: { skill: string; onClose: () =>
                   <HBar by="share" label={`${skill} share by role`} data={d.by_role.slice(0, 10).map((r) => ({ label: r.key, value: r.n, share: r.share }))}
                     onSelect={(role) => nav(drillHref("/explorer", filters, { role, skill }))} /></div>
                 <div><h3 className="mb-1 text-sm font-medium">By country <span className="font-normal text-ink-3">share within the 12 largest countries</span></h3>
-                  <HBar by="share" label={`${skill} share by country`} color={2} data={d.by_country.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
+                  <HBar by="share" label={`${skill} share by country`} color={HUE.place} data={d.by_country.map((r) => ({ label: r.key, value: r.n, share: r.share }))}
                     onSelect={(country) => nav(drillHref("/explorer", filters, { country, skill }))} /></div>
                 <div><h3 className="mb-1 text-sm font-medium">Most often paired with <span className="font-normal text-ink-3">share of {skill} postings</span></h3>
-                  <HBar by="share" label={`Skills paired with ${skill}`} color={3} data={d.co_skills.slice(0, 10).map((c) => ({ label: c.skill, value: c.together, share: c.p_given_skill, note: c.lift ? `Lift ${c.lift.toFixed(2)}` : undefined }))} /></div>
+                  <HBar by="share" label={`Skills paired with ${skill}`} color={HUE.skill} data={d.co_skills.slice(0, 10).map((c) => ({ label: c.skill, value: c.together, share: c.p_given_skill, note: c.lift ? `Lift ${c.lift.toFixed(2)}` : undefined }))} /></div>
               </div>
               <div className="grid gap-4 lg:grid-cols-3">
                 <div><h3 className="mb-1 text-sm font-medium">By seniority</h3>
-                  <HBar by="share" label={`${skill} share by seniority`} color={3} data={d.by_seniority.map((r) => ({ label: r.key, value: r.n, share: r.share }))} /></div>
+                  <HBar by="share" label={`${skill} share by seniority`} data={d.by_seniority.map((r) => ({ label: r.key, value: r.n, share: r.share }))} /></div>
                 <div>
                   <h3 className="mb-1 text-sm font-medium">Monthly share in the 2023 archive</h3>
                   {trend.length >= 3 ? <MonthLines label={`${skill} monthly share, 2023 archive`} height={200} yName="" yFmt={(v) => fmtPct(v, 0)}

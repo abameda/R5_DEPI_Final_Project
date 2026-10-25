@@ -21,7 +21,9 @@ category default of a grey card grid with one blue accent and a hero-metric row.
 OWN-WORLD: Cairene mashrabiya. Deep teak rail and header (#24180F family), shaded-plaster
 ground (cool off-white, never cream), white work panels with hairline plaster borders, sunlit
 amber reserved for selection, focus and the lattice light; data series from qamariyya stained
-glass (turquoise, amber, ruby, emerald, cobalt, violet). Night mode: dark teak ground, same glass.
+glass, one hue per kind of entity in every module: posting attributes cobalt, skills turquoise,
+places emerald, pay amber glass, sources and collections violet, decreases ruby (finish-review
+fix). Night mode: dark teak ground, same glass.
 One sans with Arabic + Latin (Readex Pro), tabular figures, tight 1.125 scale.
 
 STORY: The visitor sees the population they are looking at, the demand for roles and skills in
@@ -34,8 +36,10 @@ two columns: top roles bar chart + top skills bar (observed vs added split), the
 (roles × skills) at full width, then geography, salary, cohorts.
 
 FORM: Mashrabiya lattice world, position 7 of 7 on the grounded list. seed:792994a690522073
-Signature interaction: the lattice; hover lights an aperture and dims the rest of its row and
-column, click drills to postings for that role + skill.
+Signature interaction: the lattice; hover or keyboard focus lights an aperture and keeps its
+row and column lit while every other cell dims (a reading crosshair; adapted at the finish
+review so the row and column stay comparable), click or Enter drills to postings for that
+role + skill.
 Raises: nothing labelled twice (Saville sleeve); a changed figure stays marked after a filter
 edit (gate board); focus dims the rest (streaming wall); one size does the work (acetate
 manual); amber only where you can press or what is selected (warm consumer app); table columns

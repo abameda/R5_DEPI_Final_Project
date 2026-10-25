@@ -17,7 +17,7 @@ export const fmtPp = (x: number | null | undefined) =>
 
 export function fmtUsd(n: number | null | undefined): string {
   if (n == null) return "—";
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100_000 ? 0 : 1)}k`;
+  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100_000 ? 0 : 1).replace(/\.0$/, "")}k`;
   return `$${Math.round(n)}`;
 }
 
@@ -33,6 +33,3 @@ export function fmtMonth(d: string): string {
   const dt = new Date(`${d.slice(0, 7)}-01T00:00:00`);
   return dt.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 }
-
-/** Arabic (or mixed) text gets dir="auto" handling in the UI; this decides alignment hints. */
-export const hasArabic = (s: string | null | undefined) => !!s && /[؀-ۿ]/.test(s);

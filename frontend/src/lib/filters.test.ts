@@ -27,10 +27,12 @@ describe("URL filter state", () => {
     expect(activeCount({ ...EMPTY_FILTERS, country: ["Egypt"], skill: ["SQL"] })).toBe(2);
   });
 
-  it("drills down by adding to (not replacing) the current filters", () => {
-    const cur = { ...EMPTY_FILTERS, country: ["Egypt"] };
-    expect(drillHref("/explorer", cur, { role: "Mobile" })).toBe("/explorer?country=Egypt&role=Mobile");
-    expect(drillHref("/explorer", cur, { country: "Egypt" })).toBe("/explorer?country=Egypt");
+  it("drills down: keeps other filters, narrows the drilled facet, adds skills", () => {
+    const cur = { ...EMPTY_FILTERS, country: ["Egypt"], role: ["Data Engineering", "Data Analysis & BI"], skill: ["SQL"] };
+    expect(drillHref("/explorer", cur, { role: "Data Engineering" }))
+      .toBe("/explorer?country=Egypt&role=Data+Engineering&skill=SQL");
+    expect(drillHref("/explorer", cur, { skill: "Python" }))
+      .toBe("/explorer?country=Egypt&role=Data+Engineering&role=Data+Analysis+%26+BI&skill=SQL&skill=Python");
     expect(drillHref("/skills", EMPTY_FILTERS, {}, { view: "SQL Server" })).toBe("/skills?view=SQL+Server");
   });
 
