@@ -1,0 +1,23 @@
+# Data is NOT committed: raw third-party data must not be redistributed (NFR-08)
+# and the files are larger than GitHub's 100 MB limit. Share them via Drive.
+data/raw/
+data/processed/
+data/processed_staging/
+# generated: analytical store and the synthetic demo data (scripts/make_demo_data.py)
+data/analytics/
+data/demo/
+*.zip
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dashboard front end
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+frontend/*.tsbuildinfo

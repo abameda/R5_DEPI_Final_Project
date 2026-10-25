@@ -1,0 +1,19 @@
+# Cleaning pipeline
+pandas==3.1.0
+numpy==2.5.4
+openpyxl==3.1.5      # read the .xlsx source
+ftfy==6.3.1          # repair broken text encoding (mojibake)
+tabulate==0.10.0     # markdown tables in the data-quality report
+
+# EDA notebook
+matplotlib==3.11.2
+jupyter==1.1.1
+
+# Dashboard API + analytical store
+duckdb==2.0.0
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+
+# Tests
+pytest==9.1.1
+httpx==0.28.1        # FastAPI TestClient

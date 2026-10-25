@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-10-25T16:38:05",
+  "stages": [
+    {
+      "stage": "1. raw rows loaded (all sources)",
+      "rows": 775155
+    },
+    {
+      "stage": "2-5. after cleaning & standardizing (no rows removed)",
+      "rows": 775155
+    },
+    {
+      "stage": "6. after dropping missing-title & non-tech rows",
+      "rows": 773374
+    },
+    {
+      "stage": "7a. after removing exact duplicates",
+      "rows": 770956
+    },
+    {
+      "stage": "7b. after removing near-duplicates (title+company+location)",
+      "rows": 588545
+    }
+  ],
+  "dropped": {
+    "missing title": 5,
+    "non-tech roles (FR-10)": 1776
+  },
+  "raw_rows_by_source": {
+    "kaggle_2023_international": 705866,
+    "kaggle_2023_arab_search": 38898,
+    "jooble_careerjet_foreign": 18583,
+    "all_tech_jobs": 6693,
+    "startup_jobs": 3543,
+    "remote_boards": 1075,
+    "arab_jobs": 439,
+    "cybersecurity_manual": 58
+  },
+  "sudan_search_location_rows": {
+    "rows": 21141,
+    "country_from_real_location": {
+      "United States": 17065,
+      "Remote (Anywhere)": 3902,
+      "Other/Unknown": 134,
+      "Unknown": 36,
+      "Lebanon": 2,
+      "Jordan": 1,
+      "Oman": 1
+    }
+  },
+  "runtime_seconds": 137.7
+}
