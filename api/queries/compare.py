@@ -9,7 +9,7 @@ from __future__ import annotations
 from ..db import Store
 from ..filters import Filters
 from ..labels import MIN_GROUP_POSTINGS, MIN_SALARY_N, RELIABLE_SALARY_N, share
-from .market import breakdown, kpis
+from .market import breakdowns, kpis
 from .salary import salary_summary
 from .skills import top_skills
 
@@ -22,14 +22,15 @@ MIN_GAP_PP = 5.0
 def _segment(store: Store, f: Filters) -> dict:
     k = kpis(store, f)
     sal = salary_summary(store, f, None, "advertised", None)["overall"]
+    b = breakdowns(store, f, ["cohort", "source_dataset", "role_category", "seniority", "work_mode"], total=k["postings"])
     return {
         "kpis": k,
         "salary": sal,
-        "cohorts": breakdown(store, f, "cohort"),
-        "sources": breakdown(store, f, "source_dataset"),
-        "roles": breakdown(store, f, "role_category", limit=8),
-        "seniority": breakdown(store, f, "seniority"),
-        "work_mode": breakdown(store, f, "work_mode"),
+        "cohorts": b["cohort"],
+        "sources": b["source_dataset"],
+        "roles": b["role_category"][:8],
+        "seniority": b["seniority"],
+        "work_mode": b["work_mode"],
         "top_skills": top_skills(store, f, limit=20),
     }
 
@@ -87,6 +88,10 @@ def compare(store: Store, a: Filters, b: Filters) -> dict:
             warnings.append({"level": "info", "segment": key, "code": "mixed_currencies",
                              "text": f"Segment {key.upper()} salaries were converted to USD from "
                                      f"{seg['salary']['currencies']} currencies at fixed approximate rates."})
+    if a.provenance != b.provenance:
+        warnings.append({"level": "warn", "segment": None, "code": "different_provenance",
+                         "text": "The segments count skills differently (all skills vs only skills written in the "
+                                 "posting); skill shares are not comparable."})
     ca, wa = _main_cohort(sa)
     cb, wb = _main_cohort(sb)
     if ca and cb and ca != cb and wa >= 0.5 and wb >= 0.5:
@@ -103,7 +108,7 @@ def compare(store: Store, a: Filters, b: Filters) -> dict:
     for key, seg in (("a", sa), ("b", sb)):
         if (seg["salary"].get("n") or 0) < MIN_SALARY_N:
             seg["salary"] = {**seg["salary"], "median": None, "p25": None, "p75": None, "p10": None,
-                             "p90": None, "mean": None}
+                             "p90": None, "mean": None, "min": None, "max": None}
         if seg["top_skills"]["denominator"] < MIN_GROUP_POSTINGS:
             seg["top_skills"]["rows"] = []
     return {"a": sa, "b": sb, "skills": skills, "warnings": warnings,

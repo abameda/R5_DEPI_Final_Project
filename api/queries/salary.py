@@ -79,7 +79,7 @@ def salary_summary(store: Store, f: Filters, dim: str | None, kind: Kind, period
                     GROUP BY 1 ORDER BY count(*) DESC LIMIT ?)
             SELECT s.skill AS key, {stats} FROM job_skills s JOIN f USING (jid)
             WHERE s.skill IN (SELECT skill FROM top) AND f.salary_kind = ? {pc} {cond}
-            GROUP BY 1 ORDER BY median DESC""", [*params, kind, *pp, limit, kind, *pp])
+            GROUP BY 1 HAVING count(*) >= ? ORDER BY median DESC""", [*params, kind, *pp, limit, kind, *pp, MIN_SALARY_N])
     elif dim:
         if dim not in BREAKDOWN_DIMS:
             raise HTTPException(422, f"Unsupported dimension: {dim}")
@@ -90,6 +90,9 @@ def salary_summary(store: Store, f: Filters, dim: str | None, kind: Kind, period
         groups.sort(key=lambda g: -(g["median"] or 0))
     for g in [overall, *groups]:
         g["confidence"] = salary_confidence(g.get("n") or 0)
+        if g["confidence"] == "insufficient":
+            for k in ("min", "max", "p10", "p25", "median", "p75", "p90", "mean"):
+                g[k] = None
     hidden = 0
     if dim and dim != "skill":
         hidden = store.scalar(f"""{cte} SELECT count(*) FROM (SELECT {dim} FROM f WHERE {base} AND {dim} IS NOT NULL

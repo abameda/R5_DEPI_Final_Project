@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
+from collections import defaultdict, deque
 from typing import Annotated, Literal
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
@@ -35,6 +37,25 @@ F = Annotated[Filters, Depends(filters_from_query)]
 def cached(endpoint: str, f: Filters | None, fn, **kw):
     key = endpoint + "|" + (f.key() if f else "") + "|" + json.dumps(kw, sort_keys=True, default=str)
     return cache.get_or_compute(key, fn)
+
+
+# Postings are browsable one page at a time, never in bulk (NFR-08): a simple
+# per-client limit on the endpoints that return raw postings.
+RAW_LIMIT_PER_MINUTE = 120
+_raw_hits: dict[str, deque] = defaultdict(deque)
+
+
+@app.middleware("http")
+async def raw_rate_limit(request: Request, call_next):
+    if request.url.path.startswith("/api/jobs"):
+        now = time.monotonic()
+        hits = _raw_hits[request.client.host if request.client else "?"]
+        while hits and now - hits[0] > 60:
+            hits.popleft()
+        if len(hits) >= RAW_LIMIT_PER_MINUTE:
+            return JSONResponse({"detail": "Too many posting requests; wait a minute and retry."}, status_code=429)
+        hits.append(now)
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -113,7 +134,7 @@ def insights(f: F):
 
 # --- jobs ------------------------------------------------------------------
 @app.get("/api/jobs")
-def jobs(f: F, page: Annotated[int, Query(ge=1)] = 1, page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+def jobs(f: F, page: Annotated[int, Query(ge=1)] = 1, page_size: Annotated[int, Query(ge=1, le=50)] = 25,
          sort: str = "newest"):
     return cached("jobs", f, lambda: market.list_jobs(get_store(), f, page, page_size, sort),
                   page=page, page_size=page_size, sort=sort)
@@ -271,6 +292,7 @@ def builder_csv(req: builder.BuilderRequest):
 # ---------------------------------------------------------------------------
 # Built dashboard (production). In development Vite serves it and proxies /api.
 DIST = ROOT / "frontend" / "dist"
+SAFE_PATH = re.compile(r"[A-Za-z0-9._\-/]+")
 if DIST.exists():
     app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
 
@@ -278,7 +300,11 @@ if DIST.exists():
     def spa(path: str):
         if path.startswith("api/"):
             raise HTTPException(404, "Not found")
-        file = (DIST / path).resolve()
-        if path and file.is_file() and DIST in file.parents:
-            return FileResponse(file)
+        # Plain relative paths only: no drive letters, UNC/backslash paths or "..",
+        # checked before any filesystem call (resolve() on a UNC path does network I/O).
+        parts = path.split("/")
+        if path and SAFE_PATH.fullmatch(path) and ".." not in parts:
+            file = DIST / path
+            if file.is_file():
+                return FileResponse(file)
         return FileResponse(DIST / "index.html")

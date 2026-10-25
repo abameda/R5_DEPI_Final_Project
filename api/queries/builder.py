@@ -37,7 +37,7 @@ METRICS = {
     "median_salary": "Median advertised salary (USD/yr)",
     "salary_coverage": "Share with an advertised salary",
     "remote_share": "Share remote",
-    "avg_skills": "Average skills per posting",
+    "avg_skills": "Average skills per posting that lists skills",
 }
 SKILL_DIM_METRICS = {"postings", "share", "employers", "median_salary"}
 
@@ -89,7 +89,7 @@ def _metric_sql(metric: str, f: Filters, skill_join: bool) -> str:
         "median_salary": "median(f.salary_usd_annual) FILTER (WHERE f.salary_kind = 'advertised')",
         "salary_coverage": "avg(CASE WHEN f.salary_kind = 'advertised' THEN 1.0 ELSE 0.0 END)",
         "remote_share": "avg(CASE WHEN f.market_type = 'Remote' THEN 1.0 ELSE 0.0 END)",
-        "avg_skills": f"avg(f.{skilled_col(f)})",
+        "avg_skills": f"avg(f.{skilled_col(f)}) FILTER (WHERE f.{skilled_col(f)} > 0)",
     }[metric]
 
 
@@ -101,7 +101,12 @@ def run(store: Store, req: BuilderRequest) -> dict:
     exprs = [DIMENSIONS[d][0] for d in dims]
     cte, params = f.cte()
     src = "f"
-    if skill_join:
+    if "skill_category" in dims:
+        # one row per (posting, category): a posting with three Python-family
+        # skills must count once for its category, not three times
+        src = (f"(SELECT DISTINCT s.jid, k.category FROM job_skills s JOIN skills k USING (skill) "
+               f"WHERE TRUE {f.skill_condition()}) k JOIN f USING (jid) WHERE TRUE")
+    elif skill_join:
         src = f"job_skills s JOIN f USING (jid) JOIN skills k USING (skill) WHERE TRUE {f.skill_condition()}"
     where_word = "AND" if skill_join else "WHERE"
     not_null = " AND ".join(f"{e} IS NOT NULL" for e in exprs)
@@ -125,15 +130,28 @@ def run(store: Store, req: BuilderRequest) -> dict:
           {'AND ' + exprs[1] + ' IN (SELECT d1 FROM top2)' if req.split_by else ''}
         GROUP BY {group}""", [*params, req.limit, *split_params])
 
+    metric_label = METRICS[req.metric]
     if req.metric == "share":
-        if skill_join:
-            denom = store.scalar(f"{cte} SELECT count(*) FROM f WHERE {skilled_col(f)} > 0", params) or 0
+        # Denominator = the posting-level group the share is read within:
+        #  * skill dimension + posting dimension -> that group's postings with skills
+        #  * skill dimension alone               -> all postings with skills
+        #  * two posting dimensions              -> postings of the main group (rows sum to 100%)
+        #  * one posting dimension               -> all postings
+        sk = skilled_col(f)
+        group_i = next((i for i, d in enumerate(dims) if not DIMENSIONS[d][1]), None) if skill_join else (0 if req.split_by else None)
+        cond = f"{sk} > 0" if skill_join else "TRUE"
+        if group_i is None:
+            denom = store.scalar(f"{cte} SELECT count(*) FROM f WHERE {cond}", params) or 0
             for r in rows:
                 r["value"] = share(r["value"], denom)
+            metric_label = "Share of postings that list skills" if skill_join else "Share of postings"
         else:
-            total = store.scalar(f"{cte} SELECT count(*) FROM f", params) or 0
+            e = exprs[group_i]
+            dens = {d["k"]: d["n"] for d in store.rows(
+                f"{cte} SELECT {e} AS k, count(*) AS n FROM f WHERE {cond} AND {e} IS NOT NULL GROUP BY 1", params)}
             for r in rows:
-                r["value"] = share(r["value"], total)
+                r["value"] = share(r["value"], dens.get(r[f"d{group_i}"], 0))
+            metric_label = f"Share of each {DIMENSION_LABELS[dims[group_i]].lower()}'s postings" + (" that list skills" if skill_join else "")
     hidden = 0
     if req.metric == "median_salary":
         for r in rows:
@@ -150,12 +168,17 @@ def run(store: Store, req: BuilderRequest) -> dict:
                                  r["value"] or 0), reverse=reverse)
     return {
         "dimension": req.dimension, "split_by": req.split_by, "metric": req.metric,
-        "metric_label": METRICS[req.metric],
+        "metric_label": metric_label,
         "dimension_label": DIMENSION_LABELS[req.dimension],
         "split_label": DIMENSION_LABELS.get(req.split_by) if req.split_by else None,
         "rows": rows, "warnings": warnings, "hidden_small_salary_groups": hidden,
         "filters": f.active(),
     }
+
+
+def _cell(v):
+    """Neutralize spreadsheet formulas: employer names such as '+OneX' or '@Orchard'."""
+    return "'" + v if isinstance(v, str) and v[:1] in ("=", "+", "-", "@", "\t", "\r") else v
 
 
 def to_csv(result: dict) -> str:
@@ -164,7 +187,7 @@ def to_csv(result: dict) -> str:
     head = [result["dimension_label"]] + ([result["split_label"]] if result["split_by"] else [])
     w.writerow(head + [result["metric_label"], "Postings (n)", "Advertised salaries (n)"])
     for r in result["rows"]:
-        w.writerow([r["d0"]] + ([r.get("d1")] if result["split_by"] else [])
+        w.writerow([_cell(r["d0"])] + ([_cell(r.get("d1"))] if result["split_by"] else [])
                    + [r["value"], r["postings"], r["salary_n"]])
     w.writerow([])
     w.writerow(["# Aggregated from the Job Market Intelligence dataset (job-posting sample, not the whole market)."])
@@ -223,16 +246,19 @@ def insights(store: Store, f: Filters) -> list[dict]:
                             f"({_pct(share(role['n'], n))}).",
                     "value": share(role["n"], n), "n": role["n"], "denominator": n,
                     "drill": {"path": "/explorer", "params": {"role": role["key"]}}})
-    out.append({"id": "remote", "kind": "market",
-                "text": f"{_pct(share(k['remote'], n))} of the selected postings are remote "
-                        f"({k['remote']:,} of {n:,}).",
-                "value": share(k["remote"], n), "n": k["remote"], "denominator": n,
-                "drill": {"path": "/explorer", "params": {"market": "Remote"}}})
+    if not f.market or "Remote" in f.market:
+        out.append({"id": "remote", "kind": "market",
+                    "text": f"{_pct(share(k['remote'], n))} of the selected postings are remote "
+                            f"({k['remote']:,} of {n:,}).",
+                    "value": share(k["remote"], n), "n": k["remote"], "denominator": n,
+                    "drill": {"path": "/explorer", "params": {"market": "Remote"}}})
     sal = salary_summary(store, f, None, "advertised", None)["overall"]
     if (sal.get("n") or 0) >= MIN_SALARY_N:
         out.append({"id": "salary", "kind": "salary",
                     "text": f"{sal['n']:,} selected postings advertise a salary; their median is about "
-                            f"${sal['median']:,.0f} per year (annualized, approximate USD).",
+                            f"${sal['median']:,.0f} per year (annualized, approximate USD"
+                            + (f", converted from {sal['currencies']} currencies at fixed rates" if sal["currencies"] > 1 else "")
+                            + ").",
                     "value": sal["median"], "n": sal["n"], "denominator": n,
                     "drill": {"path": "/salary", "params": {}}})
     else:
@@ -249,13 +275,15 @@ def insights(store: Store, f: Filters) -> list[dict]:
                             f"postings with a known country — the sample is geographically concentrated.",
                     "value": geo["concentration"]["top3_share"], "n": geo["located"], "denominator": geo["located"],
                     "drill": {"path": "/geography", "params": {}}})
-    co = cooccurrence(store, f, limit=15)
+    # pairs come from skills written in the postings: team-added skills were
+    # appended as fixed blocks and would manufacture strong "pairs"
+    co = cooccurrence(store, f.model_copy(update={"provenance": "observed"}), limit=15)
     strong = [link for link in co["links"] if link["together"] >= max(MIN_GROUP_POSTINGS, 0.02 * co["denominator"])]
     if strong:
         best = max(strong, key=lambda link: link["lift"] or 0)
         out.append({"id": "pairing", "kind": "skills",
-                    "text": f"{best['a']} and {best['b']} appear together {best['lift']:.1f}× as often as if they "
-                            f"were independent ({best['together']:,} postings).",
+                    "text": f"{best['a']} and {best['b']} are written together {best['lift']:.1f}× as often as if they "
+                            f"were independent ({best['together']:,} postings; skills written in the posting only).",
                     "value": best["lift"], "n": best["together"], "denominator": co["denominator"],
                     "drill": {"path": "/skills", "params": {"skill": best["a"]}}})
     kag = store.scalar(f"{cte} SELECT count(*) FROM f WHERE cohort = 'kaggle_2023'", params) or 0

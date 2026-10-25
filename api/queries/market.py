@@ -30,6 +30,29 @@ def breakdown(store: Store, f: Filters, dim: str, limit: int | None = None) -> l
     return rows
 
 
+def breakdowns(store: Store, f: Filters, dims: list[str], total: int | None = None) -> dict[str, list[dict]]:
+    """Several breakdowns of the same population in ONE scan (GROUPING SETS):
+    filters that need a sub-query (skills) are evaluated once instead of per chart."""
+    for d in dims:
+        if d not in BREAKDOWN_DIMS:
+            raise HTTPException(422, f"Unsupported dimension: {d}")
+    cte, params = f.cte()
+    cols = ", ".join(dims)
+    sets = ", ".join(f"({d})" for d in dims)
+    gid = ", ".join(f"GROUPING({d}) AS g_{d}" for d in dims)
+    rows = store.rows(f"{cte} SELECT {cols}, {gid}, count(*) AS n FROM f GROUP BY GROUPING SETS ({sets})", params)
+    if total is None:
+        total = store.scalar(f"{cte} SELECT count(*) FROM f", params) or 0
+    out: dict[str, list[dict]] = {d: [] for d in dims}
+    for r in rows:
+        for d in dims:
+            if r[f"g_{d}"] == 0:
+                out[d].append({"key": r[d], "n": r["n"], "share": share(r["n"], total)})
+    for d in dims:
+        out[d].sort(key=lambda x: (-x["n"], str(x["key"])))
+    return out
+
+
 def kpis(store: Store, f: Filters) -> dict:
     cte, params = f.cte()
     k = store.one(f"""{cte}
@@ -65,17 +88,20 @@ def overview(store: Store, f: Filters) -> dict:
     hist = store.rows(f"""{cte}
         SELECT least(floor(salary_usd_annual / 20000) * 20000, 300000) AS bin, count(*) AS n
         FROM f WHERE salary_kind = 'advertised' GROUP BY 1 ORDER BY 1""", params)
+    k = kpis(store, f)
+    b = breakdowns(store, f, ["role_category", "market_type", "region", "seniority", "work_mode", "job_type",
+                              "source_dataset", "cohort", "country"], total=k["postings"])
     return {
-        "kpis": kpis(store, f),
-        "roles": breakdown(store, f, "role_category"),
-        "markets": breakdown(store, f, "market_type"),
-        "regions": breakdown(store, f, "region"),
-        "seniority": breakdown(store, f, "seniority"),
-        "work_mode": breakdown(store, f, "work_mode"),
-        "job_type": breakdown(store, f, "job_type"),
-        "sources": breakdown(store, f, "source_dataset"),
-        "cohorts": breakdown(store, f, "cohort"),
-        "countries": breakdown(store, f, "country", limit=15),
+        "kpis": k,
+        "roles": b["role_category"],
+        "markets": b["market_type"],
+        "regions": b["region"],
+        "seniority": b["seniority"],
+        "work_mode": b["work_mode"],
+        "job_type": b["job_type"],
+        "sources": b["source_dataset"],
+        "cohorts": b["cohort"],
+        "countries": b["country"][:15],
         "top_skills": top_skills(store, f, limit=15),
         "skill_categories": skill_categories(store, f),
         "months": months,
@@ -216,7 +242,7 @@ def crosstab(store: Store, f: Filters, row_dim: str, col_dim: str, rows_limit: i
 # Employers
 # ---------------------------------------------------------------------------
 COMPANY_SORTS = {"postings": "postings DESC, company", "name": "company",
-                 "salary": "salary_median DESC NULLS LAST, company", "recent": "last_posted DESC NULLS LAST, company"}
+                 "salary": "CASE WHEN salary_n >= 10 THEN salary_median END DESC NULLS LAST, postings DESC, company", "recent": "last_posted DESC NULLS LAST, company"}
 
 
 def companies(store: Store, f: Filters, search: str | None, page: int, page_size: int, sort: str,

@@ -252,3 +252,74 @@ def test_quality_endpoint(demo):
     q = get(demo, "/api/quality")
     assert q["totals"]["postings"] == len(demo["jobs"])
     assert sum(r["postings"] for r in q["per_source"]) == len(demo["jobs"])
+
+
+# --- regressions from the independent review ------------------------------------
+def test_builder_share_with_split_uses_group_denominators(demo):
+    body = {"dimension": "skill", "split_by": "market_type", "metric": "share", "limit": 5}
+    res = demo["client"].post("/api/builder", json=body).json()
+    matrix = get(demo, "/api/skills/matrix", dim="market_type", groups=4, top=5)
+    expect = {(c["key"], c["skill"]): c["share"] for c in matrix["cells"]}
+    checked = 0
+    for r in res["rows"]:
+        if (r["d1"], r["d0"]) in expect:
+            assert r["value"] == pytest.approx(expect[(r["d1"], r["d0"])], abs=1e-6)
+            checked += 1
+    assert checked and "each market's postings" in res["metric_label"]
+
+
+def test_builder_two_posting_dimensions_sum_to_one_per_row(demo):
+    body = {"dimension": "role_category", "split_by": "seniority", "metric": "share", "limit": 50}
+    res = demo["client"].post("/api/builder", json=body).json()
+    per_role = {}
+    for r in res["rows"]:
+        per_role[r["d0"]] = per_role.get(r["d0"], 0) + r["value"]
+    # every seniority value fits in the 8 split slots, so each role's row sums to 1
+    assert all(v == pytest.approx(1, abs=1e-5) for v in per_role.values())  # shares are rounded to 6 dp
+
+
+def test_builder_skill_category_counts_each_posting_once(demo):
+    res = demo["client"].post("/api/builder", json={"dimension": "skill_category", "metric": "postings"}).json()
+    j, s = demo["jobs"], demo["skills"]
+    import skill_taxonomy as tax
+    cat = s["skill"].map(lambda k: tax.skill_category(k.lower())[0])
+    distinct = s.assign(category=cat).drop_duplicates(["job_id", "category"]).groupby("category").size()
+    for r in res["rows"]:
+        assert r["postings"] == distinct[r["d0"]]
+    adv = set(j.loc[j["salary_usd_annual"].notna() & ~j["salary_is_estimate"], "job_id"])
+    top = res["rows"][0]["d0"]
+    ids = set(s.assign(category=cat).loc[lambda d: d["category"] == top, "job_id"])
+    assert res["rows"][0]["salary_n"] == len(ids & adv)
+
+
+def test_salary_by_skill_hides_small_groups(demo):
+    res = get(demo, "/api/salary/summary", dim="skill", country="Germany", role="Mobile")
+    assert all(g["n"] >= res["min_n"] for g in res["groups"])
+    if res["overall"]["n"] < res["min_n"]:
+        assert res["overall"]["median"] is None and res["overall"]["max"] is None
+
+
+def test_builder_csv_neutralizes_formulas():
+    from api.queries.builder import _cell
+    assert _cell("+OneX") == "'+OneX" and _cell("@Orchard") == "'@Orchard" and _cell("Python") == "Python"
+
+
+def test_compare_warns_when_provenance_differs(demo):
+    res = demo["client"].post("/api/compare", json={"a": {}, "b": {"provenance": "observed"}}).json()
+    assert any(w["code"] == "different_provenance" for w in res["warnings"])
+
+
+def test_raw_postings_are_rate_limited(demo, monkeypatch):
+    import api.main as m
+    monkeypatch.setattr(m, "RAW_LIMIT_PER_MINUTE", 3)
+    m._raw_hits.clear()
+    codes = [demo["client"].get("/api/jobs", params={"page": i + 1}).status_code for i in range(4)]
+    m._raw_hits.clear()
+    assert codes == [200, 200, 200, 429]
+
+
+def test_spa_route_rejects_non_relative_paths():
+    from api.main import SAFE_PATH
+    assert SAFE_PATH.fullmatch("assets/index-abc.js")
+    assert not SAFE_PATH.fullmatch(r"\\10.0.0.1\share\x")
+    assert not SAFE_PATH.fullmatch("C:/Windows/win.ini")
