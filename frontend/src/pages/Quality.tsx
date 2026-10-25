@@ -51,7 +51,7 @@ export default function Quality() {
                   {stages.map((s, i) => (
                     <li key={s.stage}>
                       <div className="flex justify-between text-sm"><span className="text-ink-2">{s.stage}</span><span className="tnum font-medium">{fmtInt(s.rows)}</span></div>
-                      <div className="mt-1 h-2 rounded-full bg-panel-2"><div className={clsx("h-full rounded-full", i === stages.length - 1 ? "bg-accent" : "bg-s1")} style={{ width: `${(s.rows / (raw || 1)) * 100}%` }} /></div>
+                      <div className="mt-1 h-2 rounded-full bg-panel-2"><div className={clsx("h-full rounded-full", i === stages.length - 1 ? "bg-s4" : "bg-[var(--s4-soft)]")} style={{ width: `${(s.rows / (raw || 1)) * 100}%` }} /></div>
                     </li>
                   ))}
                 </ol>

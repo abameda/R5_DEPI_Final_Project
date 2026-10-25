@@ -126,7 +126,7 @@ function WorldMap({ rows, metric, handle, onPick }: { rows: CountryRow[]; metric
         visualMap: {
           min: metric === "n" ? 0 : Math.min(...vals), max: metric === "n" ? Math.log10(Math.max(...vals, 10)) : Math.max(...vals, 1),
           left: 8, bottom: 8, itemHeight: 120, calculable: false, text: metric === "n" ? ["more", "fewer (log scale)"] : undefined,
-          inRange: { color: [t.lattice0, t.lattice1] },
+          inRange: { color: [t.place0, t.series[HUE.place]] },
           textStyle: { color: t.ink2, fontSize: 11 },
           formatter: (v: number) => (metric === "n" ? fmtInt(10 ** v) : metric === "remote" ? fmtPct(v, 0) : fmtUsd(v)),
         },

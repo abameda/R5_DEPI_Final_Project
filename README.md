@@ -12,6 +12,8 @@ added by the team, advertised salaries vs market benchmarks, the 2023 Kaggle arc
 
 ## Quick start
 
+Requires **Python 3.12+** (pinned numpy 2.5 / pandas 3.1) and **Node.js 20+**.
+
 ```bash
 python -m venv .venv && .venv\Scripts\activate        # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt

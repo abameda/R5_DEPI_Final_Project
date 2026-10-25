@@ -222,7 +222,7 @@ export function Callout({ tone = "info", children, title }: { tone?: "info" | "w
   return (
     <div role={tone === "info" ? "note" : "status"} className={clsx("flex gap-2.5 rounded-md border p-3 text-sm",
       tone === "info" && "border-line bg-info-soft text-ink",
-      tone === "warn" && "border-accent-line bg-warn-soft text-ink",
+      tone === "warn" && "border-warn/40 bg-warn-soft text-ink",
       tone === "crit" && "border-crit/40 bg-crit-soft text-ink")}>
       {tone === "info" ? <Info size={16} className="mt-0.5 shrink-0 text-s1" /> : <AlertTriangle size={16} className={clsx("mt-0.5 shrink-0", tone === "warn" ? "text-warn" : "text-crit")} />}
       <div>{title && <p className="font-medium">{title}</p>}<div className="text-ink-2">{children}</div></div>

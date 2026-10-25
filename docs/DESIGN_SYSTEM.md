@@ -56,8 +56,10 @@ Entity hues, the same in every module (`HUE` in `lib/echarts.ts`):
 Categorical order for multi-series charts (`categorical()`): cobalt, turquoise, ruby,
 violet, emerald. Validated with the dataviz palette validator in both themes: every
 adjacent pair passes CVD and normal-vision separation; the first three also pass all-pairs
-(use them for scatter-like or map-like charts). Sequential magnitude (map, lattice) is a
-single amber-to-brown ramp (`--lattice-0` → `--lattice-1`) paired with size or a table.
+(use them for scatter-like or map-like charts). Sequential magnitude uses one hue of the
+entity it describes: the country map runs from `--place-0` to emerald, heatmaps from the
+panel colour to the entity hue. The only amber magnitude is the lattice's light, and there
+the aperture **area** carries the value; brightness only repeats it.
 
 ### Never colour alone
 

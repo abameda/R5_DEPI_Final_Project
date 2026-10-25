@@ -22,8 +22,8 @@ OWN-WORLD: Cairene mashrabiya. Deep teak rail and header (#24180F family), shade
 ground (cool off-white, never cream), white work panels with hairline plaster borders, sunlit
 amber reserved for selection, focus and the lattice light; data series from qamariyya stained
 glass, one hue per kind of entity in every module: posting attributes cobalt, skills turquoise,
-places emerald, pay amber glass, sources and collections violet, decreases ruby (finish-review
-fix). Night mode: dark teak ground, same glass.
+places emerald, pay ruby, sources and collections violet (two tones); amber is never a data
+hue (finish-review fix). Night mode: dark teak ground, same glass.
 One sans with Arabic + Latin (Readex Pro), tabular figures, tight 1.125 scale.
 
 STORY: The visitor sees the population they are looking at, the demand for roles and skills in
