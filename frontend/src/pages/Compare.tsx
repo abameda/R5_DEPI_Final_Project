@@ -226,7 +226,7 @@ function MixPanel({ title, a, b }: { title: string; a: Count[]; b: Count[] }) {
           <li key={k}>
             <div className="flex justify-between"><span className="text-ink-2">{k}</span>
               <span className="tnum text-ink-3"><span className="text-s1">A</span> {fmtPct(sa(k), 0)} · <span className="text-s3">B</span> {fmtPct(sb(k), 0)}
-                {Math.abs(sa(k) - sb(k)) >= 0.1 && <> <Pill tone="accent">{fmtPp(100 * (sa(k) - sb(k)))}</Pill></>}</span></div>
+                {Math.abs(sa(k) - sb(k)) >= 0.1 && <> <Pill>{fmtPp(100 * (sa(k) - sb(k)))}</Pill></>}</span></div>
             <div className="mt-1 grid gap-0.5">
               <span className="block h-1.5 rounded-full bg-s1" style={{ width: `${sa(k) * 100}%` }} />
               <span className="block h-1.5 rounded-full bg-s3" style={{ width: `${sb(k) * 100}%` }} />
