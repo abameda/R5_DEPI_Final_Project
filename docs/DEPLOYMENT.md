@@ -87,6 +87,25 @@ service that runs Python (e.g. a 1 vCPU / 1 GB instance):
 
 No paid service is required. Nothing has been deployed by this work.
 
+### Vercel (synthetic store)
+
+`vercel.json` deploys the repository as one Vercel project with two
+[services](https://vercel.com/docs/services):
+
+| Service | Root | Public path | What it is |
+|---|---|---|---|
+| `api` | `.` | `/api/*` | FastAPI (`api.main:app`) as a Vercel Function |
+| `frontend` | `frontend/` | everything else | Vite build of the dashboard, with an `index.html` fallback for client routes |
+
+The dashboard calls `/api/...` on its own origin from the browser, so the services need no
+bindings. The `api` build runs `python scripts/make_demo_data.py`, which writes the synthetic
+store to `data/analytics/demo.duckdb`; set the project environment variable
+`JMI_DB=data/analytics/demo.duckdb` so the API opens it. `.vercelignore` keeps `data/` and the
+raw archive out of every upload, so the real store is never deployed.
+
+Run both services locally with `vercel dev`. Hosting the real store needs the data owners'
+agreement first (see above).
+
 ## Rebuilding after data changes
 
 `python src/pipeline.py` → `python src/build_analytics.py` → restart the API (the store is
