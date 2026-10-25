@@ -27,8 +27,8 @@ STAGING_COLUMNS = [
     "title", "company", "location", "city", "country_raw",
     "work_mode_raw",      # explicit remote/on-site information, if the source has it
     "job_type_raw", "description",
-    "skills_raw",
-    "skills_enriched",    # True = some skills were ADDED by the team, not written in the posting
+    "skills_raw",         # final skill list (original + skills the team added)
+    "skills_observed_raw",  # only the skills present in the data as collected (per-skill provenance)
     "salary_text",        # free salary text to parse, OR the numeric fields below
     "salary_min", "salary_max", "salary_currency", "salary_period",
     "salary_is_estimate", # True = market benchmark added by the team, not the posting's pay
@@ -45,24 +45,17 @@ def _finish(df: pd.DataFrame) -> pd.DataFrame:
     return df[STAGING_COLUMNS]
 
 
-def _skills_were_added(before: pd.Series, after: pd.Series) -> pd.Series:
-    """Compare the original file with the '_after_adding_skills' file:
-    True when the enriched list contains skills the original did not have."""
-    b = before.map(lambda v: set(parse_skill_list(v)))
-    a = after.map(lambda v: set(parse_skill_list(v)))
-    return pd.Series([bool(x - y) for x, y in zip(a, b)], index=after.index)
-
-
 def _api_board_file(after_name: str, before_name: str, dataset: str) -> pd.DataFrame:
     """Shared reader for the three files that use the same 16-column API layout
-    (Jooble/Careerjet, remote boards, startup.jobs)."""
+    (Jooble/Careerjet, remote boards, startup.jobs). The original file (before
+    the team added skills) gives the observed skills of each posting."""
     after = pd.read_csv(RAW / after_name, low_memory=False)
     before = pd.read_csv(RAW / before_name, usecols=["id", "skills"]).set_index("id")["skills"]
-    after["skills_enriched"] = _skills_were_added(after["id"].map(before), after["skills"])
     return after.assign(
         source_dataset=dataset, source_platform=after["source"], source_record_id=after["id"],
         location=after["location_raw"], country_raw=after["country"], job_type_raw=after["job_type"],
-        skills_raw=after["skills"], salary_text=after["salary"], salary_is_estimate=False,
+        skills_raw=after["skills"], skills_observed_raw=after["id"].map(before),
+        salary_text=after["salary"], salary_is_estimate=False,
         posted_raw=after["updated"], url=after["link"], role_hint=after["category"],
     )
 
@@ -113,6 +106,27 @@ def _merged_salary_is_estimate(source: pd.Series) -> pd.Series:
     return ~(s.str.startswith("Original") | s.str.startswith("No data"))
 
 
+def _merged_observed_skills(skills: pd.Series, source: pd.Series, added: pd.Series) -> pd.Series:
+    """Original skills of the merged file. The team appended the skills they
+    added at the END of `skills`, one per ';' segment, and recorded how many in
+    `skills_added_count`:  'bash, python, aws; Python; SQL; Spark; Airflow; Kafka'
+    with 5 added -> original = 'bash, python, aws'.
+    Only rows whose skills_source says the list came from the source data or the
+    posting text ('Original ...', 'Extracted by reading the job description')
+    have original skills; 'Inferred ...' / 'No data ...' rows have none.
+    (Checked against the Kaggle `job_type_skills` column: identical lists.)"""
+    has_original = source.fillna("").str.match(r"Original|Extracted")
+    n_added = added.fillna(0).astype(int)
+
+    def original_part(text, n):
+        segments = str(text).split(";")
+        return ";".join(segments[: len(segments) - n] if n else segments)
+
+    observed = [original_part(t, n) if ok and isinstance(t, str) else np.nan
+                for t, n, ok in zip(skills, n_added, has_original)]
+    return pd.Series(observed, index=skills.index)
+
+
 def load_merged_45k() -> pd.DataFrame:
     """The team's merged Excel file (45.6k rows) = two different origins:
 
@@ -142,7 +156,7 @@ def load_merged_45k() -> pd.DataFrame:
         "work_mode_raw": wfh.where(file2, np.where(df["country"].eq("Worldwide"), "Remote", None)),
         "job_type_raw": df["job_type"], "description": df["description"],
         "skills_raw": df["skills"],
-        "skills_enriched": df["skills_source"].fillna("").str.contains("research_added|research_filled|Inferred"),
+        "skills_observed_raw": _merged_observed_skills(df["skills"], df["skills_source"], df["skills_added_count"]),
         "salary_text": df["salary"].where(has_salary & ~numeric),
         "salary_min": value.where(numeric), "salary_max": value.where(numeric),
         "salary_currency": np.where(numeric, "USD", None),
@@ -172,7 +186,7 @@ def load_international() -> pd.DataFrame:
         "location": df["job_location"], "country_raw": df["job_country"],
         "work_mode_raw": np.where(df["job_work_from_home"], "Remote", "On-site"),
         "job_type_raw": df["job_schedule_type"],
-        "skills_raw": df["job_skills"], "skills_enriched": False,
+        "skills_raw": df["job_skills"], "skills_observed_raw": df["job_skills"],
         "salary_min": year.fillna(hour), "salary_max": year.fillna(hour),
         "salary_currency": np.where(has_salary, "USD", None),
         "salary_period": np.where(year.notna(), "year", np.where(hour.notna(), "hour", None)),
@@ -207,8 +221,8 @@ def load_arab_jobs() -> pd.DataFrame:
         "city": df["location_raw"], "country_raw": df["country"],
         "work_mode_raw": df["work_mode"].replace({"Not remote": "On-site"}),
         "job_type_raw": df["job_type"], "description": df["description"],
-        "skills_raw": df["skills"],
-        "skills_enriched": df["skills_source"].fillna("").str.contains("research_added"),
+        # `skills_original` is the posting's own skills field before the team edited it
+        "skills_raw": df["skills"], "skills_observed_raw": df["skills_original"],
         "salary_min": df["salary_local"].where(salary_known),
         "salary_max": df["salary_local"].where(salary_known),
         "salary_currency": df["salary_currency"].where(salary_known),
@@ -228,7 +242,7 @@ def load_cybersecurity() -> pd.DataFrame:
         "title": df["job_title"], "company": df["company_name"],
         "location": df["city"] + ", " + df["country"], "city": df["city"],
         "country_raw": df["country"], "skills_raw": df["required_skills"],
-        "skills_enriched": False, "salary_text": df["salary"], "salary_is_estimate": False,
+        "skills_observed_raw": df["required_skills"], "salary_text": df["salary"], "salary_is_estimate": False,
         "role_hint": "Cybersecurity",
     })
     return _finish(out)

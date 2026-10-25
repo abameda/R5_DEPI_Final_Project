@@ -15,12 +15,16 @@ Steps (record counts are logged after each one, FR-28):
 
 Outputs (data/processed/ and reports/):
     jobs_clean.csv           one row per unique posting
-    job_skills.csv           long table: one row per (job_id, skill)
+    job_skills.csv           long table: one row per (job_id, skill, is_observed)
+    skills_dim.csv           one row per skill: category, category source, technical or not
     data_quality_report.md   counts, missing values, duplicates per source
+    pipeline_stats.json      the same stage counts, machine-readable (used by the dashboard)
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
+import json
 import logging
 import time
 from pathlib import Path
@@ -29,6 +33,7 @@ import numpy as np
 import pandas as pd
 
 import clean_utils as cu
+import skill_taxonomy as tax
 from loaders import LOADERS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,7 +77,7 @@ FINAL_COLUMNS = [
     "job_id", "title", "company", "role_category", "seniority",
     "country", "city", "location", "region", "market_type", "work_mode", "job_type",
     "language", "description", "description_length",
-    "skills", "skills_count", "skills_enriched",
+    "skills", "skills_count", "skills_observed_count", "skills_enriched",
     "salary_min", "salary_max", "salary_currency", "salary_period",
     "salary_usd_annual", "salary_is_estimate",
     "posted_date", "posted_year",
@@ -156,9 +161,18 @@ def standardize_categories(df: pd.DataFrame) -> pd.DataFrame:
 
 def standardize_skills(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """Parse skills into canonical keys, then pick ONE display spelling per skill:
-    the most common capitalized spelling seen anywhere in the raw data
-    (so 'python' -> 'Python', 'aws' -> 'AWS', 'power bi' -> 'Power BI')."""
-    df["skill_keys"] = df["skills_raw"].map(cu.parse_skill_list)
+    a curated name from skill_taxonomy.SKILL_DISPLAY, else the most common
+    capitalized spelling seen anywhere in the raw data
+    (so 'python' -> 'Python', 'aws' -> 'AWS', 'power bi' -> 'Power BI').
+
+    Per-skill provenance: a skill is *observed* when it is in the posting's
+    original skill list (`skills_observed_raw`); otherwise the team added it.
+    A skill that was only in the original list (and dropped from the final
+    list) is added back, so the final list always contains every observed skill."""
+    observed = df["skills_observed_raw"].map(cu.parse_skill_list)
+    final = df["skills_raw"].map(cu.parse_skill_list)
+    df["skill_keys"] = [f + [k for k in o if k not in set(f)] for f, o in zip(final, observed)]
+    df["skill_observed"] = [[k in set(o) for k in keys] for keys, o in zip(df["skill_keys"], observed)]
 
     # Collect raw spellings -> display name.
     raw_tokens = (df["skills_raw"].dropna().astype(str)
@@ -171,10 +185,31 @@ def standardize_skills(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     # count every (key, spelling) pair, then keep the most frequent spelling per key
     display = (capitalized.value_counts(["key", "raw"]).reset_index()
                .drop_duplicates("key").set_index("key")["raw"])
+    display = pd.Series(tax.SKILL_DISPLAY).combine_first(display)
 
     df["skills"] = df["skill_keys"].map(lambda ks: "; ".join(display.get(k, k) for k in ks) or np.nan)
     df["skills_count"] = df["skill_keys"].str.len()
+    df["skills_observed_count"] = df["skill_observed"].map(sum)
+    # True = at least one skill was added by the team (not in the original posting data)
+    df["skills_enriched"] = df["skills_count"] > df["skills_observed_count"]
     return df, display
+
+
+def skills_tables(df: pd.DataFrame, display: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Long (job_id, skill, is_observed) table and the skill dimension."""
+    long = (df[["job_id", "skill_keys", "skill_observed"]]
+            .explode(["skill_keys", "skill_observed"]).dropna(subset=["skill_keys"]))
+    long = pd.DataFrame({"job_id": long["job_id"],
+                         "skill": long["skill_keys"].map(lambda k: display.get(k, k)),
+                         "is_observed": long["skill_observed"].astype(bool)})
+    keys = pd.Series(sorted(set(df["skill_keys"].explode().dropna())))
+    cats = keys.map(tax.skill_category)
+    dim = pd.DataFrame({"skill": keys.map(lambda k: display.get(k, k)), "skill_key": keys,
+                        "category": cats.str[0], "category_source": cats.str[1]})
+    dim["is_technical"] = dim["category"].map(tax.is_technical)
+    # two keys can share a display spelling ('c#' and 'C#' variants) -> keep one row
+    long = long.sort_values("is_observed", ascending=False).drop_duplicates(["job_id", "skill"])
+    return long.sort_index(), dim.drop_duplicates("skill")
 
 
 def standardize_salary(df: pd.DataFrame) -> pd.DataFrame:
@@ -255,7 +290,8 @@ def make_job_id(df: pd.DataFrame) -> pd.Series:
 
 
 # ---------------------------------------------------------------------------
-def quality_report(raw: pd.DataFrame, clean: pd.DataFrame, stages: StageLog, dropped: dict) -> str:
+def quality_report(raw: pd.DataFrame, clean: pd.DataFrame, skills_long: pd.DataFrame,
+                   stages: StageLog, dropped: dict) -> str:
     """FR-11: markdown data-quality report per source and for the whole dataset."""
     key_fields = ["title", "company", "country", "description", "skills", "salary_usd_annual", "posted_date"]
     per_source = pd.DataFrame({
@@ -302,6 +338,15 @@ def quality_report(raw: pd.DataFrame, clean: pd.DataFrame, stages: StageLog, dro
         f"- Postings found in more than one place (`duplicate_count > 1`): "
         f"**{(clean['duplicate_count'] > 1).sum():,}**",
         "",
+        "### Skill provenance (per posting × skill)",
+        "",
+        skills_long.groupby(skills_long["job_id"].map(clean.set_index("job_id")["source_dataset"]))["is_observed"]
+        .agg(skill_rows="size", observed_share=lambda s: round(100 * s.mean(), 1))
+        .rename_axis("source_dataset").to_markdown(),
+        "",
+        "`observed_share` = % of skill rows that were in the posting data as collected; "
+        "the rest were added by the team.",
+        "",
         "### Market type", "", clean["market_type"].value_counts().to_frame("rows").to_markdown(), "",
         "### Role category", "", clean["role_category"].value_counts().to_frame("rows").to_markdown(), "",
         "### Language", "", clean["language"].value_counts().to_frame("rows").to_markdown(), "",
@@ -312,8 +357,8 @@ def quality_report(raw: pd.DataFrame, clean: pd.DataFrame, stages: StageLog, dro
         "- `kaggle_2023_*` rows are from **2023**; API/board rows are from **Oct 2026**. "
         "Filter on `posted_year` when comparing markets over time.",
         "- `skills_enriched = True` means the team **added** skills that were not written in the "
-        "posting (inferred from title / similar postings). Use `skills_enriched == False` for "
-        "strict skill-demand analysis.",
+        "posting (inferred from title / similar postings). For strict skill-demand analysis use "
+        "`job_skills.is_observed == True` (per skill) rather than dropping whole postings.",
         "- `salary_is_estimate = True` means a **market benchmark** (Paylab, Indeed, BLS ...) "
         "was attached, not the posting's own pay. Use only `salary_is_estimate == False` for pay analysis.",
         "- Currency conversion uses fixed approximate rates (`USD_PER_UNIT` in `src/clean_utils.py`).",
@@ -323,19 +368,23 @@ def quality_report(raw: pd.DataFrame, clean: pd.DataFrame, stages: StageLog, dro
     return "\n".join(lines)
 
 
-def main() -> None:
+def main(out: Path = OUT) -> None:
     t0 = time.perf_counter()
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     REPORTS.mkdir(exist_ok=True)
     stages = StageLog()
 
     df = load_all(stages)
     raw_counts = df[["source_dataset"]].copy()
+    # Evidence for the 'Sudan' correction (see load_merged_45k): the Kaggle rows
+    # searched from 'Sudan' and the country rebuilt from their real location.
+    sudan = df["source_dataset"].eq("kaggle_2023_arab_search") & df["search_keyword"].eq("Sudan")
+    sudan_countries = df.loc[sudan, "country_raw"].fillna("(missing)").value_counts()
 
     df = clean_text_fields(df)
     df = standardize_location(df)
     df = standardize_categories(df)
-    df, _ = standardize_skills(df)
+    df, display = standardize_skills(df)
     df = standardize_salary(df)
     df = parse_dates(df)
     stages("2-5. after cleaning & standardizing (no rows removed)", df)
@@ -352,14 +401,24 @@ def main() -> None:
     df = df.sort_values(["source_dataset", "posted_date", "title"], na_position="last")
 
     clean = df[FINAL_COLUMNS].reset_index(drop=True)
-    skills_long = (df[["job_id", "skills"]].dropna().assign(skill=lambda d: d["skills"].str.split("; "))
-                   .explode("skill")[["job_id", "skill"]])
+    skills_long, skills_dim = skills_tables(df, display)
 
     # utf-8-sig = UTF-8 with BOM, so Excel / Power BI show Arabic text correctly.
-    clean.to_csv(OUT / "jobs_clean.csv", index=False, encoding="utf-8-sig")
-    skills_long.to_csv(OUT / "job_skills.csv", index=False, encoding="utf-8-sig")
+    clean.to_csv(out / "jobs_clean.csv", index=False, encoding="utf-8-sig")
+    skills_long.to_csv(out / "job_skills.csv", index=False, encoding="utf-8-sig")
+    skills_dim.to_csv(out / "skills_dim.csv", index=False, encoding="utf-8-sig")
     (REPORTS / "data_quality_report.md").write_text(
-        quality_report(raw_counts, clean, stages, dropped), encoding="utf-8")
+        quality_report(raw_counts, clean, skills_long, stages, dropped), encoding="utf-8")
+    stats = {
+        "generated_at": pd.Timestamp.now().isoformat(timespec="seconds"),
+        "stages": [{"stage": s, "rows": n} for s, n in stages.rows],
+        "dropped": dropped,
+        "raw_rows_by_source": raw_counts["source_dataset"].value_counts().to_dict(),
+        "sudan_search_location_rows": {"rows": int(sudan.sum()),
+                                       "country_from_real_location": sudan_countries.to_dict()},
+        "runtime_seconds": round(time.perf_counter() - t0, 1),
+    }
+    (REPORTS / "pipeline_stats.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
     log.info("saved %s (%s rows), %s (%s rows)", "jobs_clean.csv", f"{len(clean):,}",
              "job_skills.csv", f"{len(skills_long):,}")
@@ -367,4 +426,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--out", type=Path, default=OUT, help="output folder (default: data/processed)")
+    main(parser.parse_args().out)

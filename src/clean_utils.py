@@ -323,6 +323,14 @@ SKILL_SYNONYMS = {
     "microsoft azure": "azure", "ci / cd": "ci/cd", "cicd": "ci/cd",
     "ml": "machine learning", "dl": "deep learning", "sklearn": "scikit-learn",
     "scikit learn": "scikit-learn", "nosql databases": "nosql",
+    # ".NET" loses its leading dot when list punctuation is stripped below
+    "net": ".net", "dot-net": ".net", "asp.netcore": "asp.net",
+    # Stack-Overflow-style tags and spelling variants seen in the raw files
+    "microsoft-azure": "azure", "amazon-web-services": "aws", "c-sharp": "c#",
+    "microsoft-typescript": "typescript", "xml-format": "xml", "no-sql": "nosql",
+    "angular.js": "angular", "firewalls": "firewall", "rest": "rest api",
+    "msaccess": "ms access", "sqlserver": "sql server", "huggingface": "hugging face",
+    "rubyon rails": "ruby on rails", "visualbasic": "visual basic",
 }
 
 

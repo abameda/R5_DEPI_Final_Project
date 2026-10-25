@@ -147,3 +147,35 @@ def test_salary_to_usd_annual_and_outliers():
                        "salary_currency": ["USD", "USD", "AED"], "salary_period": ["hour", "year", "month"]})
     out = cu.salary_to_usd_annual(df).tolist()
     assert out[0] == 104000 and np.isnan(out[1]) and out[2] == round(4000 * 12 / 3.6725)
+
+
+def test_parse_skill_list_keeps_dotnet_and_merges_tag_spellings():
+    # '.NET' used to lose its leading dot ('net'); tag spellings map to one key
+    assert cu.parse_skill_list(".NET, dot-net, microsoft-azure, amazon-web-services") == [".net", "azure", "aws"]
+
+
+# --- skill taxonomy and provenance -------------------------------------------
+import skill_taxonomy as tax  # noqa: E402
+from loaders import _merged_observed_skills  # noqa: E402
+
+
+def test_skill_category_sources():
+    assert tax.skill_category("python") == ("Programming & query languages", "kaggle")
+    assert tax.skill_category("oracle") == ("Databases", "kaggle (corrected)")
+    assert tax.skill_category("siem") == ("Security & compliance", "curated")
+    assert tax.skill_category("some new tool") == ("Uncategorized", "none")
+
+
+def test_soft_skills_and_languages_are_not_technical():
+    assert not tax.is_technical(tax.skill_category("communication")[0])
+    assert not tax.is_technical(tax.skill_category("arabic")[0])
+    assert tax.is_technical(tax.skill_category("sql")[0])
+
+
+def test_merged_observed_skills_uses_added_count_suffix():
+    skills = pd.Series(["bash, python, aws; Python; SQL; Spark", "Python; SQL", "sql, excel; Tableau"])
+    source = pd.Series(["Original (from source data); research_added", "No data; research_filled",
+                        "Inferred: skills most common ...; research_added"])
+    out = _merged_observed_skills(skills, source, pd.Series([3, 2, 1]))
+    assert out[0] == "bash, python, aws"
+    assert pd.isna(out[1]) and pd.isna(out[2])   # nothing original when not 'Original'/'Extracted'
