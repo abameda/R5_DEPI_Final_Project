@@ -1,9 +1,14 @@
-# Raw and processed third-party data must never be uploaded (NFR-08). The hosted
-# API builds the synthetic store at deploy time (see vercel.json).
-data/
+# Raw and processed third-party data must never be uploaded (NFR-08). Only the
+# analytical store goes up, from a CLI deploy on a machine that has it; it is
+# git-ignored, so Git deploys cannot serve it.
+data/*
+!data/analytics
+data/analytics/*
+!data/analytics/jmi.duckdb
 *.zip
 
 # Local environments and build output
+.env*
 .venv/
 frontend/node_modules/
 frontend/dist/

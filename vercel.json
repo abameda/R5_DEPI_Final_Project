@@ -1,11 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": { "deploymentEnabled": false },
   "services": {
     "api": {
       "root": ".",
       "framework": "fastapi",
-      "entrypoint": "api.main:app",
-      "buildCommand": "python scripts/make_demo_data.py"
+      "entrypoint": "api.main:app"
     },
     "frontend": {
       "root": "frontend",

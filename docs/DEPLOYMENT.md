@@ -87,7 +87,7 @@ service that runs Python (e.g. a 1 vCPU / 1 GB instance):
 
 No paid service is required. Nothing has been deployed by this work.
 
-### Vercel (synthetic store)
+### Vercel (real store, deployed from the CLI)
 
 `vercel.json` deploys the repository as one Vercel project with two
 [services](https://vercel.com/docs/services):
@@ -98,13 +98,20 @@ No paid service is required. Nothing has been deployed by this work.
 | `frontend` | `frontend/` | everything else | Vite build of the dashboard, with an `index.html` fallback for client routes |
 
 The dashboard calls `/api/...` on its own origin from the browser, so the services need no
-bindings. The `api` build runs `python scripts/make_demo_data.py`, which writes the synthetic
-store to `data/analytics/demo.duckdb`; set the project environment variable
-`JMI_DB=data/analytics/demo.duckdb` so the API opens it. `.vercelignore` keeps `data/` and the
-raw archive out of every upload, so the real store is never deployed.
+bindings. The API opens `data/analytics/jmi.duckdb`, which is git-ignored, so deploy from a
+machine that has the built store:
 
-Run both services locally with `vercel dev`. Hosting the real store needs the data owners'
-agreement first (see above).
+```bash
+vercel deploy            # preview
+vercel deploy --prod     # production
+```
+
+`.vercelignore` uploads `data/analytics/jmi.duckdb` and nothing else from `data/` (no raw or
+processed files, no archive). Leave `JMI_DB` unset in the Vercel project. A Git-triggered
+deploy would have no store, so `vercel.json` turns Git deployments off
+(`git.deploymentEnabled: false`); deploy from the CLI only.
+
+Run both services locally with `vercel dev`.
 
 ## Rebuilding after data changes
 
