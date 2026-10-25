@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Empty, ErrorState, Loading, PageHeader, Pill, Select, Button } from "../components/ui";
 import { useApi } from "../lib/api";
 import { fmtDate, fmtInt, fmtUsdFull } from "../lib/format";
-import { useFilters, useLabels, useParam } from "../lib/hooks";
+import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
 import type { Job, JobPage, SkillChip } from "../lib/types";
 
 const SORTS = [
@@ -16,7 +16,8 @@ const PAGE_SIZE = 25;
 
 export default function Explorer() {
   const { filters, reset } = useFilters();
-  const [sort, setSort] = useParam("sort", "newest");
+  const [sort] = useParam("sort", "newest");
+  const update = useUpdateParams();
   const [pageStr, setPage] = useParam("page", "1");
   const [selected, setSelected] = useParam("job", "");
   const page = Math.max(1, Number.parseInt(pageStr, 10) || 1);
@@ -29,7 +30,7 @@ export default function Explorer() {
   return (
     <>
       <PageHeader title="Job explorer" description="Search and filter the unique postings. Each posting links to its original advert when the source provided one.">
-        <Select label="Sort" value={sort} onChange={(v) => { setSort(v); setPage("1"); }} options={SORTS} />
+        <Select label="Sort" value={sort} onChange={(v) => update({ sort: v === "newest" ? null : v, page: null })} options={SORTS} />
       </PageHeader>
       <div ref={top} className={clsx("grid gap-4", selected && "xl:grid-cols-[minmax(0,1fr)_420px]")}>
         <div className="min-w-0 rounded-lg border border-line bg-panel">

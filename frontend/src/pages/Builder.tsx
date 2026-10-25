@@ -6,7 +6,7 @@ import { apiGet, usePost } from "../lib/api";
 import { axisStyle, baseOption, esc } from "../lib/echarts";
 import { filterBody } from "../lib/filters";
 import { fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
-import { useFilters, useLabels, useParam } from "../lib/hooks";
+import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
 
 interface Options { dimensions: { key: string; label: string; skill_level: boolean }[]; metrics: { key: string; label: string; skill_level: boolean }[] }
 interface Result {
@@ -19,7 +19,8 @@ export default function Builder() {
   const { filters } = useFilters();
   const labels = useLabels();
   const opts = useQuery<Options>({ queryKey: ["builder-options"], queryFn: () => apiGet<Options>("/builder/options"), staleTime: Infinity });
-  const [dimension, setDimension] = useParam("dimension", "role_category");
+  const [dimension] = useParam("dimension", "role_category");
+  const update = useUpdateParams();
   const [split, setSplit] = useParam("split", "");
   const [metric, setMetric] = useParam("metric", "postings");
   const [limit, setLimit] = useParam("limit", "15");
@@ -47,7 +48,7 @@ export default function Builder() {
       <PageHeader title="Insight builder" description="Build your own aggregate view from the posting data: choose what to group by, an optional split and a measure. Combinations that would mislead are not offered." />
       <Panel title="Build a view">
         <div className="flex flex-wrap items-end gap-3">
-          <Select label="Group by" value={dimension} onChange={(v) => { setDimension(v); if (split === v) setSplit(null); }}
+          <Select label="Group by" value={dimension} onChange={(v) => update({ dimension: v, split: split === v ? null : split })}
             options={(opts.data?.dimensions ?? []).map((d) => ({ value: d.key, label: d.label }))} />
           <label className="inline-flex items-center gap-2 text-sm text-ink-2"><span>Split by</span>
             <select value={split} onChange={(e) => setSplit(e.target.value || null)} className="h-8 rounded-md border border-line-strong bg-panel px-2 text-sm text-ink">

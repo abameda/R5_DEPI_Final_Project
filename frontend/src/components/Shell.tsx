@@ -54,7 +54,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </button>
       </div>
       <aside className={clsx("z-30 flex-col bg-rail text-rail-ink lg:sticky lg:top-0 lg:flex lg:h-screen",
-        open ? "fixed inset-x-0 top-12 bottom-0 flex overflow-auto" : "hidden")} aria-label="Main navigation">
+        open ? "fixed inset-x-0 top-12 bottom-0 flex overflow-auto" : "hidden")} aria-label="Sidebar">
         <div className="hidden px-4 pt-4 pb-3 lg:block"><Brand /></div>
         <Nav />
         <RailFooter builtAt={meta?.built_at} />
@@ -91,7 +91,7 @@ function Nav() {
   const { filters } = useFilters();
   const qs = new URLSearchParams(filterParams(filters)).toString();
   return (
-    <nav className="flex-1 overflow-y-auto px-2 pb-4">
+    <nav aria-label="Main navigation" className="flex-1 overflow-y-auto px-2 pb-4">
       {NAV.map((g) => (
         <div key={g.group} className="mt-3">
           <p className="px-2 pb-1 text-xs font-medium text-rail-ink-2">{g.group}</p>

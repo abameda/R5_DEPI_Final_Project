@@ -8,7 +8,7 @@ import { Button, Callout, ChartPanel, Empty, Guard, IconButton, PageHeader, Pane
 import { useApi } from "../lib/api";
 import { drillHref } from "../lib/filters";
 import { fmtDate, fmtInt, fmtUsd } from "../lib/format";
-import { useFilters, useLabels, useParam } from "../lib/hooks";
+import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
 import type { Count, Kpis, SalarySummary, TopSkills } from "../lib/types";
 
 interface Row { company: string; postings: number; appearances: number; countries: number; top_role: string; is_placeholder: boolean; salary_n: number; salary_median: number | null; last_posted: string | null }
@@ -17,12 +17,13 @@ interface Profile { company: string; is_placeholder: boolean; kpis: Kpis; titles
 export default function Employers() {
   const { filters } = useFilters();
   const [name, setName] = useParam("name", "");
-  const [sort, setSort] = useParam("esort", "postings");
-  const [boards, setBoards] = useParam("boards", "");
+  const [sort] = useParam("esort", "postings");
+  const [boards] = useParam("boards", "");
+  const update = useUpdateParams();
   const [pageStr, setPage] = useParam("epage", "1");
-  const [search, setSearch] = useParam("find", "");
+  const [search] = useParam("find", "");
   const [text, setText] = useState(search);
-  useEffect(() => { const t = setTimeout(() => { if (text !== search) { setSearch(text || null); setPage(null); } }, 300); return () => clearTimeout(t); }, [text, search, setSearch, setPage]);
+  useEffect(() => { const t = setTimeout(() => { if (text !== search) update({ find: text || null, epage: null }); }, 300); return () => clearTimeout(t); }, [text, search, update]);
   const page = Math.max(1, +pageStr || 1);
   const q = useApi<{ total: number; rows: Row[] }>("/companies", filters, { search: search || undefined, page, page_size: 25, sort, include_placeholders: boards === "1" });
   const pages = q.data ? Math.max(1, Math.min(400, Math.ceil(q.data.total / 25))) : 1;
@@ -32,7 +33,7 @@ export default function Employers() {
       <PageHeader title="Employers" description="Who posts the jobs in your selection, what they ask for and where. Counts are postings in this sample — not workforce size or total hiring." />
       {name && <EmployerProfile name={name} onClose={() => setName(null)} />}
       <Panel title="Employer directory" meta={q.data ? `${fmtInt(q.data.total)} employers` : undefined}
-        actions={<Select label="Sort" value={sort} onChange={(v) => { setSort(v); setPage(null); }} options={[
+        actions={<Select label="Sort" value={sort} onChange={(v) => update({ esort: v === "postings" ? null : v, epage: null })} options={[
           { value: "postings", label: "Most postings" }, { value: "salary", label: "Highest median pay" }, { value: "recent", label: "Most recent" }, { value: "name", label: "Name" }]} />}>
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <label className="relative flex h-8 min-w-[220px] items-center">
@@ -42,7 +43,7 @@ export default function Employers() {
               className="h-8 w-full rounded-md border border-line-strong bg-panel pl-8 pr-2 text-sm placeholder:text-ink-3" />
           </label>
           <label className="flex items-center gap-2 text-sm text-ink-2">
-            <input type="checkbox" checked={boards === "1"} onChange={(e) => { setBoards(e.target.checked ? "1" : null); setPage(null); }} className="size-4 accent-[var(--accent-ink)]" />
+            <input type="checkbox" checked={boards === "1"} onChange={(e) => update({ boards: e.target.checked ? "1" : null, epage: null })} className="size-4 accent-[var(--accent-ink)]" />
             Include job boards and hidden employers (“Confidential”, Dice, Upwork …)
           </label>
         </div>

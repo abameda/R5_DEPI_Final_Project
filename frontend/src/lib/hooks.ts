@@ -33,6 +33,25 @@ export function useFilters() {
   return { filters, set, toggle, reset, replace };
 }
 
+/**
+ * Update several page-local URL parameters in ONE navigation. Two separate
+ * setSearchParams calls in the same event both start from the current URL,
+ * so the second would silently undo the first (e.g. sort + page reset).
+ */
+export function useUpdateParams() {
+  const [, setParams] = useSearchParams();
+  return useCallback((updates: Record<string, string | null>) => {
+    setParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      for (const [k, v] of Object.entries(updates)) {
+        if (v === null || v === "") sp.delete(k);
+        else sp.set(k, v);
+      }
+      return sp;
+    }, { replace: true });
+  }, [setParams]);
+}
+
 /** A page-local URL parameter (tab, sort, selected skill ...). */
 export function useParam(key: string, fallback = ""): [string, (v: string | null) => void] {
   const [params, setParams] = useSearchParams();
