@@ -1,0 +1,15 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [
+      ".impeccable/mocks/**"
+    ],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "geist variable",
+        "createdAt": "2026-10-29T16:33:21.684Z"
+      }
+    ]
+  }
+}

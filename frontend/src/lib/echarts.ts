@@ -15,23 +15,21 @@ echarts.use([
 export { echarts };
 
 /**
- * One stained-glass hue per kind of thing, the same in every module:
- * posting attributes (role, seniority, employment) cobalt, skills turquoise,
- * places (country, market, work mode) emerald, pay ruby, data sources and
- * collections violet. Amber is NOT a data hue: it is reserved for selection,
- * focus and the lattice's light. Index into Tokens.series.
+ * Single-series data is the product blue, whatever it counts: one colour that
+ * means "data" keeps every chart quiet. Sources and collections are slate so
+ * provenance never reads as a finding. Teal and amber are NOT data hues: they
+ * mean "you have it" and "gap". Index into Tokens.series.
  */
-export const HUE = { posting: 0, skill: 2, source: 3, pay: 4, place: 5 } as const;
+export const HUE = { posting: 0, skill: 0, source: 5, pay: 0, place: 0 } as const;
 
-/** Categorical order for multi-series charts, amber excluded; validated for CVD
- * separation (adjacent pairs, and the first three all-pairs) in both themes. */
-export const categorical = (t: Tokens) => [0, 2, 4, 3, 5].map((i) => t.series[i]);
+/** Categorical order for multi-series charts: blue, rose, cyan, violet, ochre. */
+export const categorical = (t: Tokens) => [0, 1, 2, 3, 4].map((i) => t.series[i]);
 
 /** Chart colours come from the CSS tokens so light/dark are each selected, not flipped. */
 export interface Tokens {
   ink: string; ink2: string; ink3: string; line: string; lineStrong: string; panel: string; panel2: string;
   accent: string; accentInk: string; accentSoft: string; series: string[]; s1Soft: string; s3Soft: string; s4Soft: string;
-  place0: string; crit: string; warn: string; good: string; dark: boolean;
+  place0: string; crit: string; warn: string; good: string; goodFill: string; goodSoft: string; dark: boolean;
 }
 
 export function readTokens(): Tokens {
@@ -42,7 +40,7 @@ export function readTokens(): Tokens {
     panel: v("--panel"), panel2: v("--panel-2"), accent: v("--accent"), accentInk: v("--accent-ink"),
     accentSoft: v("--accent-soft"), series: ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"].map(v),
     s1Soft: v("--s1-soft"), s3Soft: v("--s3-soft"), s4Soft: v("--s4-soft"), place0: v("--place-0"), crit: v("--crit"),
-    warn: v("--warn"), good: v("--good"), dark: document.documentElement.dataset.theme === "dark",
+    warn: v("--warn"), good: v("--good"), goodFill: v("--good-fill"), goodSoft: v("--good-soft"), dark: document.documentElement.dataset.theme === "dark",
   };
 }
 
@@ -52,13 +50,13 @@ export function baseOption(t: Tokens) {
     animation: !matchMedia("(prefers-reduced-motion: reduce)").matches,
     animationDuration: 250,
     animationDurationUpdate: 250,
-    textStyle: { fontFamily: "Readex Pro Variable, Segoe UI, sans-serif", color: t.ink2, fontSize: 12 },
+    textStyle: { fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, sans-serif", color: t.ink2, fontSize: 12 },
     // the container carries a written label and every panel has a table view;
     // ECharts' generated description would replace that label with raw numbers
     aria: { enabled: false },
     tooltip: {
       backgroundColor: t.panel, borderColor: t.lineStrong, borderWidth: 1, padding: [8, 10],
-      textStyle: { color: t.ink, fontSize: 12 }, extraCssText: "box-shadow: var(--shadow); border-radius: 6px;",
+      textStyle: { color: t.ink, fontSize: 12 }, extraCssText: "box-shadow: var(--shadow); border-radius: 8px;",
       confine: true,
     },
   };
@@ -69,7 +67,7 @@ export function axisStyle(t: Tokens) {
     axisLine: { lineStyle: { color: t.lineStrong } },
     axisTick: { show: false },
     axisLabel: { color: t.ink3, fontSize: 11 },
-    splitLine: { lineStyle: { color: t.line, type: [3, 3] as number[] } },
+    splitLine: { lineStyle: { color: t.line } },
     nameTextStyle: { color: t.ink3, fontSize: 11 },
   };
 }

@@ -10,7 +10,8 @@ const rowHeight = 26;
 const WRITTEN = () => tr("Written in posting", "مذكورة في الإعلان");
 const ADDED = () => tr("Added by team", "أضافها الفريق");
 
-export interface BarDatum { label: string; value: number; share?: number | null; note?: string; muted?: boolean }
+/** `have` marks a bar the visitor already has (a skill in their profile): drawn teal. */
+export interface BarDatum { label: string; value: number; share?: number | null; note?: string; muted?: boolean; have?: boolean }
 
 /** Ranked horizontal bars, largest on top, value + share as direct labels. */
 export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color = 0, maxLabel = 26, by = "value" }: {
@@ -39,10 +40,10 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
           },
         },
         series: [{
-          type: "bar", barMaxWidth: 16, barCategoryGap: "38%",
-          data: rows.map((r) => ({ value: by === "share" ? r.share ?? 0 : r.value, itemStyle: { color: r.muted ? t.lineStrong : t.series[color] } })),
+          type: "bar", barMaxWidth: 14, barCategoryGap: "40%",
+          data: rows.map((r) => ({ value: by === "share" ? r.share ?? 0 : r.value, itemStyle: { color: r.have ? t.goodFill : r.muted ? t.lineStrong : t.series[color] } })),
           itemStyle: { borderRadius: [0, 4, 4, 0] },
-          emphasis: { focus: "self", itemStyle: { color: t.accent } },
+          emphasis: { focus: "self" },
           blur: { itemStyle: { opacity: 0.45 } },
           label: {
             show: true, position: "right", color: t.ink2, fontSize: 11,
@@ -57,13 +58,15 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
 }
 
 /** Skill demand split into written-in-posting (solid) and team-added (hatched). */
-export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }: {
+export function SkillBars({ rows, denominator, handle, onSelect, observedOnly, have }: {
   rows: SkillRow[]; denominator: number; handle?: Handle; onSelect?: (skill: string) => void; observedOnly: boolean;
+  /** Skills the visitor has are drawn teal. */
+  have?: (skill: string) => boolean;
 }) {
   const r = [...rows].reverse();
   return (
     <Chart label={tr(`Most requested skills, share of ${fmtInt(denominator)} postings with skills`, `المهارات الأكثر طلبًا، نسبةً إلى ${fmtInt(denominator)} إعلانًا فيها مهارات`)} handleRef={handle}
-      height={Math.max(140, r.length * rowHeight + 40)} deps={[rows, observedOnly]}
+      height={Math.max(140, r.length * rowHeight + 40)} deps={[rows, observedOnly, have]}
       onClick={onSelect ? (p) => onSelect(r[p.dataIndex].skill) : undefined}
       build={(t) => ({
         ...baseOption(t),
@@ -89,7 +92,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
             formatter: (p: { dataIndex: number }) => fmtPct(r[p.dataIndex].share) };
           const observed = {
             name: WRITTEN(), type: "bar", stack: "s", barMaxWidth: 16, barCategoryGap: "38%",
-            data: r.map((x) => x.observed / denominator), emphasis: { focus: "series" },
+            data: r.map((x) => ({ value: x.observed / denominator, itemStyle: have?.(x.skill) ? { color: t.goodFill } : undefined })), emphasis: { focus: "series" },
             itemStyle: { color: t.series[HUE.skill], borderRadius: observedOnly ? [0, 4, 4, 0] : 0 },
             label: observedOnly ? endLabel : undefined,
           };
@@ -97,7 +100,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
           return [observed, {
             name: ADDED(), type: "bar", stack: "s", barMaxWidth: 16,
             data: r.map((x) => x.added / denominator), emphasis: { focus: "series" },
-            itemStyle: { color: t.s3Soft, borderColor: t.series[HUE.skill], borderWidth: 1, borderRadius: [0, 4, 4, 0],
+            itemStyle: { color: t.s1Soft, borderColor: t.series[HUE.skill], borderWidth: 1, borderRadius: [0, 4, 4, 0],
               decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: t.series[HUE.skill] } },
             label: endLabel,
           }];
@@ -157,7 +160,7 @@ export function CohortMonths({ months, cohortLabel, handle, min = 30 }: {
                 tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { dataIndex: number }[]) =>
                   `<b>${fmtMonth(p.shown[ps[0].dataIndex].month)}</b><br/>${tr(`${fmtInt(p.shown[ps[0].dataIndex].n)} postings`, `${fmtInt(p.shown[ps[0].dataIndex].n)} إعلانًا`)}` },
                 series: [{ type: "bar", data: p.shown.map((m) => m.n), barMaxWidth: 22,
-                  itemStyle: { color: i === 0 ? t.series[HUE.source] : t.s4Soft, borderColor: t.series[HUE.source], borderWidth: i === 0 ? 0 : 1, borderRadius: [3, 3, 0, 0] } }],
+                  itemStyle: { color: i === 0 ? t.series[HUE.source] : t.panel2, borderColor: t.series[HUE.source], borderWidth: i === 0 ? 0 : 1, borderRadius: [3, 3, 0, 0] } }],
               })} />
           ) : <p className="py-6 text-sm text-ink-3">{tr(`No month reaches ${min} postings.`, `لا يبلغ أي شهر ${min} إعلانًا.`)}</p>}
           {p.hidden.length > 0 && (

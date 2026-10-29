@@ -8,6 +8,7 @@ import { Loading } from "./components/ui";
 import { useLang } from "./lib/i18n";
 import "./styles.css";
 
+const Home = lazy(() => import("./pages/Home"));
 const Overview = lazy(() => import("./pages/Overview"));
 const Explorer = lazy(() => import("./pages/Explorer"));
 const Skills = lazy(() => import("./pages/Skills"));
@@ -25,10 +26,13 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
 
 // ECharts caches text widths; measuring with the fallback font clips axis labels
-// once Readex Pro arrives. Load the face first (never wait more than 1.5 s).
-// The Arabic and Latin faces are separate files (unicode-range), so both are loaded.
+// once the faces arrive. Load them first (never wait more than 1.5 s): Geist for
+// Latin, Readex Pro for Arabic (the stack falls through to it per glyph).
 const fontReady = Promise.race([
-  Promise.all(["400 12px", "500 12px"].flatMap((w) => ["Aa", "عر"].map((s) => document.fonts?.load(`${w} "Readex Pro Variable"`, s)))),
+  Promise.all(["400 12px", "500 12px"].flatMap((w) => [
+    document.fonts?.load(`${w} "Geist Variable"`, "Aa"),
+    document.fonts?.load(`${w} "Readex Pro Variable"`, "عر"),
+  ])),
   new Promise((r) => setTimeout(r, 1500)),
 ]).catch(() => undefined);
 
@@ -48,7 +52,8 @@ createRoot(document.getElementById("root")!).render(
           <RouteErrorBoundary>
           <Suspense fallback={<Loading h={420} />}>
             <Routes>
-              <Route path="/" element={<Overview />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/market" element={<Overview />} />
               <Route path="/explorer" element={<Explorer />} />
               <Route path="/skills" element={<Skills />} />
               <Route path="/salary" element={<Salary />} />

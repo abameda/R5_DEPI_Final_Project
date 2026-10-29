@@ -1,18 +1,17 @@
 import clsx from "clsx";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Chart } from "../components/Chart";
 import { HBar } from "../components/charts";
-import { Kpi, KpiStrip } from "../components/Kpi";
-import { Callout, ChartPanel, Guard, Loading, PageHeader, Panel, Pill, Segmented, TextLink } from "../components/ui";
+import { Callout, ChartPanel, ErrorState, Guard, InfoTip, Loading, PageHeader, Panel, Pill, Segmented, Skeleton, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
 import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
-import { fmtInt, fmtPct, fmtUsd, fmtUsdFull } from "../lib/format";
+import { fmtCompact, fmtInt, fmtPct, fmtUsd, fmtUsdFull } from "../lib/format";
 import { useFilters, useParam } from "../lib/hooks";
-import { t, tv } from "../lib/i18n";
-import type { CountryRow, Geo } from "../lib/types";
+import { getLang, t, tv } from "../lib/i18n";
+import type { CountryRow, Geo, Overview } from "../lib/types";
 import { loadWorld, mapName } from "../lib/world";
 
 type Metric = "n" | "remote" | "salary";
@@ -21,6 +20,8 @@ export default function Geography() {
   const { filters } = useFilters();
   const nav = useNavigate();
   const q = useApi<Geo>("/geo/countries", filters);
+  // market type (Arab / International / Remote) comes from the overview aggregate
+  const ov = useApi<Overview>("/overview", filters);
   const [metric, setMetric] = useParam("metric", "n") as [Metric, (v: string | null) => void];
   const [names, setNames] = useState<Set<string> | null>(null);
   useEffect(() => { loadWorld().then(setNames); }, []);
@@ -30,67 +31,68 @@ export default function Geography() {
 
   return (
     <>
-      <PageHeader title={t("Geography", "الجغرافيا")}
-        description={t("Where the postings are, how remote-friendly each market is and what it advertises. Countries come from each posting's own location; nothing is geocoded beyond that.",
-          "أين تقع الإعلانات، ومدى انفتاح كل سوق على العمل عن بُعد، وما الذي يعلنه. تُؤخذ الدولة من موقع الإعلان نفسه، دون أي تحديد جغرافي إضافي.")} >
-        <Segmented label={t("Map metric", "مقياس الخريطة")} value={metric} onChange={setMetric}
+      <PageHeader title={t("Locations", "المواقع")}
+        description={t("Where the postings are, how many are in the Arab world, abroad or remote, and what each country advertises. Each posting's country comes from its own location text; nothing is geocoded beyond that.",
+          "أين تقع الإعلانات، وكم منها في العالم العربي أو في الخارج أو عن بُعد، وما تعلنه كل دولة. تُؤخذ دولة كل إعلان من نص موقعه نفسه، دون أي تحديد جغرافي إضافي.")}>
+        <Segmented label={t("Map shows", "تعرض الخريطة")} value={metric} onChange={setMetric}
           options={[{ value: "n", label: t("Postings", "الإعلانات") }, { value: "remote", label: t("Remote share", "نسبة العمل عن بُعد") },
             { value: "salary", label: t("Median advertised pay", "وسيط الأجر المعلن") }]} />
       </PageHeader>
-      <Guard q={q} h={88} empty={(g) => !g.countries.length}>
-        {(g) => {
-          const small = fmtInt(g.countries.filter((c) => c.small_sample).length);
-          const arab = g.countries.filter((c) => c.region === "Arab");
-          const arabN = fmtInt(arab.reduce((a, c) => a + c.n, 0));
-          return (
-            <KpiStrip>
-              <Kpi label={t("Countries", "الدول")} value={fmtInt(g.countries.length)} sub={t(`${small} with fewer than 30 postings`, `${small} منها بأقل من 30 إعلانًا`)} />
-              <Kpi label={t("With a country", "بدولة محددة")} value={fmtInt(g.located)} sub={t(`${fmtInt(g.no_country)} remote / unknown`, `${fmtInt(g.no_country)} عن بُعد / غير معروفة`)} />
-              <Kpi label={t("Top 3 countries", "أكبر 3 دول")} value={fmtPct(g.concentration.top3_share)} sub={g.countries.slice(0, 3).map((c) => tv(c.country)).join(t(", ", "، "))} />
-              <Kpi label={t("Concentration (HHI)", "التركّز (HHI)")} value={g.concentration.hhi?.toFixed(3) ?? "—"} sub={t("1 = all in one country", "1 = الكل في دولة واحدة")}
-                title={t("Herfindahl–Hirschman index of country shares: sum of squared shares.", "مؤشر هيرفندال–هيرشمان لحصص الدول: مجموع مربعات الحصص.")} />
-              <Kpi label={t("Arab League countries", "دول الجامعة العربية")} value={fmtInt(arab.length)} sub={t(`${arabN} postings`, `${arabN} إعلان`)} />
-              <Kpi label={t("Pay reported for", "الأجر متاح لـ")} value={fmtInt(g.countries.filter((c) => c.salary_median != null).length)}
-                sub={t("countries with ≥ 10 advertised salaries", "دول بها 10 رواتب معلنة أو أكثر")} />
-            </KpiStrip>
-          );
-        }}
+
+      <Guard q={q} h={180} empty={(g) => !g.countries.length}>
+        {(g) => <WhereSummary g={g} markets={ov.data?.markets} />}
       </Guard>
 
       <ChartPanel className="mt-4"
         title={metric === "n" ? t("Postings by country", "الإعلانات حسب الدولة") : metric === "remote" ? t("Share of postings that are remote", "نسبة الإعلانات عن بُعد") : t("Median advertised salary (USD/yr, approx.)", "وسيط الراتب المعلن (دولار/سنة، تقريبًا)")}
-        meta={metric === "salary" ? t("Countries with fewer than 10 advertised salaries are left blank", "الدول التي بها أقل من 10 رواتب معلنة تُترك فارغة")
-          : t("Countries with fewer than 30 postings are drawn with a hatched fill", "الدول التي بها أقل من 30 إعلانًا مرسومة بتظليل مخطط")}
+        meta={metric === "salary" ? t("Countries with fewer than 10 advertised salaries are left blank. Select a country to see its postings.", "الدول التي بها أقل من 10 رواتب معلنة تُترك فارغة. اختر دولة لعرض إعلاناتها.")
+          : t("Countries with fewer than 30 postings are drawn with a hatched fill. Select a country to see its postings.", "الدول التي بها أقل من 30 إعلانًا مرسومة بتظليل مخطط. اختر دولة لعرض إعلاناتها.")}
         info={t("Country names are matched to Natural Earth boundaries (public domain). Very small territories may not be drawn on the map; the table below lists every country.",
           "تُطابَق أسماء الدول مع حدود Natural Earth (ملكية عامة). قد لا تظهر الأقاليم الصغيرة جدًا على الخريطة؛ الجدول أدناه يضم كل الدول.")}
         table={q.data ? { columns: [t("Country", "الدولة"), t("Postings", "الإعلانات"), t("Remote share", "نسبة العمل عن بُعد"), t("Median advertised salary", "وسيط الراتب المعلن"), t("Salary n", "عدد الرواتب")], filename: "countries",
           rows: q.data.countries.map((c) => [c.country, c.n, fmtPct(c.remote / c.n), c.salary_median, c.salary_n]) } : undefined}>
-        {(h) => !names || !q.data ? <Loading h={440} /> : (
+        {(h) => q.error && !q.data ? <ErrorState error={q.error} retry={() => q.refetch()} /> : !names || !q.data ? <Loading h={440} /> : (
           <WorldMap rows={q.data.countries} metric={metric} handle={h} onPick={toExplorer} />
         )}
       </ChartPanel>
 
-      <Callout tone="info" title={t("Location corrections", "تصحيحات الموقع")}>
-        {t("About 21,000 rows of the team's merged file listed “Sudan” as their country. That field was the Kaggle search location, not the job's location; the pipeline rebuilds the country from each posting's own location text (most are in the United States, the rest are “Anywhere”). No posting in this dashboard is attributed to Sudan for that reason. Evidence is on the ",
-          "نحو 21,000 صف في ملف الفريق المدمج كانت دولتها «السودان». كان ذلك الحقل موقع البحث في Kaggle وليس موقع الوظيفة؛ لذا يعيد خط المعالجة بناء الدولة من نص موقع كل إعلان (معظمها في الولايات المتحدة، والباقي «Anywhere»). لهذا السبب لا يُنسب أي إعلان في هذه اللوحة إلى السودان. الأدلة في ")}
-        <TextLink to="/quality">{t("methodology page", "صفحة المنهجية")}</TextLink>.
-      </Callout>
+      <div className="mt-4">
+        <Callout tone="info" title={t("Location corrections", "تصحيحات الموقع")}>
+          {t("About 21,000 rows of the team's merged file listed “Sudan” as their country. That field was the Kaggle search location, not the job's location; the pipeline rebuilds the country from each posting's own location text (most are in the United States, the rest are “Anywhere”). No posting in this dashboard is attributed to Sudan for that reason. Evidence is on the ",
+            "نحو 21,000 صف في ملف الفريق المدمج كانت دولتها «السودان». كان ذلك الحقل موقع البحث في Kaggle وليس موقع الوظيفة؛ لذا يعيد خط المعالجة بناء الدولة من نص موقع كل إعلان (معظمها في الولايات المتحدة، والباقي «Anywhere»). لهذا السبب لا يُنسب أي إعلان في هذه اللوحة إلى السودان. الأدلة في ")}
+          <TextLink to="/quality">{t("methodology page", "صفحة المنهجية")}</TextLink>.
+        </Callout>
+      </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <Panel title={t("Country table", "جدول الدول")} meta={t("Select a header to sort · select a country to open its postings", "اختر عنوان عمود للترتيب · اختر دولة لفتح إعلاناتها")}>
+      <div className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Panel title={t("Every country", "كل الدول")} meta={t("Select a header to sort · select a country to open its postings", "اختر عنوان عمود للترتيب · اختر دولة لفتح إعلاناتها")}>
           <Guard q={q} h={400}>{(g) => <CountryTable rows={g.countries} onPick={toExplorer} />}</Guard>
         </Panel>
         <ChartPanel title={t("Arab League countries", "دول الجامعة العربية")} meta={t("Share of the Arab-region postings located in each member state", "نسبة إعلانات المنطقة العربية في كل دولة عضو")}
           table={q.data ? { columns: [t("Country", "الدولة"), t("Postings", "الإعلانات"), t("Remote", "عن بُعد"), t("Median salary", "وسيط الراتب")], filename: "arab-countries",
             rows: q.data.countries.filter((c) => c.region === "Arab").map((c) => [c.country, c.n, c.remote, c.salary_median]) } : undefined}>
-          {(h) => <Guard q={q} h={360}>{(g) => { const arab = g.countries.filter((c) => c.region === "Arab"); const tot = arab.reduce((a, c) => a + c.n, 0); return <HBar handle={h} label={t("Postings in Arab League countries", "الإعلانات في دول الجامعة العربية")} color={HUE.place}
-            data={arab.map((c) => ({ label: c.country, value: c.n, share: tot ? c.n / tot : null, note: c.small_sample ? t("Small sample", "عينة صغيرة") : undefined }))}
-            onSelect={toExplorer} />; }}</Guard>}
+          {(h) => <Guard q={q} h={360}>{(g) => {
+            const arab = g.countries.filter((c) => c.region === "Arab");
+            const tot = arab.reduce((a, c) => a + c.n, 0);
+            const small = arab.filter((c) => c.small_sample);
+            if (!arab.length) return <p className="py-6 text-sm text-ink-3">{t("No postings in Arab League countries match this selection.", "لا توجد إعلانات في دول الجامعة العربية تطابق هذا الاختيار.")}</p>;
+            return (<>
+              <HBar handle={h} label={t("Postings in Arab League countries", "الإعلانات في دول الجامعة العربية")} color={HUE.place}
+                data={arab.map((c) => ({ label: c.country, value: c.n, share: tot ? c.n / tot : null, muted: c.small_sample, note: c.small_sample ? t("Small sample: fewer than 30 postings", "عينة صغيرة: أقل من 30 إعلانًا") : undefined }))}
+                onSelect={toExplorer} />
+              {small.length > 0 && (
+                <p className="mt-2 text-xs leading-5 text-warn">
+                  {t(`Grey bars, small samples (fewer than 30 postings each): ${small.map((c) => tv(c.country)).join(", ")}. Read their shares as indicative only.`,
+                    `الأشرطة الرمادية عينات صغيرة (أقل من 30 إعلانًا لكل منها): ${small.map((c) => tv(c.country)).join("، ")}. تعامل مع نسبها كمؤشر فقط.`)}
+                </p>
+              )}
+            </>);
+          }}</Guard>}
         </ChartPanel>
       </div>
 
-      <ChartPanel className="mt-4" title={t("Role mix in the 15 largest countries", "توزيع الأدوار في أكبر 15 دولة")}
-        meta={t("Share of each country's postings in each role (rows sum to the roles shown, which cover most postings)", "نسبة إعلانات كل دولة في كل دور (تجمع الصفوف الأدوار المعروضة، وهي تغطي معظم الإعلانات)")}
+      <ChartPanel className="mt-4" title={t("Which roles each country hires for", "الأدوار التي توظّف لها كل دولة")}
+        meta={t("The 15 largest countries · share of each country's postings in each role (the roles shown cover most postings). Select a cell to see those postings.", "أكبر 15 دولة · نسبة إعلانات كل دولة في كل دور (تغطي الأدوار المعروضة معظم الإعلانات). اختر خلية لعرض تلك الإعلانات.")}
         table={cross.data ? { columns: [t("Country", "الدولة"), t("Role", "الدور"), t("Postings", "الإعلانات"), t("Share of country", "النسبة من الدولة")], filename: "country-role",
           rows: cross.data.cells.map((c) => [c.row, c.col, c.n, fmtPct(c.share)]) } : undefined}>
         {(h) => <Guard q={cross} h={420} empty={(d) => !d.rows.length}>{(d) => {
@@ -121,6 +123,78 @@ export default function Geography() {
   );
 }
 
+const MARKET_ORDER = ["Arab", "International", "Remote"];
+// same hue per market as the home page, so the split reads the same everywhere
+const MARKET_TONE: Record<string, string> = { International: "bg-accent", Remote: "bg-s4", Arab: "bg-s6" };
+
+/** Where the postings are, in one panel: the located population, its concentration, and the Arab / international / remote split. */
+function WhereSummary({ g, markets }: { g: Geo; markets?: Overview["markets"] }) {
+  const { filters } = useFilters();
+  const B = ({ children }: { children: ReactNode }) => <b className="tnum font-semibold text-ink">{children}</b>;
+  const total = g.located + g.no_country;
+  const top3 = g.countries.slice(0, 3).map((c) => tv(c.country));
+  const arab = g.countries.filter((c) => c.region === "Arab");
+  const arabN = arab.reduce((a, c) => a + c.n, 0);
+  const small = g.countries.filter((c) => c.small_sample).length;
+  const withPay = g.countries.filter((c) => c.salary_median != null).length;
+  const rows = markets
+    ? [...markets].filter((m) => m.n > 0).sort((a, b) => {
+      const ia = MARKET_ORDER.indexOf(a.key);
+      const ib = MARKET_ORDER.indexOf(b.key);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    })
+    : null;
+  const mTotal = rows?.reduce((a, r) => a + r.n, 0) || 1;
+  const list = (xs: string[]) => (getLang() === "ar" ? xs.join("، ") : xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}` : xs.join(""));
+  const hhi = (
+    <span className="inline-flex align-middle"><InfoTip>
+      {t(`Concentration index (Herfindahl–Hirschman, sum of squared country shares): ${g.concentration.hhi?.toFixed(3) ?? "—"}. 1 would mean every posting is in one country.`,
+        `مؤشر التركّز (هيرفندال–هيرشمان، مجموع مربعات حصص الدول): ${g.concentration.hhi?.toFixed(3) ?? "—"}. القيمة 1 تعني أن كل الإعلانات في دولة واحدة.`)}
+    </InfoTip></span>
+  );
+  return (
+    <section aria-labelledby="where-h" className="rounded-xl border border-line bg-panel px-5 py-5 sm:px-6">
+      <h2 id="where-h" className="text-[0.9375rem] font-semibold text-ink">{t("Where the postings are", "أين الإعلانات")}</h2>
+      <p className="mt-2 max-w-4xl text-lg leading-7 text-ink-2">
+        {getLang() === "ar" ? (<>
+          <B>{fmtInt(g.located)}</B> من أصل <B>{fmtInt(total)}</B> إعلان تذكر دولة، موزعة على <B>{fmtInt(g.countries.length)}</B> دولة.
+          {top3.length > 0 && <> تضم أكبر الدول — {list(top3)} — <B>{fmtPct(g.concentration.top3_share)}</B> منها{hhi}.</>}
+        </>) : (<>
+          <B>{fmtInt(g.located)}</B> of <B>{fmtInt(total)}</B> postings name a country, spread over <B>{fmtInt(g.countries.length)}</B> countries.
+          {top3.length > 0 && <> The largest — {list(top3)} — hold <B>{fmtPct(g.concentration.top3_share)}</B> of them{hhi}.</>}
+        </>)}
+      </p>
+
+      <div className="mt-5">
+        <h3 className="text-sm font-medium text-ink">{t("Arab world, international or remote", "العالم العربي أم الخارج أم عن بُعد")}</h3>
+        {!rows ? <div className="mt-2"><Skeleton h={56} /></div> : (<>
+          <div className="mt-2 flex h-3 gap-[3px] overflow-hidden rounded-full" role="img"
+            aria-label={rows.map((r) => `${tv(r.key)} ${fmtPct(r.n / mTotal, 0)}`).join(t(", ", "، "))}>
+            {rows.map((r) => <span key={r.key} className={MARKET_TONE[r.key] ?? "bg-s6"} style={{ flexGrow: r.n / mTotal, flexBasis: 0, minWidth: 4 }} />)}
+          </div>
+          <ul className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+            {rows.map((r) => (
+              <li key={r.key}>
+                <Link to={drillHref("/explorer", filters, { market: r.key })} className="block rounded-lg text-ink no-underline hover:underline">
+                  <span className="flex items-center gap-1.5 text-ink-2"><span className={clsx("size-2 rounded-full", MARKET_TONE[r.key] ?? "bg-s6")} aria-hidden />{tv(r.key)}</span>
+                  <span className="mt-0.5 block"><span className="tnum font-semibold">{fmtCompact(r.n)}</span> <span className="tnum text-ink-3">{fmtPct(r.n / mTotal, 0)}</span></span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>)}
+      </div>
+
+      <div className="mt-4 space-y-1 border-t border-line pt-3 text-sm leading-6 text-ink-3">
+        <p>{t(`Arab = located in an Arab League country (${fmtInt(arab.length)} countries here, ${fmtInt(arabN)} postings). Remote = marked remote or from a remote-jobs board. International = any other country. Advertised pay is reported for ${fmtInt(withPay)} countries with at least 10 salaries.`,
+          `عربي = في دولة من الجامعة العربية (${fmtInt(arab.length)} دولة هنا، ${fmtInt(arabN)} إعلان). عن بُعد = موسوم بذلك أو من موقع وظائف عن بُعد. دولي = أي دولة أخرى. الأجر المعلن متاح لـ${fmtInt(withPay)} دولة بها 10 رواتب على الأقل.`)}</p>
+        {small > 0 && <p className="text-warn">{t(`${fmtInt(small)} countries have fewer than 30 postings: they are hatched on the map and marked “Under 30” in the table. Treat their figures as indicative only.`,
+          `${fmtInt(small)} دولة بها أقل من 30 إعلانًا: مرسومة بتظليل مخطط على الخريطة ومعلَّمة «أقل من 30» في الجدول. تعامل مع أرقامها كمؤشر فقط.`)}</p>}
+      </div>
+    </section>
+  );
+}
+
 function WorldMap({ rows, metric, handle, onPick }: { rows: CountryRow[]; metric: Metric; handle: React.MutableRefObject<import("../components/Chart").ChartHandle | null>; onPick: (c: string) => void }) {
   const byMap = useMemo(() => new Map(rows.map((r) => [mapName(r.country), r])), [rows]);
   const val = (r: CountryRow) => (metric === "n" ? r.n : metric === "remote" ? r.remote / r.n : r.salary_median);
@@ -133,9 +207,9 @@ function WorldMap({ rows, metric, handle, onPick }: { rows: CountryRow[]; metric
         tooltip: { ...baseOption(tk).tooltip, trigger: "item", formatter: (p: { name: string }) => {
           const r = byMap.get(p.name);
           if (!r) return `${esc(tv(p.name))}<br/><span style="color:${tk.ink3}">${t("No postings in this selection", "لا إعلانات في هذا الاختيار")}</span>`;
-          return `<b>${esc(tv(r.country))}</b>${r.small_sample ? ` <i>${t("(small sample)", "(عينة صغيرة)")}</i>` : ""}<br/>`
+          return `<b>${esc(tv(r.country))}</b>${r.small_sample ? ` <i style="color:${tk.warn}">${t("(small sample: under 30 postings)", "(عينة صغيرة: أقل من 30 إعلانًا)")}</i>` : ""}<br/>`
             + `${t(`${fmtInt(r.n)} postings · ${fmtPct(r.remote / r.n)} remote`, `${fmtInt(r.n)} إعلان · ${fmtPct(r.remote / r.n)} عن بُعد`)}<br/>`
-            + `${t("Median advertised pay", "وسيط الأجر المعلن")}: ${r.salary_median != null ? `${fmtUsdFull(r.salary_median)} (n=${fmtInt(r.salary_n)})` : t("too few salaries", "رواتب قليلة جدًا")}<br/>`
+            + `${t("Median advertised pay", "وسيط الأجر المعلن")}: ${r.salary_median != null ? `${fmtUsdFull(r.salary_median)} ${t("per year", "سنويًا")} (n=${fmtInt(r.salary_n)})` : t("too few salaries", "رواتب قليلة جدًا")}<br/>`
             + `${t("Top role", "الدور الأبرز")}: ${esc(r.top_role ? tv(r.top_role) : r.top_role)}<br/>${t("Top skill", "المهارة الأبرز")}: ${esc(r.top_skill)} (${fmtPct(r.top_skill_share)})`;
         } },
         visualMap: {
@@ -183,14 +257,18 @@ function CountryTable({ rows, onPick }: { rows: CountryRow[]; onPick: (c: string
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-panel text-start text-xs text-ink-3">
           <tr><H k="country">{t("Country", "الدولة")}</H><H k="n" right>{t("Postings", "الإعلانات")}</H><H k="remote" right>{t("Remote", "عن بُعد")}</H>
-            <H k="employers" right>{t("Employers", "جهات التوظيف")}</H><H k="salary_median" right>{t("Median pay", "وسيط الأجر")}</H>
+            <H k="employers" right>{t("Employers", "جهات التوظيف")}</H><H k="salary_median" right>{t("Median pay (USD/yr)", "وسيط الأجر (دولار/سنة)")}</H>
             <th scope="col" className="px-2 py-2 text-start font-medium">{t("Top skill", "المهارة الأبرز")}</th></tr>
         </thead>
         <tbody>
           {sorted.map((r) => (
             <tr key={r.country} className="border-t border-line hover:bg-panel-2">
-              <td className="px-2 py-1.5"><button type="button" onClick={() => onPick(r.country)} className="text-start font-medium text-ink hover:underline">{tv(r.country)}</button>
-                {r.small_sample && <Pill tone="warn" title={t("Fewer than 30 postings", "أقل من 30 إعلانًا")}>{t("small", "صغيرة")}</Pill>}</td>
+              <td className="px-2 py-1.5">
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <button type="button" onClick={() => onPick(r.country)} className="text-start font-medium text-ink hover:underline">{tv(r.country)}</button>
+                  {r.small_sample && <Pill tone="warn" title={t("Small sample: fewer than 30 postings", "عينة صغيرة: أقل من 30 إعلانًا")}>{t("Under 30", "أقل من 30")}</Pill>}
+                </span>
+              </td>
               <td className="tnum px-2 py-1.5 text-end">{fmtInt(r.n)}</td>
               <td className="tnum px-2 py-1.5 text-end text-ink-2">{fmtPct(r.remote / r.n, 0)}</td>
               <td className="tnum px-2 py-1.5 text-end text-ink-2">{fmtInt(r.employers)}</td>

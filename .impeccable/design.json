@@ -1,679 +1,731 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T15:07:39+00:00",
-  "title": "Design System: Job Market Intelligence",
+  "generatedAt": "2026-10-29T17:29:09.060Z",
+  "title": "Design System: Bosla",
   "extensions": {
     "colorMeta": {
-      "plaster-ground": {
+      "bg": {
         "role": "neutral",
-        "displayName": "Shaded Plaster",
-        "canonical": "#eceeed",
-        "dark": "#130e0a",
+        "displayName": "Stone Ground",
+        "canonical": "#f6f6f3",
         "cssVar": "--bg",
-        "purpose": "Page ground; cool, never cream.",
+        "dark": "#0b0f17",
         "tonalRamp": [
-          "#0a0b0b",
-          "#242525",
-          "#414242",
-          "#606261",
-          "#818382",
-          "#a4a5a4",
-          "#c8cac9",
-          "#edefee"
+          "#2c2c21",
+          "#4c4c39",
+          "#6c6c51",
+          "#8c8c69",
+          "#a8a88a",
+          "#c2c2ad",
+          "#dcdcd0",
+          "#f4f4f0"
         ]
       },
       "panel": {
         "role": "neutral",
         "displayName": "Panel White",
         "canonical": "#ffffff",
-        "dark": "#1d1712",
         "cssVar": "--panel",
-        "purpose": "Work panels, popovers, tooltips.",
+        "dark": "#121826",
         "tonalRamp": [
-          "#0b0b0b",
-          "#252525",
+          "#262626",
           "#424242",
-          "#616161",
-          "#828282",
-          "#a5a5a5",
-          "#c9c9c9",
-          "#eeeeee"
+          "#5e5e5e",
+          "#7a7a7a",
+          "#999999",
+          "#b8b8b8",
+          "#d6d6d6",
+          "#f2f2f2"
         ]
       },
-      "panel-recess": {
+      "panel-2": {
         "role": "neutral",
-        "displayName": "Panel Recess",
-        "canonical": "#f5f6f5",
-        "dark": "#241d17",
+        "displayName": "Recess",
+        "canonical": "#f1f1ed",
         "cssVar": "--panel-2",
-        "purpose": "Table heads, chips, hovers, neutral pills.",
+        "dark": "#182031",
         "tonalRamp": [
-          "#0b0b0b",
-          "#242524",
-          "#414241",
-          "#616161",
-          "#828282",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#eeefee"
+          "#2b2b21",
+          "#4b4b3a",
+          "#6a6a53",
+          "#8a8a6b",
+          "#a6a68c",
+          "#c1c1af",
+          "#dbdbd1",
+          "#f4f4f1"
         ]
       },
-      "plaster-hairline": {
+      "line": {
         "role": "neutral",
-        "displayName": "Plaster Hairline",
-        "canonical": "#dcdfdd",
-        "dark": "#352b23",
+        "displayName": "Hairline",
+        "canonical": "#e4e4de",
         "cssVar": "--line",
-        "purpose": "Panel borders, row rules, chart grid.",
+        "dark": "#222b3d",
         "tonalRamp": [
-          "#0a0c0a",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808381",
-          "#a3a6a4",
-          "#c7cac8",
-          "#ecefed"
+          "#2a2a22",
+          "#49493c",
+          "#686855",
+          "#87876e",
+          "#a3a38f",
+          "#bfbfb0",
+          "#dadad2",
+          "#f4f4f1"
         ]
       },
-      "plaster-hairline-strong": {
+      "line-strong": {
         "role": "neutral",
         "displayName": "Strong Hairline",
-        "canonical": "#c4c9c6",
-        "dark": "#4a3d33",
+        "canonical": "#cfcfc6",
         "cssVar": "--line-strong",
-        "purpose": "Control borders, axis lines, popover borders, muted bars.",
+        "dark": "#34405a",
         "tonalRamp": [
-          "#090c0a",
-          "#222624",
-          "#3f4341",
-          "#5e6260",
-          "#7f8481",
-          "#a1a6a3",
-          "#c5cac7",
-          "#ebf0ed"
+          "#2a2a23",
+          "#48483d",
+          "#666656",
+          "#858570",
+          "#a2a290",
+          "#bebeb1",
+          "#dadad3",
+          "#f3f3f1"
         ]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Ink",
-        "canonical": "#1c1712",
-        "dark": "#f2eae0",
+        "displayName": "Navy-Charcoal Ink",
+        "canonical": "#0e1525",
         "cssVar": "--ink",
-        "purpose": "Headings, figures, primary text.",
+        "dark": "#eaeef6",
         "tonalRamp": [
-          "#0f0a06",
-          "#29241f",
-          "#47413b",
-          "#66605a",
-          "#88817b",
-          "#aba49d",
-          "#cfc8c1",
-          "#f4ede6"
+          "#151f38",
+          "#243760",
+          "#344e89",
+          "#4365b2",
+          "#6b87c7",
+          "#97abd8",
+          "#c4cfe9",
+          "#edf0f8"
         ]
       },
       "ink-2": {
         "role": "neutral",
-        "displayName": "Ink 2",
-        "canonical": "#4c453e",
-        "dark": "#cdbfb0",
+        "displayName": "Secondary Ink",
+        "canonical": "#434b5d",
         "cssVar": "--ink-2",
-        "purpose": "Body, descriptions, chart category labels.",
+        "dark": "#b6bdcd",
         "tonalRamp": [
-          "#0f0a05",
-          "#2a241d",
-          "#48413a",
-          "#676058",
-          "#898179",
-          "#aca39b",
-          "#d0c7bf",
-          "#f6ede4"
+          "#20242c",
+          "#383e4d",
+          "#4f586e",
+          "#67738e",
+          "#8893aa",
+          "#acb3c3",
+          "#d0d4dd",
+          "#f0f1f4"
         ]
       },
       "ink-3": {
         "role": "neutral",
-        "displayName": "Ink 3",
-        "canonical": "#6b635b",
-        "dark": "#a59686",
+        "displayName": "Meta Ink",
+        "canonical": "#5f6678",
         "cssVar": "--ink-3",
-        "purpose": "Meta lines, axes, captions.",
+        "dark": "#8e97ab",
         "tonalRamp": [
-          "#100a05",
-          "#2a241d",
-          "#484139",
-          "#686058",
-          "#898178",
-          "#aca39b",
-          "#d0c7be",
-          "#f6ede3"
+          "#22242b",
+          "#3b3f4a",
+          "#535a69",
+          "#6c7489",
+          "#8d94a5",
+          "#afb4c0",
+          "#d1d4db",
+          "#f1f2f4"
         ]
       },
-      "teak-rail": {
+      "rail": {
         "role": "neutral",
-        "displayName": "Teak Rail",
-        "canonical": "#24180f",
-        "dark": "#0d0906",
+        "displayName": "Navy Answer",
+        "canonical": "#0f1b33",
         "cssVar": "--rail",
-        "purpose": "Sidebar, mobile bar, primary button, lattice frame.",
+        "dark": "#16244a",
         "tonalRamp": [
-          "#130803",
-          "#2f2219",
-          "#4d3f35",
-          "#6d5e53",
-          "#8f7f74",
-          "#b2a296",
-          "#d6c6b9",
-          "#fcebde"
+          "#111f3b",
+          "#1e3666",
+          "#2b4d92",
+          "#3864bd",
+          "#6186d1",
+          "#91abdf",
+          "#c0cfec",
+          "#ebf0f9"
         ]
       },
-      "teak-rail-raised": {
+      "rail-2": {
         "role": "neutral",
-        "displayName": "Raised Teak",
-        "canonical": "#33241a",
-        "dark": "#1b130d",
+        "displayName": "Navy Raised",
+        "canonical": "#1a2a4d",
         "cssVar": "--rail-2",
-        "purpose": "Active nav item, rail hover, lattice well.",
+        "dark": "#1f3263",
         "tonalRamp": [
-          "#140802",
-          "#302117",
-          "#4e3e33",
-          "#6f5d52",
-          "#917e72",
-          "#b4a194",
-          "#d9c5b8",
-          "#ffeadd"
+          "#131f39",
+          "#213663",
+          "#304d8d",
+          "#3e64b7",
+          "#6686cc",
+          "#94aadb",
+          "#c2cfea",
+          "#ecf0f9"
         ]
       },
-      "teak-rail-line": {
+      "rail-line": {
         "role": "neutral",
-        "displayName": "Rail Line",
-        "canonical": "#46342a",
-        "dark": "#2c2119",
+        "displayName": "Navy Line",
+        "canonical": "#2b3d66",
         "cssVar": "--rail-line",
-        "purpose": "Rules and rings inside the rail.",
+        "dark": "#2f4580",
         "tonalRamp": [
-          "#150702",
-          "#312117",
-          "#503d33",
-          "#705c52",
-          "#927d72",
-          "#b6a094",
-          "#dbc4b7",
-          "#ffeade"
+          "#172036",
+          "#27385d",
+          "#384f85",
+          "#4967ac",
+          "#6f89c3",
+          "#9bacd5",
+          "#c6d0e7",
+          "#edf0f7"
         ]
       },
       "rail-ink": {
         "role": "neutral",
-        "displayName": "Rail Ink",
-        "canonical": "#f3eadf",
-        "dark": "#f3eadf",
+        "displayName": "Navy Ink",
+        "canonical": "#f3f5fa",
         "cssVar": "--rail-ink",
-        "purpose": "Text on teak.",
+        "dark": "#f3f5fa",
         "tonalRamp": [
-          "#100a04",
-          "#2a241c",
-          "#484138",
-          "#686056",
-          "#898177",
-          "#aca499",
-          "#d0c8bd",
-          "#f6ede2"
+          "#162036",
+          "#27375e",
+          "#374e85",
+          "#4865ad",
+          "#6f87c3",
+          "#9aabd5",
+          "#c5cfe7",
+          "#edf0f8"
         ]
       },
       "rail-ink-2": {
         "role": "neutral",
-        "displayName": "Rail Ink 2",
-        "canonical": "#c4b3a0",
-        "dark": "#b4a290",
+        "displayName": "Navy Secondary Ink",
+        "canonical": "#aeb8d0",
         "cssVar": "--rail-ink-2",
-        "purpose": "Secondary text on teak, nav group names.",
+        "dark": "#b3bfdc",
         "tonalRamp": [
-          "#140800",
-          "#2f2213",
-          "#4d3f2f",
-          "#6d5e4d",
-          "#8f7f6d",
-          "#b3a28f",
-          "#d7c6b3",
-          "#fdebd7"
+          "#1c2230",
+          "#313b54",
+          "#455477",
+          "#5a6d9b",
+          "#7e8eb4",
+          "#a5b0cb",
+          "#cbd2e1",
+          "#eff1f6"
         ]
       },
-      "sunlit-amber": {
+      "accent": {
         "role": "primary",
-        "displayName": "Sunlit Amber",
-        "canonical": "#e2a13a",
-        "dark": "#e8ae4e",
+        "displayName": "Deep Action Blue",
+        "canonical": "#1e45c8",
         "cssVar": "--accent",
-        "purpose": "Lattice light, active nav icon, checked box, changed dot, hover emphasis. Never data.",
+        "dark": "#7f9cff",
         "tonalRamp": [
-          "#160700",
-          "#362000",
-          "#5b3a00",
-          "#82570a",
-          "#ad7610",
-          "#d7972d",
-          "#febb58",
-          "#feebd2"
+          "#0a1743",
+          "#112873",
+          "#1939a4",
+          "#2049d5",
+          "#4e70e4",
+          "#839bec",
+          "#b8c6f4",
+          "#e9edfc"
         ]
       },
-      "amber-ink": {
+      "accent-ink": {
         "role": "primary",
-        "displayName": "Amber Ink",
-        "canonical": "#8a5300",
-        "dark": "#f0bd62",
+        "displayName": "Action Blue Deep",
+        "canonical": "#1a3cae",
         "cssVar": "--accent-ink",
-        "purpose": "Focus ring, links, selected text, caret.",
+        "dark": "#a3b8ff",
         "tonalRamp": [
-          "#180600",
-          "#371e00",
-          "#5e3806",
-          "#8a5300",
-          "#ae7431",
-          "#d39756",
-          "#f9bb7a",
-          "#ffebd7"
+          "#0a1743",
+          "#112873",
+          "#1939a4",
+          "#2049d5",
+          "#4e70e4",
+          "#839bec",
+          "#b8c6f4",
+          "#e9edfc"
         ]
       },
-      "amber-wash": {
+      "accent-soft": {
         "role": "primary",
-        "displayName": "Amber Wash",
-        "canonical": "#fbedd3",
-        "dark": "#3b2b12",
+        "displayName": "Blue Wash",
+        "canonical": "#e9eefc",
         "cssVar": "--accent-soft",
-        "purpose": "Selected-state background, text selection, changed flash.",
+        "dark": "#1a2547",
         "tonalRamp": [
-          "#130900",
-          "#2e230e",
-          "#4c402b",
-          "#6c6049",
-          "#8d8169",
-          "#b1a38b",
-          "#d5c8ae",
-          "#fbedd3"
+          "#091843",
+          "#102a75",
+          "#173ca6",
+          "#1d4ed7",
+          "#4b74e7",
+          "#819eee",
+          "#b7c8f5",
+          "#e9eefc"
         ]
       },
-      "amber-line": {
+      "accent-line": {
         "role": "primary",
-        "displayName": "Amber Line",
-        "canonical": "#e9c27f",
-        "dark": "#6d4f1d",
+        "displayName": "Blue Line",
+        "canonical": "#b9c7f3",
         "cssVar": "--accent-line",
-        "purpose": "Active facet border, link underline.",
+        "dark": "#344a8c",
         "tonalRamp": [
-          "#150800",
-          "#332100",
-          "#573d01",
-          "#7d5a10",
-          "#a07c39",
-          "#c49f5c",
-          "#eac380",
-          "#ffeccd"
+          "#0b1841",
+          "#132a71",
+          "#1c3ca1",
+          "#244ed1",
+          "#5174e1",
+          "#859dea",
+          "#b9c7f3",
+          "#e9eefb"
         ]
       },
-      "glass-cobalt": {
-        "role": "secondary",
-        "displayName": "Glass Cobalt",
-        "canonical": "#2f5bb7",
-        "dark": "#5a82d8",
-        "cssVar": "--s1",
-        "purpose": "Posting attributes; categorical series 1.",
-        "tonalRamp": [
-          "#000039",
-          "#00146e",
-          "#103992",
-          "#2f5bb7",
-          "#4f7ede",
-          "#76a3fc",
-          "#b0cafa",
-          "#e6efff"
-        ]
-      },
-      "glass-turquoise": {
-        "role": "secondary",
-        "displayName": "Glass Turquoise",
-        "canonical": "#00968c",
-        "dark": "#139a8f",
-        "cssVar": "--s3",
-        "purpose": "Skills; categorical series 2.",
-        "tonalRamp": [
-          "#000f0d",
-          "#012c29",
-          "#094d47",
-          "#027169",
-          "#01968c",
-          "#44bab0",
-          "#6de0d4",
-          "#b9fef6"
-        ]
-      },
-      "glass-violet": {
-        "role": "secondary",
-        "displayName": "Glass Violet",
-        "canonical": "#7b52b0",
-        "dark": "#9b7ad2",
-        "cssVar": "--s4",
-        "purpose": "Sources and collections; categorical series 4.",
-        "tonalRamp": [
-          "#130028",
-          "#320558",
-          "#512681",
-          "#7148a5",
-          "#936aca",
-          "#b68df1",
-          "#d4bbfe",
-          "#f1ebfe"
-        ]
-      },
-      "glass-ruby": {
-        "role": "secondary",
-        "displayName": "Glass Ruby",
-        "canonical": "#b8344a",
-        "dark": "#e0657d",
-        "cssVar": "--s5",
-        "purpose": "Pay, decreases, below-threshold; categorical series 3.",
-        "tonalRamp": [
-          "#210003",
-          "#4d0012",
-          "#7f0126",
-          "#ab2740",
-          "#d34e60",
-          "#fc7381",
-          "#feb2b6",
-          "#ffe8e9"
-        ]
-      },
-      "glass-emerald": {
-        "role": "secondary",
-        "displayName": "Glass Emerald",
-        "canonical": "#4f8f1f",
-        "dark": "#5f9a2c",
-        "cssVar": "--s6",
-        "purpose": "Places; categorical series 5.",
-        "tonalRamp": [
-          "#011000",
-          "#102d00",
-          "#244e00",
-          "#3a7208",
-          "#569628",
-          "#78ba4f",
-          "#9be074",
-          "#d1ffb9"
-        ]
-      },
-      "cobalt-pale": {
-        "role": "secondary",
-        "displayName": "Cobalt Pale",
-        "canonical": "#b9c9ec",
-        "dark": "#2c3d66",
+      "s1-soft": {
+        "role": "primary",
+        "displayName": "Blue Soft (team-added)",
+        "canonical": "#c7d3f7",
         "cssVar": "--s1-soft",
-        "purpose": "Secondary form of posting data.",
+        "dark": "#2a3a6e",
         "tonalRamp": [
-          "#030921",
-          "#19243e",
-          "#35415e",
-          "#53617f",
-          "#7482a2",
-          "#96a5c7",
-          "#b9c9ec",
-          "#e7effe"
+          "#0a1843",
+          "#112974",
+          "#183ba5",
+          "#1f4cd6",
+          "#4c73e6",
+          "#829ded",
+          "#b8c7f5",
+          "#e9edfc"
         ]
       },
-      "turquoise-pale": {
-        "role": "secondary",
-        "displayName": "Turquoise Pale",
-        "canonical": "#b3e0dc",
-        "dark": "#12423d",
-        "cssVar": "--s3-soft",
-        "purpose": "Fill behind hatching for team-added skills.",
-        "tonalRamp": [
-          "#000f0e",
-          "#002c2a",
-          "#204a47",
-          "#406a67",
-          "#618c88",
-          "#83afab",
-          "#a7d4d0",
-          "#ccf9f5"
-        ]
-      },
-      "violet-pale": {
-        "role": "secondary",
-        "displayName": "Violet Pale",
-        "canonical": "#cbbbe3",
-        "dark": "#4a3a6a",
-        "cssVar": "--s4-soft",
-        "purpose": "Second collection's bars, outlined in violet.",
-        "tonalRamp": [
-          "#10041f",
-          "#2b1d3c",
-          "#483a5b",
-          "#68597d",
-          "#897a9f",
-          "#ac9dc3",
-          "#d1c1e9",
-          "#f2eafe"
-        ]
-      },
-      "status-good": {
+      "s2": {
         "role": "tertiary",
-        "displayName": "Status Green",
-        "canonical": "#2b7a32",
-        "dark": "#6cc070",
+        "displayName": "Series Rose",
+        "canonical": "#c4404f",
+        "cssVar": "--s2",
+        "dark": "#f07a88",
+        "tonalRamp": [
+          "#3a1217",
+          "#651f27",
+          "#902d38",
+          "#bb3a48",
+          "#cf636f",
+          "#dd929a",
+          "#ecc1c6",
+          "#f9eced"
+        ]
+      },
+      "s3": {
+        "role": "tertiary",
+        "displayName": "Series Cyan",
+        "canonical": "#0f8285",
+        "cssVar": "--s3",
+        "dark": "#46c3c2",
+        "tonalRamp": [
+          "#084345",
+          "#0d7477",
+          "#13a6aa",
+          "#19d7dc",
+          "#48e6ea",
+          "#7feef1",
+          "#b6f5f7",
+          "#e8fcfc"
+        ]
+      },
+      "s4": {
+        "role": "tertiary",
+        "displayName": "Series Violet",
+        "canonical": "#6c4bc0",
+        "cssVar": "--s4",
+        "dark": "#a98cf0",
+        "tonalRamp": [
+          "#1e1439",
+          "#342262",
+          "#4b318c",
+          "#613fb5",
+          "#8468ca",
+          "#a995da",
+          "#cec3ea",
+          "#f0ecf8"
+        ]
+      },
+      "s5": {
+        "role": "tertiary",
+        "displayName": "Series Ochre",
+        "canonical": "#a06b12",
+        "cssVar": "--s5",
+        "dark": "#e0b25a",
+        "tonalRamp": [
+          "#452e08",
+          "#77500d",
+          "#aa7113",
+          "#dc9319",
+          "#eaae48",
+          "#f1c67f",
+          "#f7deb6",
+          "#fcf5e8"
+        ]
+      },
+      "s6": {
+        "role": "tertiary",
+        "displayName": "Provenance Slate",
+        "canonical": "#5b6b8c",
+        "cssVar": "--s6",
+        "dark": "#97a6c4",
+        "tonalRamp": [
+          "#1e232e",
+          "#343d50",
+          "#4a5772",
+          "#607194",
+          "#8391af",
+          "#a8b2c7",
+          "#ced3df",
+          "#f0f1f5"
+        ]
+      },
+      "good": {
+        "role": "secondary",
+        "displayName": "Have Teal Ink",
+        "canonical": "#0b7461",
         "cssVar": "--good",
-        "purpose": "Positive confirmation.",
+        "dark": "#57c9ae",
         "tonalRamp": [
-          "#001100",
-          "#002f04",
-          "#015111",
-          "#24742c",
-          "#49964d",
-          "#6dbb6f",
-          "#91e093",
-          "#cbffcb"
+          "#07463a",
+          "#0b7965",
+          "#10ac90",
+          "#15e0bb",
+          "#45edcf",
+          "#7df3dd",
+          "#b4f8ec",
+          "#e8fdf9"
         ]
       },
-      "status-warn": {
-        "role": "tertiary",
-        "displayName": "Burnt Orange",
-        "canonical": "#a4471c",
-        "dark": "#f08a5d",
+      "good-fill": {
+        "role": "secondary",
+        "displayName": "Have Teal",
+        "canonical": "#139079",
+        "cssVar": "--good-fill",
+        "dark": "#2ca88f",
+        "tonalRamp": [
+          "#094439",
+          "#0f7562",
+          "#16a78c",
+          "#1dd8b6",
+          "#4be7ca",
+          "#81eeda",
+          "#b7f5ea",
+          "#e8fcf8"
+        ]
+      },
+      "good-soft": {
+        "role": "secondary",
+        "displayName": "Have Wash",
+        "canonical": "#e1f2ed",
+        "cssVar": "--good-soft",
+        "dark": "#0f2f2a",
+        "tonalRamp": [
+          "#17352c",
+          "#285d4d",
+          "#39846e",
+          "#4aab8e",
+          "#71c1aa",
+          "#9bd4c3",
+          "#c6e6dd",
+          "#edf7f4"
+        ]
+      },
+      "warn": {
+        "role": "secondary",
+        "displayName": "Gap Amber Ink",
+        "canonical": "#995300",
         "cssVar": "--warn",
-        "purpose": "Warnings, small-group markers. Distinct from amber.",
+        "dark": "#f2b65a",
         "tonalRamp": [
-          "#1f0000",
-          "#431400",
-          "#6f2904",
-          "#9d4114",
-          "#c3633b",
-          "#ea875e",
-          "#fbb79c",
-          "#feeae2"
+          "#4d2a00",
+          "#854800",
+          "#bd6600",
+          "#f58500",
+          "#ffa233",
+          "#ffbe70",
+          "#ffdaad",
+          "#fff3e5"
         ]
       },
-      "status-warn-wash": {
-        "role": "tertiary",
-        "displayName": "Burnt Orange Wash",
-        "canonical": "#fbe6dc",
-        "dark": "#3a2015",
+      "warn-fill": {
+        "role": "secondary",
+        "displayName": "Gap Amber",
+        "canonical": "#d9891a",
+        "cssVar": "--warn-fill",
+        "dark": "#e09c33",
+        "tonalRamp": [
+          "#442b08",
+          "#764b0e",
+          "#a96a14",
+          "#db8a1a",
+          "#e9a649",
+          "#f0c17f",
+          "#f6dbb6",
+          "#fcf4e8"
+        ]
+      },
+      "warn-soft": {
+        "role": "secondary",
+        "displayName": "Gap Wash",
+        "canonical": "#fcf0dc",
         "cssVar": "--warn-soft",
-        "purpose": "Warning callout and pill background.",
+        "dark": "#36270f",
         "tonalRamp": [
-          "#140803",
-          "#30211a",
-          "#4e3e36",
-          "#6f5d54",
-          "#917e75",
-          "#b4a097",
-          "#d9c4bb",
-          "#ffeae0"
+          "#462e06",
+          "#7a500a",
+          "#ae720f",
+          "#e19413",
+          "#efae43",
+          "#f4c77b",
+          "#f9dfb4",
+          "#fdf5e8"
         ]
       },
-      "status-crit": {
-        "role": "tertiary",
-        "displayName": "Status Red",
-        "canonical": "#b3262f",
-        "dark": "#f07a80",
+      "crit": {
+        "role": "neutral",
+        "displayName": "Critical",
+        "canonical": "#b42318",
         "cssVar": "--crit",
-        "purpose": "Errors, synthetic-data banner.",
+        "dark": "#ff8a80",
         "tonalRamp": [
-          "#210001",
-          "#4c0209",
-          "#7d0d19",
-          "#af222c",
-          "#d84b4d",
-          "#f97874",
-          "#fcb4af",
-          "#fee9e7"
+          "#440d09",
+          "#751710",
+          "#a72016",
+          "#d82a1d",
+          "#e7564b",
+          "#ee8981",
+          "#f5bbb7",
+          "#fceae8"
         ]
       },
-      "status-crit-wash": {
-        "role": "tertiary",
-        "displayName": "Status Red Wash",
-        "canonical": "#fbe7e8",
-        "dark": "#3a1a1c",
+      "crit-soft": {
+        "role": "neutral",
+        "displayName": "Critical Wash",
+        "canonical": "#fdecea",
         "cssVar": "--crit-soft",
-        "purpose": "Error callout background.",
+        "dark": "#3a1a1a",
         "tonalRamp": [
-          "#130708",
-          "#2f2122",
-          "#4d3d3e",
-          "#6d5c5d",
-          "#8f7d7e",
-          "#b2a0a1",
-          "#d7c4c5",
-          "#fde9ea"
+          "#460d07",
+          "#79170c",
+          "#ac2110",
+          "#e02b15",
+          "#ed5645",
+          "#f3897d",
+          "#f8bcb4",
+          "#fdeae8"
         ]
       },
-      "info-wash": {
-        "role": "tertiary",
+      "info-soft": {
+        "role": "neutral",
         "displayName": "Info Wash",
-        "canonical": "#e7eefb",
-        "dark": "#1d2740",
+        "canonical": "#eef2fd",
         "cssVar": "--info-soft",
-        "purpose": "Informational callout background.",
+        "dark": "#161f38",
         "tonalRamp": [
-          "#070b13",
-          "#20252f",
-          "#3d424c",
-          "#5c616c",
-          "#7c838e",
-          "#9fa5b1",
-          "#c3c9d6",
-          "#e8effc"
+          "#081844",
+          "#0e2a77",
+          "#143ca9",
+          "#1a4ddb",
+          "#4873ea",
+          "#7f9df0",
+          "#b6c7f6",
+          "#e8eefc"
         ]
       }
     },
-    "chartPalette": {
-      "categoricalOrder": [
-        "glass-cobalt",
-        "glass-turquoise",
-        "glass-ruby",
-        "glass-violet",
-        "glass-emerald"
-      ],
-      "entityHues": {
-        "posting": "glass-cobalt",
-        "skill": "glass-turquoise",
-        "source": "glass-violet",
-        "pay": "glass-ruby",
-        "place": "glass-emerald"
+    "themes": {
+      "light": {
+        "selector": ":root"
       },
-      "excluded": "Amber (--s2 and --accent) is never a data hue.",
-      "validation": "Order and entity hues validated with a CVD palette validator in both themes (adjacent pairs and the first three all-pairs).",
-      "source": "frontend/src/lib/echarts.ts (HUE, categorical)"
+      "dark": {
+        "selector": ":root[data-theme=\"dark\"]",
+        "note": "Values are selected per theme, not inverted. On-accent text in dark is #0b0f17 (the dark ground).",
+        "values": {
+          "bg": "#0b0f17",
+          "panel": "#121826",
+          "panel-2": "#182031",
+          "line": "#222b3d",
+          "line-strong": "#34405a",
+          "ink": "#eaeef6",
+          "ink-2": "#b6bdcd",
+          "ink-3": "#8e97ab",
+          "rail": "#16244a",
+          "rail-2": "#1f3263",
+          "rail-line": "#2f4580",
+          "rail-ink": "#f3f5fa",
+          "rail-ink-2": "#b3bfdc",
+          "accent": "#7f9cff",
+          "accent-ink": "#a3b8ff",
+          "accent-soft": "#1a2547",
+          "accent-line": "#344a8c",
+          "s1-soft": "#2a3a6e",
+          "s2": "#f07a88",
+          "s3": "#46c3c2",
+          "s4": "#a98cf0",
+          "s5": "#e0b25a",
+          "s6": "#97a6c4",
+          "good": "#57c9ae",
+          "good-fill": "#2ca88f",
+          "good-soft": "#0f2f2a",
+          "warn": "#f2b65a",
+          "warn-fill": "#e09c33",
+          "warn-soft": "#36270f",
+          "crit": "#ff8a80",
+          "crit-soft": "#3a1a1a",
+          "info-soft": "#161f38"
+        }
+      }
     },
     "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home's value line only; 2rem/2.375rem below 640px."
+      },
       "headline": {
-        "displayName": "KPI Figure",
-        "purpose": "KPI figures only; tabular."
+        "displayName": "Headline",
+        "purpose": "Page titles; 1.5rem/2rem below 640px."
       },
-      "title-page": {
-        "displayName": "Page Title",
-        "purpose": "One per page, in the page header."
+      "answer": {
+        "displayName": "Answer",
+        "purpose": "The sentence on the navy answer band; 1.25rem/2rem below 640px."
       },
-      "title-panel": {
-        "displayName": "Panel Title",
-        "purpose": "Every panel heading."
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "KPI values and posting salary, tabular numerals."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel titles."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Default size; carries most of the interface."
+        "purpose": "Default copy and tables."
       },
       "body-sm": {
-        "displayName": "Body Small",
-        "purpose": "Controls, chips, nav, tables, callouts."
+        "displayName": "Body small",
+        "purpose": "Controls, nav items, meta lines, readouts."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "KPI labels, meta lines, nav groups, captions, pills. Sentence case."
-      },
-      "chart-axis": {
-        "displayName": "Chart Axis",
-        "purpose": "Axis labels in ink-3; category and value labels 11-12px in ink-2."
+        "purpose": "KPI labels, nav groups, captions, legends; sentence case."
       }
     },
+    "fonts": [
+      {
+        "family": "Geist Variable",
+        "script": "Latin",
+        "source": "@fontsource-variable/geist"
+      },
+      {
+        "family": "Readex Pro Variable",
+        "script": "Arabic",
+        "source": "@fontsource-variable/readex-pro",
+        "note": "Reached per glyph through the shared stack; preloaded in main.tsx."
+      }
+    ],
     "shadows": [
       {
         "name": "floating",
-        "value": "0 1px 2px rgba(36, 24, 15, 0.06), 0 4px 14px rgba(36, 24, 15, 0.06)",
-        "dark": "0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25)",
-        "cssVar": "--shadow",
-        "purpose": "Popovers, menus, info tips and chart tooltips only. In-flow surfaces are flat."
+        "value": "0 1px 2px rgba(14, 21, 37, 0.05), 0 8px 24px -6px rgba(14, 21, 37, 0.12)",
+        "dark": "0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -8px rgba(0, 0, 0, 0.5)",
+        "purpose": "Popovers, pickers, the posting drawer and chart tooltips only (--shadow / shadow-panel)."
+      },
+      {
+        "name": "control-edge",
+        "value": "0 1px 0 rgba(14,21,37,0.04)",
+        "purpose": "Secondary button under-edge."
+      },
+      {
+        "name": "segment-selected",
+        "value": "0 1px 2px rgba(14,21,37,0.1)",
+        "purpose": "Selected option in a segmented control, with a line ring."
+      },
+      {
+        "name": "hero-field",
+        "value": "0 1px 2px rgba(14,21,37,0.05)",
+        "purpose": "Home's large job search field."
+      },
+      {
+        "name": "strip-active",
+        "value": "0 0 0 2px var(--panel), 0 0 0 4px var(--ink)",
+        "purpose": "Active coverage-strip segment ring."
+      },
+      {
+        "name": "focus",
+        "value": "outline: 2px solid var(--accent); outline-offset: 2px",
+        "purpose": "Global :focus-visible."
       }
     ],
-    "focus": {
-      "value": "outline: 2px solid var(--accent-ink); outline-offset: 2px; border-radius: 4px",
-      "purpose": "Every interactive element."
-    },
     "motion": [
       {
-        "name": "changed-flash",
-        "value": "1.6s cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Amber-wash flash on a KPI figure that moved after a filter edit."
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Figure-changed flash and strip entry."
       },
       {
-        "name": "lattice-light",
-        "value": "200ms",
-        "purpose": "Aperture scale (1.08) and crosshair dimming (35%) in the lattice."
+        "name": "changed",
+        "value": "1.6s ease-out-expo, accent-soft to transparent",
+        "purpose": "A KPI that moved after a filter edit."
       },
       {
-        "name": "chart-update",
+        "name": "strip-in",
+        "value": "420ms ease-out-expo, scaleX(0.4)+fade from the start edge, 28ms stagger capped at 12",
+        "purpose": "Coverage strip segments, once on first draw."
+      },
+      {
+        "name": "chart",
         "value": "250ms",
-        "purpose": "ECharts enter and update animation."
+        "purpose": "ECharts initial and update animation; off under reduced motion."
       },
       {
-        "name": "skeleton-shimmer",
+        "name": "shimmer",
         "value": "1.4s linear infinite",
-        "purpose": "Loading skeletons."
+        "purpose": "Skeleton loading."
       },
       {
         "name": "reduced-motion",
-        "value": "0.001ms",
-        "purpose": "All animation and transition durations under prefers-reduced-motion; chart animation off."
+        "value": "durations 0.001ms",
+        "purpose": "prefers-reduced-motion: reduce disables all animation."
       }
     ],
     "breakpoints": [
       {
         "name": "sm",
         "value": "640px",
-        "purpose": "KPI strip 2 to 3 columns; lattice row header 104px to 200px."
+        "purpose": "Headline sizes step up; profile chip appears."
       },
       {
         "name": "lg",
         "value": "1024px",
-        "purpose": "Teak rail (236px) replaces the 48px mobile top bar; filter bar becomes sticky."
+        "purpose": "Sidebar becomes a fixed 248px column; top bar 64px."
       },
       {
         "name": "xl",
         "value": "1280px",
-        "purpose": "KPI strip six across."
+        "purpose": "Home and plan split into two columns; KPI strip 6-up."
       }
     ],
     "layout": {
-      "rail": "236px",
-      "contentMax": "1480px",
-      "gutter": "16px, 24px from lg",
-      "gap": "16px"
+      "sidebarWidth": "248px",
+      "contentMax": "1600px",
+      "topBar": "56px / 64px from lg",
+      "controlHeight": "36px"
     }
   },
   "components": [
@@ -681,142 +733,143 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Teak fill for the one committing action on a view; amber on teak text in dark mode.",
-      "html": "<button class=\"ds-btn ds-btn-primary\">Build plan</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; font: 500 0.8125rem/1.25rem 'Readex Pro Variable', 'Segoe UI', system-ui, sans-serif; border: 0; cursor: pointer; transition: background-color 150ms, color 150ms; } .ds-btn-primary { background: var(--rail, #24180f); color: var(--rail-ink, #f3eadf); } .ds-btn-primary:hover { background: var(--rail-2, #33241a); } .ds-btn:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
+      "description": "The one blue call to action in a region.",
+      "html": "<button class=\"ds-btn-primary\">Find jobs</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--accent, #1e45c8); color: #fff; font: 500 13px/20px 'Geist Variable', 'Readex Pro Variable', 'Segoe UI', sans-serif; cursor: pointer; transition: background-color .15s; } .ds-btn-primary:hover { background: var(--accent-ink, #1a3cae); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #1e45c8); outline-offset: 2px; }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Default button: white panel, strong hairline.",
-      "html": "<button class=\"ds-btn2\">Try again</button>",
-      "css": ".ds-btn2 { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; font: 500 0.8125rem/1.25rem 'Readex Pro Variable', 'Segoe UI', system-ui, sans-serif; background: var(--panel, #ffffff); color: var(--ink, #1c1712); border: 1px solid var(--line-strong, #c4c9c6); cursor: pointer; transition: background-color 150ms; } .ds-btn2:hover { background: var(--panel-2, #f5f6f5); } .ds-btn2:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
+      "description": "Default button: white with a strong hairline and a 1px under-edge.",
+      "html": "<button class=\"ds-btn-secondary\">Try again</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--line-strong, #cfcfc6); border-radius: 8px; background: var(--panel, #fff); color: var(--ink, #0e1525); font: 500 13px/20px 'Geist Variable', 'Segoe UI', sans-serif; box-shadow: 0 1px 0 rgba(14,21,37,0.04); cursor: pointer; transition: background-color .15s; } .ds-btn-secondary:hover { background: var(--panel-2, #f1f1ed); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--accent, #1e45c8); outline-offset: 2px; }"
     },
     {
-      "name": "Segmented Control",
-      "kind": "chip",
-      "refersTo": "segmented-option-selected",
-      "description": "Radio group; the selected option is amber wash with amber ink.",
-      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button class=\"ds-seg-o\" aria-checked=\"true\">All skills</button><button class=\"ds-seg-o\" aria-checked=\"false\">Written in posting</button></div>",
-      "css": ".ds-seg { display: inline-flex; padding: 2px; border: 1px solid var(--line-strong, #c4c9c6); border-radius: 6px; background: var(--panel, #ffffff); font-family: 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-seg-o { height: 28px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; color: var(--ink-2, #4c453e); font-size: 0.8125rem; cursor: pointer; } .ds-seg-o:hover { color: var(--ink, #1c1712); } .ds-seg-o[aria-checked=true] { background: var(--accent-soft, #fbedd3); color: var(--accent-ink, #8a5300); font-weight: 500; } .ds-seg-o:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
-    },
-    {
-      "name": "Applied Filter Chip",
-      "kind": "chip",
-      "refersTo": "filter-chip",
-      "description": "One applied filter: facet name, value, remove button.",
-      "html": "<span class=\"ds-chip\"><span class=\"ds-chip-k\">Role:</span> Data Engineering <button class=\"ds-chip-x\" aria-label=\"Remove Data Engineering\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></button></span>",
-      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border-radius: 6px; background: var(--panel-2, #f5f6f5); box-shadow: 0 0 0 1px var(--line, #dcdfdd); color: var(--ink, #1c1712); font: 0.8125rem/1.25rem 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-chip-k { color: var(--ink-3, #6b635b); } .ds-chip-x { display: grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 4px; background: transparent; color: var(--ink-3, #6b635b); cursor: pointer; } .ds-chip-x:hover { background: var(--line, #dcdfdd); color: var(--ink, #1c1712); } .ds-chip-x:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
-    },
-    {
-      "name": "Select",
+      "name": "Search Field",
       "kind": "input",
-      "refersTo": "select",
-      "description": "Labelled native select, 32px.",
-      "html": "<label class=\"ds-sel\"><span>Group by</span><select><option>Role</option><option>Seniority</option></select></label>",
-      "css": ".ds-sel { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2, #4c453e); font: 0.8125rem 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-sel select { height: 32px; padding: 0 8px; border: 1px solid var(--line-strong, #c4c9c6); border-radius: 6px; background: var(--panel, #ffffff); color: var(--ink, #1c1712); font: inherit; } .ds-sel select:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
+      "refersTo": "input-search",
+      "description": "Top-bar job search: recessed at rest, white with a blue border and soft ring on focus.",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input type=\"search\" placeholder=\"Search jobs by title or employer\"></label>",
+      "css": ".ds-search { position: relative; display: flex; align-items: center; width: 320px; color: var(--ink-3, #5f6678); } .ds-search svg { position: absolute; inset-inline-start: 12px; pointer-events: none; } .ds-search input { width: 100%; height: 36px; padding-inline: 36px 12px; border: 1px solid var(--line, #e4e4de); border-radius: 8px; background: var(--panel-2, #f1f1ed); color: var(--ink, #0e1525); font: 400 13px/20px 'Geist Variable', 'Segoe UI', sans-serif; transition: border-color .15s, background-color .15s; } .ds-search input::placeholder { color: var(--ink-3, #5f6678); } .ds-search input:hover { border-color: var(--line-strong, #cfcfc6); } .ds-search input:focus { outline: none; border-color: var(--accent, #1e45c8); background: var(--panel, #fff); box-shadow: 0 0 0 2px rgba(30,69,200,0.25); }"
     },
     {
-      "name": "Rail Navigation",
+      "name": "Sidebar Navigation",
       "kind": "nav",
       "refersTo": "nav-item",
-      "description": "Teak rail with grouped items; the active icon is the rail's only amber.",
-      "html": "<nav class=\"ds-rail\"><p class=\"ds-rail-g\">Explore</p><a class=\"ds-rail-i ds-on\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z\"/></svg>Overview</a><a class=\"ds-rail-i\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\"><rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/></svg>Job explorer</a></nav>",
-      "css": ".ds-rail { width: 236px; padding: 4px 8px 16px; background: var(--rail, #24180f); font-family: 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-rail-g { margin: 12px 0 0; padding: 0 8px 4px; font-size: 0.75rem; font-weight: 500; color: var(--rail-ink-2, #c4b3a0); } .ds-rail-i { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border-radius: 6px; font-size: 0.8125rem; color: var(--rail-ink-2, #c4b3a0); text-decoration: none; transition: background-color 150ms, color 150ms; } .ds-rail-i:hover { background: color-mix(in oklab, var(--rail-2, #33241a) 60%, transparent); color: var(--rail-ink, #f3eadf); } .ds-rail-i.ds-on { background: var(--rail-2, #33241a); box-shadow: 0 0 0 1px var(--rail-line, #46342a); color: var(--rail-ink, #f3eadf); font-weight: 500; } .ds-rail-i.ds-on svg { color: var(--accent, #e2a13a); } .ds-rail-i:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
+      "description": "Grouped sidebar items; active is a blue wash with a blue icon.",
+      "html": "<nav class=\"ds-nav\"><p class=\"ds-nav-group\">Discover</p><a class=\"ds-nav-item is-active\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10.5 12 3l9 7.5V21H3z\"/></svg>Home</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/></svg>Jobs</a></nav>",
+      "css": ".ds-nav { width: 224px; padding: 4px 12px; background: var(--panel, #fff); font-family: 'Geist Variable', 'Segoe UI', sans-serif; } .ds-nav-group { margin: 0; padding: 0 10px 6px; font-size: 12px; font-weight: 500; color: var(--ink-3, #5f6678); } .ds-nav-item { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; color: var(--ink-2, #434b5d); text-decoration: none; transition: background-color .15s, color .15s; } .ds-nav-item svg { color: var(--ink-3, #5f6678); } .ds-nav-item:hover { background: var(--panel-2, #f1f1ed); color: var(--ink, #0e1525); } .ds-nav-item.is-active { background: var(--accent-soft, #e9eefc); color: var(--accent-ink, #1a3cae); font-weight: 500; } .ds-nav-item.is-active svg { color: var(--accent, #1e45c8); } .ds-nav-item:focus-visible { outline: 2px solid var(--accent, #1e45c8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Facet Chip",
+      "kind": "chip",
+      "refersTo": "facet-chip",
+      "description": "Filter trigger; turns blue-washed with a count when it has selections.",
+      "html": "<span class=\"ds-facet\">Country</span> <span class=\"ds-facet is-on\">Role <b>2</b></span>",
+      "css": ".ds-facet { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid var(--line, #e4e4de); border-radius: 8px; background: var(--panel, #fff); color: var(--ink-2, #434b5d); font: 400 13px/20px 'Geist Variable', 'Segoe UI', sans-serif; cursor: pointer; transition: border-color .15s, color .15s; } .ds-facet:hover { border-color: var(--line-strong, #cfcfc6); color: var(--ink, #0e1525); } .ds-facet.is-on { border-color: var(--accent-line, #b9c7f3); background: var(--accent-soft, #e9eefc); color: var(--accent-ink, #1a3cae); font-weight: 500; } .ds-facet b { padding: 0 6px; border-radius: 6px; background: var(--panel, #fff); font-size: 12px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Skill Chips",
+      "kind": "chip",
+      "refersTo": "skill-have-chip",
+      "description": "A skill you have (teal wash) beside the dashed Add skill trigger.",
+      "html": "<span class=\"ds-have\">SQL <button aria-label=\"Remove SQL\">&times;</button></span> <button class=\"ds-add\">+ Add skill</button>",
+      "css": ".ds-have { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding-inline: 10px 4px; border-radius: 8px; background: var(--good-soft, #e1f2ed); color: var(--good, #0b7461); font: 500 13px/20px 'Geist Variable', 'Segoe UI', sans-serif; } .ds-have button { width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; } .ds-have button:hover { background: rgba(255,255,255,0.7); } .ds-add { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; border: 1px dashed var(--line-strong, #cfcfc6); border-radius: 8px; background: transparent; color: var(--ink-2, #434b5d); font: 500 13px/20px 'Geist Variable', 'Segoe UI', sans-serif; cursor: pointer; } .ds-add:hover { border-color: var(--accent, #1e45c8); color: var(--accent-ink, #1a3cae); } .ds-add:focus-visible, .ds-have button:focus-visible { outline: 2px solid var(--accent, #1e45c8); outline-offset: 2px; }"
     },
     {
       "name": "Panel",
       "kind": "card",
       "refersTo": "panel",
-      "description": "White work panel with hairline, title, population meta line and icon actions.",
-      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-h\"><div><h2>Postings by role</h2><p>Share of 588,545 postings · role from title rules</p></div><button class=\"ds-ib\" aria-label=\"Show as table\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18M9 21V9\"/></svg></button></div><div class=\"ds-panel-b\">Chart</div></section>",
-      "css": ".ds-panel { border: 1px solid var(--line, #dcdfdd); border-radius: 8px; background: var(--panel, #ffffff); font-family: 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-panel-h { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px 8px; } .ds-panel-h h2 { margin: 0; font-size: 0.875rem; line-height: 1.375rem; font-weight: 600; color: var(--ink, #1c1712); } .ds-panel-h p { margin: 2px 0 0; font-size: 0.75rem; line-height: 1rem; color: var(--ink-3, #6b635b); } .ds-panel-b { padding: 0 16px 16px; color: var(--ink-2, #4c453e); font-size: 0.875rem; } .ds-ib { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-3, #6b635b); cursor: pointer; } .ds-ib:hover { background: var(--panel-2, #f5f6f5); color: var(--ink, #1c1712); } .ds-ib:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 2px; }"
+      "description": "White work surface: 12px radius, hairline border, no shadow, 20px padding.",
+      "html": "<section class=\"ds-panel\"><h2>Skills in demand</h2><p class=\"ds-meta\">Share of 513,668 postings that list skills</p><p>Chart or table goes here.</p></section>",
+      "css": ".ds-panel { max-width: 420px; border: 1px solid var(--line, #e4e4de); border-radius: 12px; background: var(--panel, #fff); padding: 16px 20px 20px; font: 400 14px/22px 'Geist Variable', 'Segoe UI', sans-serif; color: var(--ink-2, #434b5d); } .ds-panel h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.005em; color: var(--ink, #0e1525); } .ds-panel .ds-meta { margin: 2px 0 12px; font-size: 13px; color: var(--ink-3, #5f6678); }"
     },
     {
-      "name": "KPI",
-      "kind": "custom",
-      "refersTo": "kpi-figure",
-      "description": "Headline figure with its denominator; an amber dot stays after a filter edit moves it.",
-      "html": "<dl class=\"ds-kpi\"><div><dt>Unique postings <span class=\"ds-kpi-dot\"></span></dt><dd><span class=\"ds-kpi-v\">588,545</span><span class=\"ds-kpi-s\">from 770,956 listings</span></dd></div></dl>",
-      "css": ".ds-kpi { margin: 0; border: 1px solid var(--line, #dcdfdd); border-radius: 8px; background: var(--panel, #ffffff); font-family: 'Readex Pro Variable', 'Segoe UI', sans-serif; } .ds-kpi > div { padding: 12px 16px; } .ds-kpi dt { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--ink-3, #6b635b); } .ds-kpi-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--accent, #e2a13a); } .ds-kpi dd { margin: 0; } .ds-kpi-v { display: inline-block; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; color: var(--ink, #1c1712); animation: ds-changed 1.6s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 4px; } .ds-kpi-s { display: block; margin-top: 2px; font-size: 0.75rem; line-height: 1rem; color: var(--ink-3, #6b635b); } @keyframes ds-changed { from { background-color: var(--accent-soft, #fbedd3); } to { background-color: transparent; } }"
+      "name": "Navy Answer Band",
+      "kind": "card",
+      "refersTo": "answer-band",
+      "description": "The page's one emphasis: the answer as a sentence with its sample size.",
+      "html": "<section class=\"ds-answer\"><p class=\"ds-answer-line\">Half advertise more than <span>$98,000 a year</span></p><p class=\"ds-answer-note\">The middle half sits between $72k and $131k. Based on n = 4,210 postings that state a salary.</p><a class=\"ds-answer-btn\" href=\"#\">See the postings</a></section>",
+      "css": ".ds-answer { max-width: 640px; padding: 28px; border-radius: 16px; background: var(--rail, #0f1b33); color: var(--rail-ink, #f3f5fa); font-family: 'Geist Variable', 'Segoe UI', sans-serif; } .ds-answer-line { margin: 0; font-size: 24px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; } .ds-answer-line span { font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-answer-note { margin: 12px 0 20px; font-size: 14px; line-height: 24px; color: var(--rail-ink-2, #aeb8d0); } .ds-answer-btn { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 8px; background: var(--panel, #fff); color: var(--ink, #0e1525); font-size: 13px; font-weight: 500; text-decoration: none; } .ds-answer-btn:hover { background: var(--panel-2, #f1f1ed); } .ds-answer-btn:focus-visible { outline: 2px solid var(--accent, #1e45c8); outline-offset: 2px; }"
     },
     {
-      "name": "Lattice",
+      "name": "Coverage Strip",
       "kind": "custom",
-      "refersTo": "lattice-aperture",
-      "description": "Signature role x skill matrix: teak cells, amber apertures sized by share; hover keeps the row and column lit and dims the rest.",
-      "html": "<div class=\"ds-lat\"><button class=\"ds-ap\" aria-label=\"Python in Data Engineering: 61%\"><span style=\"width:78%;background:color-mix(in oklab, var(--accent, #e2a13a) 90%, var(--rail-2, #33241a))\"></span></button><button class=\"ds-ap\" aria-label=\"SQL: 34%\"><span style=\"width:50%;background:color-mix(in oklab, var(--accent, #e2a13a) 55%, var(--rail-2, #33241a))\"></span></button><button class=\"ds-ap ds-ap-small\" aria-label=\"R, small group: 8%\"><span style=\"width:24%;background:color-mix(in oklab, var(--accent, #e2a13a) 28%, var(--rail-2, #33241a))\"></span></button></div>",
-      "css": ".ds-lat { display: grid; grid-template-columns: repeat(3, 56px); } .ds-ap { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: 3px solid var(--rail, #24180f); background: var(--rail-2, #33241a); box-shadow: 0 0 0 1px var(--rail, #24180f); cursor: pointer; transition: opacity 200ms; } .ds-ap span { display: block; aspect-ratio: 1; border-radius: 9999px; transition: transform 200ms; } .ds-ap-small { border-style: dashed; } .ds-lat:hover .ds-ap { opacity: 0.35; } .ds-lat .ds-ap:hover { opacity: 1; } .ds-ap:hover span, .ds-ap:focus-visible span { transform: scale(1.08); } .ds-ap:focus-visible { outline: 2px solid var(--accent-ink, #8a5300); outline-offset: 0; z-index: 1; }"
+      "refersTo": "coverage-segment-have",
+      "description": "Signature: requested skills as one bar; width = demand, teal = have, amber outline = gap, hatched = team-added.",
+      "html": "<figure class=\"ds-strip\"><p class=\"ds-strip-read\">Top 6 skills in Data Analysis &amp; BI postings</p><div class=\"ds-strip-bar\"><button class=\"have\" style=\"flex-grow:61\" aria-label=\"Python: you have it, 61%\"></button><button class=\"have\" style=\"flex-grow:60\" aria-label=\"SQL: you have it, 60%\"></button><button class=\"gap\" style=\"flex-grow:34\" aria-label=\"Tableau: to learn, 34%\"></button><button class=\"gap\" style=\"flex-grow:29\" aria-label=\"Power BI: to learn, 29%\"></button><button class=\"gap added\" style=\"flex-grow:20\" aria-label=\"R: to learn, 20%, added by the team\"></button><button class=\"have added\" style=\"flex-grow:18\" aria-label=\"Excel: you have it, 18%, added by the team\"></button></div><figcaption><span><i class=\"k have\"></i>You have 3</span><span><i class=\"k gap\"></i>To learn 3</span><span>Width = how often the skill is asked for</span></figcaption><div class=\"ds-strip-mini\"><i class=\"have\" style=\"flex-grow:61\"></i><i class=\"have\" style=\"flex-grow:60\"></i><i class=\"gap\" style=\"flex-grow:34\"></i><i class=\"gap\" style=\"flex-grow:29\"></i></div></figure>",
+      "css": ".ds-strip { margin: 0; max-width: 460px; padding: 16px; border-radius: 12px; background: var(--panel, #fff); font-family: 'Geist Variable', 'Segoe UI', sans-serif; } .ds-strip-read { margin: 0 0 8px; font-size: 13px; color: var(--ink-3, #5f6678); } .ds-strip-bar { display: flex; height: 36px; gap: 3px; } .ds-strip-bar button { flex-basis: 0; min-width: 6px; border: 0; border-radius: 5px; padding: 0; cursor: pointer; transition: opacity .2s, box-shadow .2s; } .ds-strip-bar button:first-child { border-start-start-radius: 8px; border-end-start-radius: 8px; } .ds-strip-bar button:last-child { border-start-end-radius: 8px; border-end-end-radius: 8px; } .ds-strip-bar .have { background-color: var(--good-fill, #139079); } .ds-strip-bar .gap { background-color: var(--warn-soft, #fcf0dc); box-shadow: inset 0 0 0 1.5px var(--warn-fill, #d9891a); } .ds-strip-bar .gap.added { background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgba(217,137,26,0.22) 4px 5px); } .ds-strip-bar .have.added { background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgba(255,255,255,0.28) 4px 5px); } .ds-strip-bar:hover button { opacity: .45; } .ds-strip-bar button:hover, .ds-strip-bar button:focus-visible { opacity: 1; outline: none; box-shadow: 0 0 0 2px var(--panel, #fff), 0 0 0 4px var(--ink, #0e1525); } .ds-strip figcaption { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: 12px; color: var(--ink-3, #5f6678); } .ds-strip .k { display: inline-block; width: 10px; height: 10px; margin-inline-end: 6px; border-radius: 2px; vertical-align: -1px; } .ds-strip .k.have { background: var(--good-fill, #139079); } .ds-strip .k.gap { background: var(--warn-soft, #fcf0dc); box-shadow: inset 0 0 0 1.5px var(--warn-fill, #d9891a); } .ds-strip-mini { display: flex; gap: 2px; height: 8px; width: 144px; margin-top: 16px; } .ds-strip-mini i { flex-basis: 0; min-width: 4px; border-radius: 3px; } .ds-strip-mini .have { background: var(--good-fill, #139079); } .ds-strip-mini .gap { background: var(--warn-soft, #fcf0dc); box-shadow: inset 0 0 0 1px var(--warn-fill, #d9891a); }"
     }
   ],
   "narrative": {
-    "northStar": "Light Through the Mashrabiya",
-    "overview": "A dense, working analytics product set inside a Cairene mashrabiya. A deep teak rail holds the navigation; the work happens on a cool shaded-plaster ground with white panels drawn in plaster hairlines. Sunlit amber is the light that comes through the screen: it marks what is selected, what has focus, what changed, and the openings of the role × skill lattice. Data itself is coloured from qamariyya stained glass, one glass hue per kind of entity, held constant in every module so a colour always means the same kind of thing.\n\nThe lattice is the one place the world speaks out loud. Everywhere else the system is quiet and exact: one sans for Arabic and Latin, tabular figures, a tight scale where a single size does most of the work, nothing labelled twice, every figure carrying its denominator. Night mode is a dark teak ground with the same glass, each value selected for its theme rather than flipped.\n\nThe system rejects the analytics default of a grey card grid with one blue accent and a hero-metric row.",
+    "northStar": "The Market, Read to You",
+    "overview": "A career intelligence product that reads the job market to one person. The ground is light stone, the work happens on white panels drawn with fine hairlines, and the ink is a deep navy-charcoal. One deep blue carries everything the visitor can act on and every single-series figure; two semantic hues carry the only judgement the product makes about the visitor: teal for \"you have it\", amber for \"a gap, or treat with caution\". Everything else stays neutral so those two read instantly.\n\nEach screen has one answer, and it sits on the one navy surface the page is allowed: a written sentence (\"You have 3 of the 15 skills Data Analysis & BI postings ask for most…\", \"Half advertise more than $X a year\"), with its sample size beside it. The rest of the page is the evidence: panels, charts with table views, lists of postings. Density is that of a working tool (14px body, 36px controls), not a marketing page; Home leads with the product itself.\n\nThe world holds in both themes and both directions. Dark mode uses its own tuned values (not inverted ones) and Arabic flips the whole layout through logical properties, with Readex Pro covering the Arabic script beside Geist. The visitor's role and skills live only in this browser and every page reads them; nothing in the design implies an account.",
     "keyCharacteristics": [
-      "Teak rail and header, shaded-plaster ground (cool off-white, never cream), white panels with hairline borders.",
-      "Amber means \"selected, focused, changed, or lit\"; it never encodes a data series.",
-      "One stained-glass hue per entity kind, identical across modules and both themes.",
-      "Uncertainty and team-added data are carried by dashes and hatching, never by colour alone.",
-      "Tight type scale, tabular numerals, compact 32px controls.",
-      "Flat surfaces; shadow only on floating layers."
+      "Light stone ground (`bg`), white panels (`panel`), 1px hairlines (`line`); depth by tone and line, not shadow.",
+      "One blue (`accent`) for action, selection, focus and all single-series data.",
+      "Teal (`good-fill`) means only \"you have it\"; amber (`warn-fill`) means only \"gap\" or \"caution / small sample\".",
+      "At most one navy answer band (`rail`) per screen, carrying a sentence.",
+      "The coverage strip is the signature: requested skills as one bar, width = demand.",
+      "Geist for Latin, Readex Pro for Arabic, tabular figures for every number.",
+      "Radii 8px controls, 12px panels; shadow only on floating layers."
     ],
     "rules": [
       {
-        "name": "The Light Is Not Data Rule",
-        "body": "Amber is reserved for selection, focus, change marks and the lattice's light. No chart series, bar or category is ever amber. The categorical order is cobalt, turquoise, ruby, violet, emerald, with amber excluded.",
+        "name": "The One Blue Rule",
+        "body": "Blue is the only hue for action and for data that is not about the visitor. A single-series chart is blue whatever it counts; never pick a series colour for variety.",
         "section": "colors"
       },
       {
-        "name": "The One Glass Per Kind Rule",
-        "body": "A kind of entity has one hue everywhere: posting cobalt, skill turquoise, source violet, pay ruby, place emerald. A new chart picks its colour from what it counts, not from what looks good next to its neighbour. This order and these assignments were validated for colour-vision deficiency in both themes; do not reorder or substitute them.",
+        "name": "The Teal Means You Rule",
+        "body": "Teal appears only where the thing is something the visitor has. Amber appears only for a gap, a caution, or a small sample. Neither is ever a data hue for the market.",
         "section": "colors"
       },
       {
-        "name": "The Burnt Orange Is Not Amber Rule",
-        "body": "Warning is burnt orange (status-warn), never amber, so a warning and a selection are never confused.",
+        "name": "The Selected-Per-Theme Rule",
+        "body": "Dark values are chosen, not computed: every token has its own dark value under `[data-theme=\"dark\"]` (sidecar `themes.dark`), and charts read colours from the live CSS tokens so both themes stay in step. On the dark blue (`accent` #7f9cff) the on-accent text is the dark ground, not white.",
         "section": "colors"
-      },
-      {
-        "name": "The One Size Does The Work Rule",
-        "body": "Body at 14px carries most of the interface; the scale steps (12 / 13 / 14 / 16 / 20 / 24) are small. Emphasis is weight 500-600 or a darker ink, not a bigger size.",
-        "section": "typography"
       },
       {
         "name": "The Tabular Figures Rule",
-        "body": "Every number that can be compared vertically uses tabular numerals.",
+        "body": "Every number that can sit beside another (KPIs, tables, counts, shares, salaries) uses tabular numerals (`.tnum`, `.kpi`, all tables).",
         "section": "typography"
       },
       {
-        "name": "The Only Floating Things Cast Shadows Rule",
-        "body": "If it sits in the page flow, it has a hairline and no shadow.",
-        "section": "elevation"
+        "name": "The Sentence-Case Rule",
+        "body": "Labels, group names and pills are sentence case at 12px in `ink-3`; nothing is uppercased or letter-spaced to look like a kicker.",
+        "section": "typography"
       },
       {
-        "name": "The Dashed Means Doubt Rule",
-        "body": "A dashed frame, dashed outline or diagonal hatch marks small samples (fewer than 30 postings in the group), team-added skills, and benchmark rather than advertised pay. Team-added skills are always hatched or dashed, never distinguished by colour alone.",
-        "section": "shapes"
+        "name": "The Logical Sides Rule",
+        "body": "Every directional value is logical (`ms/me`, `ps/pe`, `start/end`, `border-s/e`, `rounded-s/e`); arrows rotate 180° in RTL; charts are mirrored by one shared function rather than per chart; strip segments grow from the reading-start edge. Mixed-direction strings (titles, employers, places) carry `dir=\"auto\"` or `<bdi>`.",
+        "section": "layout"
+      },
+      {
+        "name": "The Floats-Only Rule",
+        "body": "Panels, cards, answer bands and lists never cast a shadow; a shadow means the layer is above the page and can be dismissed.",
+        "section": "elevation"
       }
     ],
     "dos": [
-      "Do colour every data mark by the kind of entity it counts: posting cobalt, skill turquoise, source violet, pay ruby, place emerald.",
-      "Do use the categorical order cobalt, turquoise, ruby, violet, emerald for multi-series charts, in that order, in both themes.",
-      "Do keep amber for selection, focus, change marks and the lattice's light; use amber ink wherever amber must be read as text or outline.",
-      "Do hatch or dash team-added skills, small samples (under 30) and benchmark pay, and say so in the legend or caption.",
-      "Do give every panel a meta line with its population and denominator, and every chart a table view.",
-      "Do use burnt orange (status-warn) for warnings and small-group markers.",
-      "Do put shadows only on popovers, menus and tooltips; separate in-flow surfaces with a plaster hairline.",
-      "Do select each dark-mode value for the dark teak ground rather than inverting the light one."
+      "Do put each screen's answer in one navy band as a sentence with its n, then the evidence below on white panels.",
+      "Do colour every single-series chart and the matrix with `accent`, sources with `s6`, and reserve `s2`–`s5` for charts with two or more series and a legend.",
+      "Do use `good-fill` only for skills the visitor has and `warn-fill` / `warn-soft` only for gaps, cautions and small samples.",
+      "Do pair every hue-coded state with a second cue: dashed or hatched for team-added, a written label or readout for have / to learn.",
+      "Do use tabular figures for every number and show the denominator next to it.",
+      "Do use logical properties for every side, `dir=\"auto\"` / `<bdi>` for data strings, and let the shared mirror handle charts in RTL.",
+      "Do give every token its own dark value; read chart colours from the CSS tokens at render time.",
+      "Do keep the profile visibly local: \"Saved in this browser only\" wherever it is edited."
     ],
     "donts": [
-      "Don't use amber (or the unused amber glass hue) as a chart series, category colour or choropleth ramp.",
-      "Don't distinguish team-added from written-in-posting skills by colour alone.",
-      "Don't use amber for warnings, or burnt orange for selection.",
-      "Don't reorder or substitute the five glass hues; the set was validated for colour-vision deficiency in both themes.",
-      "Don't make the page ground cream or warm; the plaster is cool, and the warmth belongs to the teak.",
-      "Don't add a hero-metric row, a grey card grid with one blue accent, or a second display face.",
-      "Don't add kickers or eyebrow labels above titles; a title and its meta line are enough.",
-      "Don't join the 2023 archive and the 2024-26 collection into one continuous series."
+      "Don't use the navy surface more than once per screen, as a theme, or as a sidebar.",
+      "Don't use teal or amber as a market data hue or for decoration.",
+      "Don't put a shadow on a panel, card, list or answer band; shadow is for floating layers only.",
+      "Don't go above 12px radius except the navy answer band (16px), or use pill shapes for buttons.",
+      "Don't uppercase or letter-space labels into kickers or eyebrows above headings.",
+      "Don't set a second display face or a serif; Geist and Readex Pro carry everything.",
+      "Don't add physical `left`/`right` margins, paddings or positions.",
+      "Don't imply accounts, saved jobs or settings that do not exist."
     ]
   }
 }

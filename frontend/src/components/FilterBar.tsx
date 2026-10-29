@@ -1,7 +1,7 @@
 import * as Popover from "@radix-ui/react-popover";
 import clsx from "clsx";
 import { Command } from "cmdk";
-import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useApi } from "../lib/api";
 import { activeCount, type Filters, type ListKey } from "../lib/filters";
@@ -14,18 +14,18 @@ import { Segmented } from "./ui";
 interface Option { value: string; label: string; n?: number; group?: string }
 
 const facets = (): { key: ListKey; label: string; dim?: string }[] => [
+  { key: "role", label: t("Role", "الدور"), dim: "role_category" },
   { key: "market", label: t("Market", "السوق"), dim: "market_type" },
   { key: "country", label: t("Country", "الدولة"), dim: "country" },
-  { key: "role", label: t("Role", "الدور"), dim: "role_category" },
-  { key: "seniority", label: t("Seniority", "مستوى الخبرة"), dim: "seniority" },
   { key: "skill", label: t("Skills", "المهارات") },
-  { key: "cohort", label: t("Collection", "دفعة الجمع"), dim: "cohort" },
-  { key: "source", label: t("Source", "المصدر"), dim: "source_dataset" },
+  { key: "seniority", label: t("Seniority", "مستوى الخبرة"), dim: "seniority" },
 ];
 const more = (): { key: ListKey; label: string; dim?: string }[] => [
-  { key: "region", label: t("Region", "المنطقة"), dim: "region" },
-  { key: "job_type", label: t("Employment type", "نوع التوظيف"), dim: "job_type" },
   { key: "work_mode", label: t("Work mode", "نمط العمل"), dim: "work_mode" },
+  { key: "job_type", label: t("Employment type", "نوع التوظيف"), dim: "job_type" },
+  { key: "region", label: t("Region", "المنطقة"), dim: "region" },
+  { key: "cohort", label: t("Collection", "دفعة الجمع"), dim: "cohort" },
+  { key: "source", label: t("Source", "المصدر"), dim: "source_dataset" },
   { key: "company", label: t("Employer", "جهة التوظيف") },
 ];
 export const facetLabel = (key: string): string | undefined => [...facets(), ...more()].find((f) => f.key === key)?.label;
@@ -47,11 +47,10 @@ export function FilterBar() {
 
   return (
     <div className="border-b border-line bg-panel">
-      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 lg:px-6">
-        <KeywordSearch value={filters.q ?? ""} onChange={(v) => set("q", v || undefined)} />
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 sm:px-4 lg:px-8">
         <button type="button" aria-expanded={open} aria-controls="facets" onClick={() => setOpen(!open)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong px-2.5 text-sm text-ink-2 lg:hidden">
-          <SlidersHorizontal size={14} /> {t("Filters", "الفلاتر")}{n > 0 && <span className="tnum rounded bg-accent-soft px-1 text-xs text-accent-ink">{n}</span>}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line-strong px-3 text-sm text-ink-2 lg:hidden">
+          <SlidersHorizontal size={15} /> {t("Filters", "الفلاتر")}{n > 0 && <span className="tnum rounded-md bg-accent-soft px-1.5 text-xs font-medium text-accent-ink">{n}</span>}
         </button>
         <div id="facets" className={clsx("w-full flex-wrap items-center gap-2 lg:flex lg:w-auto", open ? "flex" : "hidden")}>
         {facets().map((f) => f.key === "skill"
@@ -73,34 +72,13 @@ export function FilterBar() {
   );
 }
 
-function KeywordSearch({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [text, setText] = useState(value);
-  // take outside changes (chip removed, back button) without undoing a trailing space being typed
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (value !== text.trim()) setText(value); }, [value]);
-  useEffect(() => {
-    if (text.trim() === value) return;
-    const t = setTimeout(() => onChange(text.trim()), 350);
-    return () => clearTimeout(t);
-  }, [text, value, onChange]);
-  return (
-    <label className="relative flex h-8 min-w-[200px] flex-1 items-center sm:max-w-[280px]">
-      <Search size={15} className="pointer-events-none absolute start-2.5 text-ink-3" />
-      <span className="sr-only">{t("Search job titles and employers", "ابحث في المسميات الوظيفية وجهات التوظيف")}</span>
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("Search titles or employers", "ابحث في المسميات أو جهات التوظيف")}
-        dir="auto" type="search" maxLength={120}
-        className="h-8 w-full rounded-md border border-line-strong bg-panel ps-8 pe-2 text-sm placeholder:text-ink-3 focus-visible:outline-2" />
-    </label>
-  );
-}
-
 function FacetButton({ label, count }: { label: string; count: number }) {
   return (
-    <span className={clsx("inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm transition-colors",
-      count ? "border-accent-line bg-accent-soft font-medium text-accent-ink" : "border-line-strong bg-panel text-ink-2 hover:text-ink hover:bg-panel-2")}>
+    <span className={clsx("inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors",
+      count ? "border-accent-line bg-accent-soft font-medium text-accent-ink" : "border-line bg-panel text-ink-2 hover:border-line-strong hover:text-ink")}>
       {label}
-      {count > 0 && <span className="tnum rounded bg-panel px-1 text-xs">{count}</span>}
-      <ChevronDown size={14} />
+      {count > 0 && <span className="tnum rounded-md bg-panel px-1.5 text-xs">{count}</span>}
+      <ChevronDown size={14} className="opacity-70" />
     </span>
   );
 }
@@ -113,11 +91,11 @@ function Facet({ label, selected, options, onToggle, onClear, grouped }: {
       <Popover.Trigger aria-label={t(`Filter by ${label.toLowerCase()}${selected.length ? `, ${selected.length} selected` : ""}`, `تصفية حسب ${label}${selected.length ? `، ${selected.length} محدد` : ""}`)}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={6} collisionPadding={12}
-          className="z-50 w-72 rounded-lg border border-line-strong bg-panel shadow-panel">
+          className="z-50 w-72 rounded-xl border border-line bg-panel shadow-panel">
           <Command label={t(`${label} options`, `خيارات ${label}`)} className="flex max-h-[min(420px,70vh)] flex-col">
             <div className="border-b border-line p-2">
               <Command.Input autoFocus placeholder={t(`Find ${label.toLowerCase()}`, `ابحث في ${label}`)} dir="auto"
-                className="h-8 w-full rounded-md bg-panel-2 px-2 text-sm placeholder:text-ink-3 focus:outline-none" />
+                className="h-9 w-full rounded-lg bg-panel-2 px-2.5 text-sm placeholder:text-ink-3 focus:outline-none" />
             </div>
             <Command.List className="overflow-auto p-1">
               <Command.Empty className="p-3 text-sm text-ink-3">{t("No match.", "لا نتائج.")}</Command.Empty>
@@ -151,9 +129,9 @@ function groupBy(options: Option[]): (readonly [string, Option[]])[] {
 function OptionRow({ o, checked, onSelect }: { o: Option; checked: boolean; onSelect: () => void }) {
   return (
     <Command.Item value={`${o.label} ${o.value}`} onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[selected=true]:bg-panel-2">
+      className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm data-[selected=true]:bg-panel-2">
       <span className={clsx("grid size-4 shrink-0 place-items-center rounded border",
-        checked ? "border-accent-ink bg-accent text-rail" : "border-line-strong")} aria-hidden>
+        checked ? "border-accent bg-accent text-white dark:text-[#0b0f17]" : "border-line-strong")} aria-hidden>
         {checked && <Check size={12} strokeWidth={3} />}
       </span>
       <span className="min-w-0 flex-1 truncate" dir="auto">{o.label}</span>
@@ -179,11 +157,11 @@ function AsyncFacet({ label, selected, onToggle, kind }: { label: string; select
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger aria-label={t(`Filter by ${label.toLowerCase()}${selected.length ? `, ${selected.length} selected` : ""}`, `تصفية حسب ${label}${selected.length ? `، ${selected.length} محدد` : ""}`)}><FacetButton label={label} count={selected.length} /></Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content align="start" sideOffset={6} collisionPadding={12} className="z-50 w-72 rounded-lg border border-line-strong bg-panel shadow-panel">
+        <Popover.Content align="start" sideOffset={6} collisionPadding={12} className="z-50 w-72 rounded-xl border border-line bg-panel shadow-panel">
           <Command label={t(`${label} options`, `خيارات ${label}`)} shouldFilter={false} className="flex max-h-[min(420px,70vh)] flex-col">
             <div className="border-b border-line p-2">
               <Command.Input autoFocus value={q} onValueChange={setQ} placeholder={kind === "skill" ? t("Type a skill, e.g. Python", "اكتب مهارة، مثل Python") : t("Type an employer", "اكتب اسم جهة توظيف")}
-                className="h-8 w-full rounded-md bg-panel-2 px-2 text-sm placeholder:text-ink-3 focus:outline-none" />
+                className="h-9 w-full rounded-lg bg-panel-2 px-2.5 text-sm placeholder:text-ink-3 focus:outline-none" />
             </div>
             <Command.List className="overflow-auto p-1">
               {kind === "skill" && <p className="px-2 py-1.5 text-xs text-ink-3">{t("Postings must list every selected skill.", "يجب أن يذكر الإعلان كل المهارات المحددة.")}</p>}
@@ -204,14 +182,14 @@ function MoreFilters({ filters, optionsFor }: { filters: Filters; optionsFor: (k
   return (
     <Popover.Root>
       <Popover.Trigger aria-label={t("More filters", "فلاتر إضافية")}>
-        <span className={clsx("inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm",
-          count ? "border-accent-line bg-accent-soft font-medium text-accent-ink" : "border-line-strong text-ink-2 hover:bg-panel-2 hover:text-ink")}>
-          <SlidersHorizontal size={14} /> {t("More", "المزيد")}{count > 0 && <span className="tnum rounded bg-panel px-1 text-xs">{count}</span>}
+        <span className={clsx("inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm",
+          count ? "border-accent-line bg-accent-soft font-medium text-accent-ink" : "border-line text-ink-2 hover:border-line-strong hover:text-ink")}>
+          <SlidersHorizontal size={14} /> {t("More filters", "فلاتر أخرى")}{count > 0 && <span className="tnum rounded-md bg-panel px-1.5 text-xs">{count}</span>}
         </span>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={6} collisionPadding={12}
-          className="z-50 w-[min(560px,92vw)] rounded-lg border border-line-strong bg-panel p-4 shadow-panel">
+          className="z-50 max-h-[min(640px,80vh)] w-[min(600px,92vw)] overflow-auto rounded-xl border border-line bg-panel p-5 shadow-panel">
           <div className="grid gap-4 sm:grid-cols-2">
             {more().filter((f) => f.dim).map((f) => (
               <fieldset key={f.key}>
@@ -219,7 +197,7 @@ function MoreFilters({ filters, optionsFor }: { filters: Filters; optionsFor: (k
                 <div className="flex flex-wrap gap-1.5">
                   {optionsFor(f.key, f.dim).map((o) => (
                     <button key={o.value} type="button" aria-pressed={filters[f.key].includes(o.value)} onClick={() => toggle(f.key, o.value)}
-                      className={clsx("rounded-md border px-2 py-1 text-sm", filters[f.key].includes(o.value)
+                      className={clsx("rounded-lg border px-2.5 py-1 text-sm", filters[f.key].includes(o.value)
                         ? "border-accent-line bg-accent-soft text-accent-ink" : "border-line text-ink-2 hover:bg-panel-2")}>
                       {o.label} <span className="tnum text-xs text-ink-3">{fmtCompact(o.n)}</span>
                     </button>
@@ -231,10 +209,10 @@ function MoreFilters({ filters, optionsFor }: { filters: Filters; optionsFor: (k
               <legend className="mb-1.5 text-sm font-medium text-ink">{t("Posting date", "تاريخ النشر")}</legend>
               <div className="flex items-center gap-2 text-sm">
                 <input type="date" aria-label={t("Posted on or after", "نُشر في هذا التاريخ أو بعده")} value={filters.date_from ?? ""} min={meta?.date_range.min} max={meta?.date_range.max}
-                  onChange={(e) => set("date_from", e.target.value || undefined)} className="h-8 rounded-md border border-line-strong bg-panel px-2" />
+                  onChange={(e) => set("date_from", e.target.value || undefined)} className="h-9 rounded-lg border border-line-strong bg-panel px-2" />
                 <span className="text-ink-3">{t("to", "إلى")}</span>
                 <input type="date" aria-label={t("Posted on or before", "نُشر في هذا التاريخ أو قبله")} value={filters.date_to ?? ""} min={meta?.date_range.min} max={meta?.date_range.max}
-                  onChange={(e) => set("date_to", e.target.value || undefined)} className="h-8 rounded-md border border-line-strong bg-panel px-2" />
+                  onChange={(e) => set("date_to", e.target.value || undefined)} className="h-9 rounded-lg border border-line-strong bg-panel px-2" />
               </div>
               <p className="mt-1 text-xs text-ink-3">{t("Postings without a date are excluded when a date is set.", "تُستبعد الإعلانات غير المؤرَّخة عند تحديد تاريخ.")}</p>
             </fieldset>
@@ -242,7 +220,7 @@ function MoreFilters({ filters, optionsFor }: { filters: Filters; optionsFor: (k
               <legend className="mb-1.5 text-sm font-medium text-ink">{t("Salary", "الراتب")}</legend>
               <label className="flex items-center gap-2 text-sm text-ink-2">
                 <input type="checkbox" checked={filters.salary === "advertised"} onChange={(e) => set("salary", e.target.checked ? "advertised" : undefined)}
-                  className="size-4 accent-[var(--accent-ink)]" />
+                  className="size-4 accent-[var(--accent)]" />
                 {t("Only postings that advertise a salary", "الإعلانات التي تذكر راتبًا فقط")}
               </label>
               <p className="mt-1 text-xs text-ink-3">{t("Market benchmarks added by the team do not count.", "لا تُحتسب الرواتب المرجعية التي أضافها الفريق.")}</p>
@@ -273,12 +251,12 @@ function ActiveChips({ filters, onRemove, onReset, count }: { filters: Filters; 
   }, [filters, labels]);
   if (!count) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1.5 px-4 pb-2.5 lg:px-6" aria-label={t("Applied filters", "الفلاتر المطبقة")}>
+    <div className="flex flex-wrap items-center gap-1.5 px-3 pb-2.5 sm:px-4 lg:px-8" aria-label={t("Applied filters", "الفلاتر المطبقة")}>
       {chips.map((c) => (
-        <span key={`${c.k}:${c.v}`} className="inline-flex items-center gap-1 rounded-md bg-panel-2 py-0.5 ps-2 pe-1 text-sm text-ink ring-1 ring-line">
-          <span className="text-ink-3">{facetLabel(c.k) ?? (c.k === "q" ? t("Search", "البحث") : c.k.startsWith("date") ? t("Date", "التاريخ") : t("Salary", "الراتب"))}:</span>
+        <span key={`${c.k}:${c.v}`} className="inline-flex h-7 items-center gap-1 rounded-lg bg-accent-soft ps-2.5 pe-1 text-sm text-ink">
+          <span className="text-ink-2">{facetLabel(c.k) ?? (c.k === "q" ? t("Search", "البحث") : c.k.startsWith("date") ? t("Date", "التاريخ") : t("Salary", "الراتب"))}:</span>
           <span dir="auto" className="max-w-[220px] truncate">{c.text}</span>
-          <button type="button" aria-label={t(`Remove ${c.text}`, `إزالة ${c.text}`)} onClick={() => onRemove(c.k, c.v)} className="grid size-5 place-items-center rounded text-ink-3 hover:bg-line hover:text-ink">
+          <button type="button" aria-label={t(`Remove ${c.text}`, `إزالة ${c.text}`)} onClick={() => onRemove(c.k, c.v)} className="grid size-5 place-items-center rounded-md text-ink-3 hover:bg-panel hover:text-ink">
             <X size={13} />
           </button>
         </span>
@@ -296,9 +274,11 @@ function Population() {
   const q = useApi<Count[]>("/breakdown", filters, { dim: "cohort" });
   const total = q.data?.reduce((a, r) => a + r.n, 0);
   const all = meta?.totals.postings;
-  const mix = q.data?.filter((r) => r.n).map((r) => `${fmtPct(r.share, 0)} ${labels.cohort(r.key)}`).join(" · ");
+  // a non-zero share never rounds to 0% (nor a partial one to 100%): missing is not zero
+  const pct = (r: Count) => ((r.share ?? 0) < 0.005 ? "<1%" : total && r.n < total && (r.share ?? 0) > 0.995 ? ">99%" : fmtPct(r.share, 0));
+  const mix = q.data?.filter((r) => r.n).map((r) => `${pct(r)} ${labels.cohort(r.key)}`).join(" · ");
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line bg-panel-2 px-4 py-1.5 text-xs text-ink-2 lg:px-6" aria-live="polite">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-3 py-2 text-xs text-ink-2 sm:px-4 lg:px-8" aria-live="polite">
       <span>
         <strong className="tnum font-semibold text-ink">{total == null ? "…" : fmtInt(total)}</strong>
         {all != null && total !== all && <> {t("of", "من")} {fmtInt(all)}</>} {t("unique postings", "إعلانًا فريدًا")}

@@ -39,6 +39,19 @@ export interface Overview {
   salary_histogram: { bin: number; n: number }[];
 }
 
+/** /career/gap: a target role's requested skills set against the skills someone has. */
+export type GapSkill = SkillRow & { have: boolean; wilson_lower: number };
+export interface CareerGap {
+  role: string; denominator: number; have: string[]; min_group: number; provenance: string;
+  status: "ok" | "too_few_postings";
+  skills: GapSkill[];
+  priorities: GapSkill[];
+  alignment: { score: number; top_k: number; matched_top: string[] } | null;
+  posting_match?: { postings: number; full_match: number; half_match: number; any_match: number } | null;
+  related_roles: { role: string; similarity: number; postings_with_skills: number; alignment: number | null; top_skills: string[] }[];
+  postings: { job_id: string; title: string; company: string | null; country: string | null; market_type: string; posted_date: string | null; url: string | null; matched: number; listed: number; missing: string[] | null }[];
+}
+
 export interface SkillChip { skill: string; observed: boolean; category: string }
 export interface Job {
   job_id: string; title: string; company: string | null; company_is_placeholder: boolean; role_category: string;

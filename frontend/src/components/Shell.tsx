@@ -1,41 +1,45 @@
 import clsx from "clsx";
 import {
-  BarChart3, Briefcase, Building2, Compass, FlaskConical, GitCompareArrows, Globe2, Lightbulb, LineChart,
-  Languages, Menu, Moon, ShieldCheck, Sparkles, Sun, Wallet, X,
+  BarChart3, Briefcase, Building2, Clock3, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
+  Menu, Moon, Route, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { filterParams } from "../lib/filters";
 import { fmtDate } from "../lib/format";
 import { useFilters, useMeta, useTheme } from "../lib/hooks";
-import { t, useLang } from "../lib/i18n";
+import { t, tv, useLang } from "../lib/i18n";
+import { useProfile } from "../lib/profile";
 import { FilterBar } from "./FilterBar";
 
-export const nav = (): { group: string; items: { to: string; label: string; icon: typeof Compass; filters?: boolean }[] }[] => [
-  { group: t("Explore", "استكشاف"), items: [
-    { to: "/", label: t("Overview", "نظرة عامة"), icon: Compass },
-    { to: "/explorer", label: t("Job explorer", "مستكشف الوظائف"), icon: Briefcase },
-    { to: "/geography", label: t("Geography", "الجغرافيا"), icon: Globe2 },
-    { to: "/employers", label: t("Employers", "جهات التوظيف"), icon: Building2 },
+export const nav = (): { group: string; items: { to: string; label: string; icon: typeof Home; filters?: boolean }[] }[] => [
+  { group: t("Discover", "اكتشف"), items: [
+    { to: "/", label: t("Home", "الرئيسية"), icon: Home, filters: false },
+    { to: "/explorer", label: t("Jobs", "الوظائف"), icon: Briefcase },
   ] },
-  { group: t("Analyze", "تحليل"), items: [
-    { to: "/skills", label: t("Skills", "المهارات"), icon: Sparkles },
+  { group: t("You", "أنت"), items: [
+    { to: "/career", label: t("My skills & plan", "مهاراتي وخطتي"), icon: Route, filters: false },
+  ] },
+  { group: t("Market", "السوق"), items: [
+    { to: "/market", label: t("Market overview", "نظرة على السوق"), icon: LayoutGrid },
+    { to: "/skills", label: t("Skills in demand", "المهارات المطلوبة"), icon: Sparkles },
     { to: "/salary", label: t("Salaries", "الرواتب"), icon: Wallet },
-    { to: "/trends", label: t("Time & cohorts", "الزمن ودفعات الجمع"), icon: LineChart },
+    { to: "/geography", label: t("Locations", "المواقع"), icon: Globe2 },
+    { to: "/employers", label: t("Employers", "جهات التوظيف"), icon: Building2 },
+    { to: "/trends", label: t("Over time", "عبر الزمن"), icon: Clock3 },
     { to: "/compare", label: t("Compare markets", "مقارنة الأسواق"), icon: GitCompareArrows, filters: false },
   ] },
-  { group: t("Plan", "تخطيط"), items: [
-    { to: "/career", label: t("Career planner", "مخطط المسار المهني"), icon: Lightbulb },
+  { group: t("Tools", "أدوات"), items: [
     { to: "/insights", label: t("Guided insights", "رؤى موجّهة"), icon: BarChart3 },
     { to: "/builder", label: t("Insight builder", "منشئ التحليلات"), icon: FlaskConical },
   ] },
-  { group: t("Trust", "الثقة"), items: [
+  { group: t("About the data", "عن البيانات"), items: [
     { to: "/quality", label: t("Data & methodology", "البيانات والمنهجية"), icon: ShieldCheck, filters: false },
   ] },
 ];
 
 /** Pages whose content does not depend on the global filters hide the bar. */
-const NO_FILTERS = new Set(["/compare", "/quality"]);
+const NO_FILTERS = new Set(nav().flatMap((g) => g.items).filter((i) => i.filters === false).map((i) => i.to));
 
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -43,38 +47,37 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => setOpen(false), [loc.pathname]);
   const { data: meta } = useMeta();
   useEffect(() => {
-    document.title = t("Job Market Intelligence", "ذكاء سوق العمل");
+    document.title = t("Bosla", "بوصلة");
     document.querySelector('meta[name="description"]')?.setAttribute("content", t(
-      "Job Market Intelligence: demand, skills, pay and geography from a unified, deduplicated sample of 588k tech job postings.",
-      "ذكاء سوق العمل: الطلب والمهارات والأجور والجغرافيا من عينة موحَّدة وخالية من التكرار تضم 588 ألف إعلان وظيفة تقنية."));
+      "Bosla: find tech jobs, see how your skills match, and learn what to do next, from a unified sample of 588k postings.",
+      "بوصلة: ابحث عن وظائف تقنية، واعرف مدى توافق مهاراتك، وما تفعله بعد ذلك، من عينة موحَّدة تضم 588 ألف إعلان."));
   }, []);
-  // sticky side panels (posting detail, career plan) sit just below the filter bar
-  const filterRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const el = filterRef.current;
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  // sticky side panels (posting detail, career plan) sit just below the sticky header
+  const headRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = headRef.current;
     const root = document.documentElement;
-    if (!el) { root.style.setProperty("--filters-h", "0px"); return; }
+    if (!el) return;
     const ro = new ResizeObserver(() => root.style.setProperty("--filters-h", `${el.offsetHeight}px`));
     ro.observe(el);
     return () => ro.disconnect();
   }, [loc.pathname]);
+  const showFilters = !NO_FILTERS.has(loc.pathname);
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[236px_1fr]">
-      <a href="#main" className="sr-only z-50 rounded bg-panel p-2 focus:not-sr-only focus:fixed focus:start-2 focus:top-2">{t("Skip to content", "تخطَّ إلى المحتوى")}</a>
-      {/* mobile top bar */}
-      <div className="sticky top-0 z-40 flex h-12 items-center justify-between bg-rail px-3 text-rail-ink lg:hidden">
-        <Brand />
-        <button type="button" aria-label={open ? t("Close navigation", "إغلاق التنقل") : t("Open navigation", "فتح التنقل")} aria-expanded={open} onClick={() => setOpen(!open)}
-          className="grid size-9 place-items-center rounded-md hover:bg-rail-2">
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-      <aside className={clsx("z-30 flex-col bg-rail text-rail-ink lg:sticky lg:top-0 lg:flex lg:h-screen",
-        open ? "fixed inset-x-0 top-12 bottom-0 flex overflow-auto" : "hidden")} aria-label={t("Sidebar", "الشريط الجانبي")}>
-        <div className="hidden px-4 pt-4 pb-3 lg:block"><Brand /></div>
+    <div className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+      <a href="#main" className="sr-only z-50 rounded-lg bg-panel p-2 focus:not-sr-only focus:fixed focus:start-2 focus:top-2">{t("Skip to content", "تخطَّ إلى المحتوى")}</a>
+      <aside className={clsx("z-40 flex-col border-line bg-panel lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-e",
+        open ? "fixed inset-x-0 top-14 bottom-0 flex overflow-auto" : "hidden")} aria-label={t("Sidebar", "الشريط الجانبي")}>
+        <div className="hidden h-16 shrink-0 items-center px-5 lg:flex"><Brand /></div>
         <Nav />
-        <RailFooter builtAt={meta?.built_at} />
+        <SideFooter builtAt={meta?.built_at} />
       </aside>
       <div className="min-w-0">
         {meta?.dataset_kind === "synthetic" && (
@@ -82,25 +85,103 @@ export function Shell({ children }: { children: ReactNode }) {
             {t("Synthetic demo data — generated for testing. These numbers are not research results.", "بيانات تجريبية مُولَّدة للاختبار — هذه الأرقام ليست نتائج بحثية.")}
           </div>
         )}
-        {!NO_FILTERS.has(loc.pathname) && <div ref={filterRef} className="z-20 lg:sticky lg:top-0"><FilterBar /></div>}
-        <main id="main" className="mx-auto max-w-[1480px] px-4 py-5 lg:px-6 lg:py-6">{children}</main>
+        <div ref={headRef} className="sticky top-0 z-30">
+          <TopBar open={open} onMenu={() => setOpen(!open)} />
+          {showFilters && <FilterBar />}
+        </div>
+        <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <footer className="mx-auto max-w-[1600px] border-t border-line px-4 py-5 text-xs text-ink-3 sm:px-6 lg:px-8">
+          {t("Created by", "صُنع بواسطة")}{" "}
+          <a href="https://abdelhmeed.com" target="_blank" rel="noopener" dir="ltr" className="font-medium text-ink-2 hover:text-ink">abdelhmeed.com</a>
+        </footer>
       </div>
     </div>
   );
 }
 
+export function BrandMark({ size = 28 }: { size?: number }) {
+  return (
+    // the Bosla mark (small-size cut): a b whose bowl is a compass dial, needle pointing north-east
+    <svg width={size} height={size} viewBox="0 0 256 256" aria-hidden className="shrink-0">
+      <rect width="256" height="256" rx="56" fill="var(--rail)" />
+      <g transform="translate(25.6 25.6) scale(.8)">
+        <path fill="var(--rail-ink)" fillRule="evenodd" d="M56 24H86V101.52A72 72 0 1 1 86 218.48V232H56ZM86 160A42 42 0 1 0 170 160A42 42 0 1 0 86 160Z" />
+        <path fill="var(--warn-fill)" d="M151.33 136.67 137.19 169.19 104.67 183.33 118.81 150.81Z" />
+      </g>
+    </svg>
+  );
+}
+
 function Brand() {
   return (
-    <NavLink to="/" className="flex items-center gap-2.5 rounded-md text-rail-ink no-underline">
-      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden>
-        <rect width="32" height="32" rx="6" fill="var(--rail-2)" />
-        <g fill="var(--accent)"><circle cx="10" cy="10" r="3" /><circle cx="22" cy="10" r="4.5" /><circle cx="10" cy="22" r="4.5" /><circle cx="22" cy="22" r="2" /></g>
-      </svg>
+    <NavLink to="/" className="flex items-center gap-2.5 rounded-lg text-ink no-underline">
+      <BrandMark />
       <span className="leading-tight">
-        <span className="block text-sm font-semibold">{t("Job Market Intelligence", "ذكاء سوق العمل")}</span>
-        <span className="block text-xs text-rail-ink-2">{t("DEPI · Team 1", "DEPI · الفريق 1")}</span>
+        <span className="block text-sm font-semibold tracking-[-0.01em]">{t("Bosla", "بوصلة")}</span>
+        <span className="block text-xs text-ink-3">{t("Your tech career compass", "بوصلتك في سوق شغل التكنولوجيا")}</span>
       </span>
     </NavLink>
+  );
+}
+
+function TopBar({ open, onMenu }: { open: boolean; onMenu: () => void }) {
+  const [theme, setTheme] = useTheme();
+  const [lang, setLang] = useLang();
+  const { profile } = useProfile();
+  return (
+    <div className="flex h-14 items-center gap-2 border-b border-line bg-panel/90 px-3 backdrop-blur-md sm:px-4 lg:h-16 lg:gap-3 lg:px-8">
+      <button type="button" aria-label={open ? t("Close navigation", "إغلاق التنقل") : t("Open navigation", "فتح التنقل")} aria-expanded={open} onClick={onMenu}
+        className="grid size-9 shrink-0 place-items-center rounded-lg text-ink-2 hover:bg-panel-2 lg:hidden">
+        {open ? <X size={20} /> : <Menu size={20} />}
+      </button>
+      <div className="lg:hidden"><NavLink to="/" aria-label={t("Home", "الرئيسية")}><BrandMark /></NavLink></div>
+      <JobSearch />
+      <div className="ms-auto flex items-center gap-1">
+        <NavLink to="/career" className="hidden h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 no-underline hover:bg-panel-2 hover:text-ink sm:inline-flex">
+          <Route size={15} className="text-accent" />
+          {profile.role || profile.skills.length
+            ? <span className="max-w-[220px] truncate"><span className="font-medium text-ink">{profile.role ? tv(profile.role) : t("Your profile", "ملفك")}</span>
+              <span className="tnum text-ink-3"> · {t(`${profile.skills.length} skills`, `${profile.skills.length} مهارات`)}</span></span>
+            : <span>{t("Add your skills", "أضف مهاراتك")}</span>}
+        </NavLink>
+        <button type="button" onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+          lang={lang === "ar" ? "en" : "ar"} title={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm text-ink-2 hover:bg-panel-2 hover:text-ink">
+          <Languages size={16} /> <span className="hidden sm:inline">{lang === "ar" ? "English" : "العربية"}</span>
+        </button>
+        <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          aria-label={theme === "dark" ? t("Switch to light theme", "التبديل إلى الوضع الفاتح") : t("Switch to dark theme", "التبديل إلى الوضع الداكن")}
+          title={theme === "dark" ? t("Light theme", "الوضع الفاتح") : t("Dark theme", "الوضع الداكن")}
+          className="grid size-9 place-items-center rounded-lg text-ink-2 hover:bg-panel-2 hover:text-ink">
+          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Search from anywhere: lands on Jobs with the query applied, keeping other filters. */
+function JobSearch() {
+  const { filters } = useFilters();
+  const navigate = useNavigate();
+  const loc = useLocation();
+  const [text, setText] = useState(filters.q ?? "");
+  useEffect(() => { setText(filters.q ?? ""); }, [filters.q]);
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const sp = new URLSearchParams(filterParams({ ...filters, q: text.trim() || undefined }));
+    navigate({ pathname: "/explorer", search: sp.toString() ? `?${sp}` : "" }, { replace: loc.pathname === "/explorer" });
+  };
+  return (
+    <form role="search" onSubmit={submit} className="min-w-0 flex-1 sm:max-w-md">
+      <label className="relative flex h-9 items-center">
+        <Search size={16} className="pointer-events-none absolute start-3 text-ink-3" />
+        <span className="sr-only">{t("Search jobs by title or employer", "ابحث في الوظائف بالمسمى أو جهة التوظيف")}</span>
+        <input value={text} onChange={(e) => setText(e.target.value)} type="search" dir="auto" maxLength={120}
+          placeholder={t("Search jobs by title or employer", "ابحث في الوظائف بالمسمى أو جهة التوظيف")}
+          className="h-9 w-full rounded-lg border border-line bg-panel-2 ps-9 pe-3 text-sm transition-colors placeholder:text-ink-3 hover:border-line-strong focus:border-accent focus:bg-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25" />
+      </label>
+    </form>
   );
 }
 
@@ -108,18 +189,18 @@ function Nav() {
   const { filters } = useFilters();
   const qs = new URLSearchParams(filterParams(filters)).toString();
   return (
-    <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="flex-1 overflow-y-auto px-2 pb-4">
+    <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="flex-1 overflow-y-auto px-3 pt-2 pb-4 lg:pt-0">
       {nav().map((g) => (
-        <div key={g.group} className="mt-3">
-          <p className="px-2 pb-1 text-xs font-medium text-rail-ink-2">{g.group}</p>
-          <ul>
+        <div key={g.group} className="mt-4 first:mt-1">
+          <p className="px-2.5 pb-1.5 text-xs font-medium text-ink-3">{g.group}</p>
+          <ul className="space-y-px">
             {g.items.map((it) => (
               <li key={it.to}>
-                <NavLink to={{ pathname: it.to, search: qs ? `?${qs}` : "" }} end={it.to === "/"}
-                  className={({ isActive }) => clsx("group flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
-                    isActive ? "bg-rail-2 font-medium text-rail-ink ring-1 ring-rail-line" : "text-rail-ink-2 hover:bg-rail-2/60 hover:text-rail-ink")}>
+                <NavLink to={{ pathname: it.to, search: qs && it.filters !== false ? `?${qs}` : "" }} end={it.to === "/"}
+                  className={({ isActive }) => clsx("group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm no-underline transition-colors",
+                    isActive ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-panel-2 hover:text-ink")}>
                   {({ isActive }) => (<>
-                    <it.icon size={16} strokeWidth={1.75} aria-hidden className={isActive ? "text-accent" : undefined} />
+                    <it.icon size={16} strokeWidth={1.75} aria-hidden className={isActive ? "text-accent" : "text-ink-3 group-hover:text-ink-2"} />
                     {it.label}
                   </>)}
                 </NavLink>
@@ -132,23 +213,11 @@ function Nav() {
   );
 }
 
-function RailFooter({ builtAt }: { builtAt?: string }) {
-  const [theme, setTheme] = useTheme();
-  const [lang, setLang] = useLang();
+function SideFooter({ builtAt }: { builtAt?: string }) {
   return (
-    <div className="border-t border-rail-line px-4 py-3 text-xs text-rail-ink-2">
-      <button type="button" onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-        lang={lang === "ar" ? "en" : "ar"} title={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}
-        className="mb-1 flex h-8 w-full items-center gap-2 rounded-md px-2 text-rail-ink hover:bg-rail-2">
-        <Languages size={15} /> {lang === "ar" ? "English" : "العربية"}
-      </button>
-      <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="mb-2 flex h-8 w-full items-center gap-2 rounded-md px-2 text-rail-ink hover:bg-rail-2">
-        {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-        {theme === "dark" ? t("Light theme", "الوضع الفاتح") : t("Dark theme", "الوضع الداكن")}
-      </button>
-      <p>{t("Store built", "تاريخ بناء البيانات:")} {builtAt ? fmtDate(builtAt.slice(0, 10)) : "…"}</p>
-      <p className="mt-0.5">{t("Findings describe the collected sample, not the whole job market.", "النتائج تصف العينة المجمَّعة، لا سوق العمل بأكمله.")}</p>
+    <div className="border-t border-line px-5 py-4 text-xs leading-5 text-ink-3">
+      <p>{t("Data built", "تاريخ بناء البيانات:")} {builtAt ? fmtDate(builtAt.slice(0, 10)) : "…"}</p>
+      <p>{t("Findings describe the collected sample, not the whole job market.", "النتائج تصف العينة المجمَّعة، لا سوق العمل بأكمله.")}</p>
     </div>
   );
 }

@@ -8,10 +8,10 @@ import type { ChartHandle } from "./Chart";
 
 export function PageHeader({ title, description, children }: { title: string; description: ReactNode; children?: ReactNode }) {
   return (
-    <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-3xl">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">{title}</h1>
-        <p className="mt-1 text-ink-2">{description}</p>
+        <h1 className="text-2xl font-semibold tracking-[-0.02em] text-ink sm:text-[1.75rem] sm:leading-9">{title}</h1>
+        <p className="mt-1.5 text-[0.9375rem] leading-6 text-ink-2">{description}</p>
       </div>
       {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </header>
@@ -23,18 +23,18 @@ export function Panel({ title, meta, info, actions, children, className, id }: {
   className?: string; id?: string;
 }) {
   return (
-    <section id={id} className={clsx("min-w-0 rounded-lg border border-line bg-panel", className)} aria-label={typeof title === "string" ? title : undefined}>
-      <div className="flex items-start justify-between gap-3 px-4 pt-3.5 pb-2">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-1.5 text-base font-semibold text-ink">
+    <section id={id} className={clsx("min-w-0 rounded-xl border border-line bg-panel", className)} aria-label={typeof title === "string" ? title : undefined}>
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 px-5 pt-4 pb-3">
+        <div className="min-w-0 flex-1 basis-56">
+          <h2 className="flex items-center gap-1.5 text-[0.9375rem] font-semibold tracking-[-0.005em] text-ink">
             {title}
             {info && <InfoTip>{info}</InfoTip>}
           </h2>
-          {meta && <div className="mt-0.5 text-xs text-ink-3">{meta}</div>}
+          {meta && <div className="mt-0.5 text-sm text-ink-3">{meta}</div>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
       </div>
-      <div className="px-4 pb-4">{children}</div>
+      <div className="px-5 pb-5">{children}</div>
     </section>
   );
 }
@@ -57,8 +57,8 @@ export function ChartPanel({ title, meta, info, table, children, className, extr
     if (!table) return;
     // BOM so spreadsheet apps read Arabic labels as UTF-8
     const csv = "﻿" + [table.columns, ...table.rows].map((r) => r.map((c) => csvCell(typeof c === "string" ? tv(c) : c)).join(",")).join("\n")
-      + t("\n# Aggregated from the Job Market Intelligence posting sample (not the whole labour market)\n",
-        "\n# مجمَّعة من عينة إعلانات ذكاء سوق العمل (وليست سوق العمل بأكمله)\n");
+      + t("\n# Aggregated from the Bosla posting sample (not the whole labour market)\n",
+        "\n# مجمَّعة من عينة إعلانات بوصلة (وليست سوق العمل بأكمله)\n");
     save(URL.createObjectURL(new Blob([csv], { type: "text/csv" })), `${table.filename}.csv`);
   };
   return (
@@ -79,7 +79,7 @@ export function ChartPanel({ title, meta, info, table, children, className, extr
 
 function DataTable({ table }: { table: TableSpec }) {
   return (
-    <div className="max-h-80 overflow-auto rounded border border-line">
+    <div className="max-h-80 overflow-auto rounded-lg border border-line">
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-panel-2 text-start text-ink-2">
           <tr>{table.columns.map((c) => <th key={c} scope="col" className="px-3 py-1.5 font-medium">{c}</th>)}</tr>
@@ -125,9 +125,9 @@ export function Button({ children, onClick, variant = "secondary", type = "butto
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled} className={clsx(
-      "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-      variant === "primary" && "bg-rail text-rail-ink hover:bg-rail-2 dark:bg-accent dark:text-rail dark:hover:brightness-110",
-      variant === "secondary" && "border border-line-strong bg-panel text-ink hover:bg-panel-2",
+      "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+      variant === "primary" && "bg-accent text-white hover:bg-accent-ink dark:text-[#0b0f17] dark:hover:bg-accent-ink",
+      variant === "secondary" && "border border-line-strong bg-panel text-ink shadow-[0_1px_0_rgba(14,21,37,0.04)] hover:bg-panel-2",
       variant === "ghost" && "text-ink-2 hover:bg-panel-2 hover:text-ink",
       className)}>
       {children}
@@ -138,12 +138,12 @@ export function Button({ children, onClick, variant = "secondary", type = "butto
 export function InfoTip({ children }: { children: ReactNode }) {
   return (
     <Popover.Root>
-      <Popover.Trigger aria-label={t("How this is calculated", "طريقة الحساب")} className="grid size-5 place-items-center rounded text-ink-3 hover:text-ink">
+      <Popover.Trigger aria-label={t("How this is calculated", "طريقة الحساب")} className="grid size-5 place-items-center rounded-md text-ink-3 hover:text-ink">
         <Info size={14} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content sideOffset={6} collisionPadding={12}
-          className="z-50 max-w-xs rounded-md border border-line-strong bg-panel p-3 text-sm font-normal text-ink-2 shadow-panel">
+          className="z-50 max-w-xs rounded-lg border border-line bg-panel p-3 text-sm font-normal leading-5 text-ink-2 shadow-panel">
           {children}
           <Popover.Arrow className="fill-[var(--line-strong)]" />
         </Popover.Content>
@@ -156,7 +156,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-panel p-0.5"
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg bg-panel-2 p-0.5 ring-1 ring-line ring-inset"
       onKeyDown={(e) => {
         const i = options.findIndex((o) => o.value === value);
         const fwd = isRtl() ? -1 : 1; // arrows follow the visual order
@@ -171,7 +171,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
           data-value={o.value} tabIndex={value === o.value ? 0 : -1}
           className={clsx("h-7 rounded px-2.5 text-sm transition-colors",
-            value === o.value ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:text-ink")}>
+            value === o.value ? "bg-panel font-medium text-ink shadow-[0_1px_2px_rgba(14,21,37,0.1)] ring-1 ring-line dark:bg-line" : "text-ink-2 hover:text-ink")}>
           {o.label}
         </button>
       ))}
@@ -186,7 +186,7 @@ export function Select({ value, onChange, options, label, className }: {
     <label className={clsx("inline-flex items-center gap-2 text-sm text-ink-2", className)}>
       <span>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}
-        className="h-8 rounded-md border border-line-strong bg-panel px-2 text-sm text-ink focus-visible:outline-2">
+        className="h-9 rounded-lg border border-line-strong bg-panel px-2.5 text-sm text-ink focus-visible:outline-2">
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </label>
@@ -203,7 +203,7 @@ export function Loading({ h = 240 }: { h?: number }) {
 
 export function ErrorState({ error, retry }: { error: Error | null; retry?: () => void }) {
   return (
-    <div role="alert" className="flex flex-col items-start gap-2 rounded-md border border-crit/40 bg-crit-soft p-4 text-sm text-ink">
+    <div role="alert" className="flex flex-col items-start gap-2 rounded-xl border border-crit/30 bg-crit-soft p-4 text-sm text-ink">
       <p className="flex items-center gap-2 font-medium"><AlertTriangle size={16} className="text-crit" /> {t("This view could not be loaded.", "تعذّر تحميل هذا العرض.")}</p>
       <p className="text-ink-2">{error?.message ?? t("Unknown error.", "خطأ غير معروف.")}</p>
       {retry && <Button onClick={retry}><RefreshCw size={14} /> {t("Try again", "إعادة المحاولة")}</Button>}
@@ -214,7 +214,7 @@ export function ErrorState({ error, retry }: { error: Error | null; retry?: () =
 export function Empty({ title = t("No postings match these filters", "لا توجد إعلانات تطابق هذه الفلاتر"), hint, action }: { title?: string; hint?: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
-      <SearchX size={22} className="text-ink-3" />
+      <span className="mb-1 grid size-10 place-items-center rounded-full bg-panel-2 text-ink-3"><SearchX size={18} /></span>
       <p className="font-medium text-ink">{title}</p>
       <p className="max-w-md text-sm text-ink-2">{hint ?? t("Remove a filter or widen the date range to bring postings back.", "أزِل أحد الفلاتر أو وسِّع نطاق التاريخ لإظهار الإعلانات.")}</p>
       {action}
@@ -225,10 +225,10 @@ export function Empty({ title = t("No postings match these filters", "لا تو�
 export function Callout({ tone = "info", children, title }: { tone?: "info" | "warn" | "crit"; children: ReactNode; title?: string }) {
   return (
     <div role={tone === "info" ? "note" : "status"} className={clsx("flex gap-2.5 rounded-md border p-3 text-sm",
-      tone === "info" && "border-line bg-info-soft text-ink",
+      tone === "info" && "border-accent-line/60 bg-info-soft text-ink",
       tone === "warn" && "border-warn/40 bg-warn-soft text-ink",
       tone === "crit" && "border-crit/40 bg-crit-soft text-ink")}>
-      {tone === "info" ? <Info size={16} className="mt-0.5 shrink-0 text-s1" /> : <AlertTriangle size={16} className={clsx("mt-0.5 shrink-0", tone === "warn" ? "text-warn" : "text-crit")} />}
+      {tone === "info" ? <Info size={16} className="mt-0.5 shrink-0 text-accent" /> : <AlertTriangle size={16} className={clsx("mt-0.5 shrink-0", tone === "warn" ? "text-warn" : "text-crit")} />}
       <div>{title && <p className="font-medium">{title}</p>}<div className="text-ink-2">{children}</div></div>
     </div>
   );
@@ -237,10 +237,10 @@ export function Callout({ tone = "info", children, title }: { tone?: "info" | "w
 export function Pill({ children, tone = "neutral", title }: { children: ReactNode; tone?: "neutral" | "accent" | "warn" | "good" | "added"; title?: string }) {
   return (
     <span title={title} className={clsx("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-      tone === "neutral" && "bg-panel-2 text-ink-2 ring-1 ring-line",
+      tone === "neutral" && "bg-panel-2 text-ink-2 ring-1 ring-line ring-inset",
       tone === "accent" && "bg-accent-soft text-accent-ink",
       tone === "warn" && "bg-warn-soft text-warn",
-      tone === "good" && "bg-panel-2 text-good ring-1 ring-line",
+      tone === "good" && "bg-good-soft text-good",
       tone === "added" && "border border-dashed border-ink-3 text-ink-2")}>
       {children}
     </span>
@@ -248,7 +248,7 @@ export function Pill({ children, tone = "neutral", title }: { children: ReactNod
 }
 
 export function TextLink({ to, children }: { to: string; children: ReactNode }) {
-  return <Link to={to} className="font-medium text-accent-ink underline decoration-accent-line underline-offset-2 hover:decoration-current">{children}</Link>;
+  return <Link to={to} className="font-medium text-accent-ink no-underline hover:underline hover:decoration-accent-line hover:underline-offset-4">{children}</Link>;
 }
 
 /** A data region that reports loading / error / empty consistently. */

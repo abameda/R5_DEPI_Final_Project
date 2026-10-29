@@ -2,9 +2,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const ROUTES: [string, string][] = [
-  ["/", "Market overview"], ["/explorer", "Job explorer"], ["/geography", "Geography"], ["/employers", "Employers"],
-  ["/skills", "Skills intelligence"], ["/salary", "Salary lab"], ["/trends", "Time & cohorts"], ["/compare", "Compare markets"],
-  ["/career", "Career planner"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
+  ["/", "Understand the job market. See where you fit. Know what comes next."], ["/market", "Market overview"],
+  ["/explorer", "Jobs"], ["/geography", "Locations"], ["/employers", "Employers"],
+  ["/skills", "Skills in demand"], ["/salary", "Salaries"], ["/trends", "Over time"], ["/compare", "Compare markets"],
+  ["/career", "My skills & plan"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
 ];
 
 /** Fails the test on any console error or failed API call. */
@@ -31,11 +32,12 @@ for (const [path, heading] of ROUTES) {
 
 test("unknown routes show a helpful page", async ({ page }) => {
   await page.goto("/nope");
-  await expect(page.getByText("This page does not exist")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "We couldn’t find that page" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Search jobs" })).toBeVisible();
 });
 
 test("a facet filter updates the URL, the chips and the population", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/market");
   const before = await population(page).textContent();
   await page.getByRole("button", { name: "Filter by market" }).click();
   await page.getByRole("option", { name: /^Arab/ }).click();
@@ -48,21 +50,30 @@ test("a facet filter updates the URL, the chips and the population", async ({ pa
 });
 
 test("filters survive navigation between modules", async ({ page }) => {
-  await page.goto("/?country=Egypt");
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills" }).click();
+  await page.goto("/market?country=Egypt");
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills in demand" }).click();
   await expect(page).toHaveURL(/\/skills\?country=Egypt/);
   await expect(page.getByRole("button", { name: "Remove Egypt" })).toBeVisible();
 });
 
-test("keyword search is debounced into the URL", async ({ page }) => {
+test("job search from the top bar lands in the URL", async ({ page }) => {
   await page.goto("/explorer");
-  await page.getByPlaceholder("Search titles or employers").fill("Data Engineering");
+  await page.getByPlaceholder("Search jobs by title or employer").fill("Data Engineering");
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/q=Data\+Engineering/);
   await expect(page.getByRole("button", { name: /Remove “Data Engineering”/ })).toBeVisible();
 });
 
-test("the lattice drills down with the keyboard", async ({ page }) => {
+test("search from Home opens Jobs with the query", async ({ page }) => {
   await page.goto("/");
+  await page.getByPlaceholder(/Job title or employer/).fill("analyst");
+  await page.getByRole("button", { name: "Find jobs" }).click();
+  await expect(page).toHaveURL(/\/explorer\?q=analyst/);
+  await expect(page.getByRole("heading", { level: 1, name: "Jobs" })).toBeVisible();
+});
+
+test("the lattice drills down with the keyboard", async ({ page }) => {
+  await page.goto("/market");
   const grid = page.getByRole("grid", { name: /Share of each role/ });
   await expect(grid).toBeVisible();
   const first = grid.getByRole("gridcell").first();
@@ -71,35 +82,47 @@ test("the lattice drills down with the keyboard", async ({ page }) => {
   await expect(page.getByText(/postings with skill data/).first()).toBeVisible();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/explorer\?.*role=.*skill=/);
-  await expect(page.getByText(/postings · page 1 of/)).toBeVisible();
+  await expect(page.getByText(/Page 1 of/)).toBeVisible();
 });
 
 test("explorer paginates, sorts and opens a posting", async ({ page }) => {
   await page.goto("/explorer");
-  await expect(page.getByText(/page 1 of/).first()).toBeVisible();
+  await expect(page.getByText(/Page 1 of/).first()).toBeVisible();
   await page.getByRole("button", { name: "Next" }).click();
   await expect(page).toHaveURL(/page=2/);
   await page.getByLabel("Sort").selectOption("salary_high");
   await expect(page).toHaveURL(/sort=salary_high/);
   await expect(page).not.toHaveURL(/page=2/);
-  await page.locator("tbody tr").first().getByRole("button").first().click();
-  const detail = page.getByRole("complementary", { name: "Posting details" });
-  await expect(detail.getByText(/written in posting/)).toBeVisible();
-  await expect(detail.getByRole("heading", { name: "Salary" })).toBeVisible();
+  await page.getByRole("main").getByRole("listitem").first().getByRole("button").first().click();
+  const detail = page.getByRole("complementary", { name: "Job details" });
+  await expect(detail.getByText(/written in the posting/)).toBeVisible();
+  await expect(detail.getByRole("heading", { name: "How you match" })).toBeVisible();
   await detail.getByRole("button", { name: "Close details" }).click();
   await expect(detail).toHaveCount(0);
 });
 
+test("job detail compares the posting with your skills", async ({ page }) => {
+  await page.goto("/explorer");
+  await page.getByRole("main").getByRole("listitem").first().getByRole("button").first().click();
+  const detail = page.getByRole("complementary", { name: "Job details" });
+  const strip = detail.getByRole("list", { name: /skills listed in this posting/ });
+  if (await strip.count()) {
+    await strip.getByRole("listitem").first().click();
+    await expect(detail.getByText(/You have \d+ of the \d+ skills this posting lists/)).toBeVisible();
+    await expect(page.getByRole("link", { name: /· 1 skills/ })).toBeVisible();
+  }
+});
+
 test("empty results explain how to recover", async ({ page }) => {
   await page.goto("/explorer?q=zzzz-no-such-posting");
-  await expect(page.getByText("No postings match these filters")).toBeVisible();
-  await page.getByRole("main").getByRole("button", { name: "Reset filters" }).click();
-  await expect(page.getByText(/postings · page 1 of/)).toBeVisible();
+  await expect(page.getByText("No jobs match these filters")).toBeVisible();
+  await page.getByRole("main").getByRole("button", { name: "Clear all filters" }).click();
+  await expect(page.getByText(/Page 1 of/)).toBeVisible();
 });
 
 test("chart panels switch to a table and export CSV", async ({ page }) => {
-  await page.goto("/");
-  const panel = page.getByRole("region", { name: "Postings by role" });
+  await page.goto("/market");
+  const panel = page.getByRole("region", { name: "Which roles are hiring" });
   await panel.getByRole("button", { name: "Show as table" }).click();
   await expect(panel.getByRole("table")).toBeVisible();
   const download = page.waitForEvent("download");
@@ -124,12 +147,12 @@ test("Arabic switches the interface to right-to-left and persists", async ({ pag
   const html = page.locator("html");
   await expect(html).toHaveAttribute("lang", "ar");
   await expect(html).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("link", { name: "نظرة عامة", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "الرئيسية", exact: true })).toBeVisible();
   await page.reload();
   await expect(html).toHaveAttribute("dir", "rtl");
   await page.getByRole("button", { name: "English" }).click();
   await expect(html).toHaveAttribute("dir", "ltr");
-  await expect(page.getByRole("link", { name: "Overview", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Home", exact: true })).toBeVisible();
 });
 
 test("the provenance switch changes how skills are counted", async ({ page }) => {
@@ -147,15 +170,20 @@ test("skill profile opens from the URL and closes", async ({ page }) => {
   await expect(page).not.toHaveURL(/view=/);
 });
 
-test("career planner ranks missing skills for a role", async ({ page }) => {
+test("the plan ranks missing skills and remembers your skills", async ({ page }) => {
   await page.goto("/career?target=Data%20Analysis%20%26%20BI");
+  // the shared link seeds the profile, then the URL is tidied
+  await expect(page).toHaveURL(/\/career$/);
+  await expect(page.getByLabel("Role you want")).toHaveValue("Data Analysis & BI");
+  await expect(page.getByRole("heading", { name: "What to learn next" })).toBeVisible();
   await page.getByRole("button", { name: "Add skill" }).click();
   await page.getByPlaceholder("Type a skill").fill("SQL");
-  await page.getByRole("option", { name: "SQL", exact: true }).click();
-  await expect(page).toHaveURL(/have=SQL/);
-  await expect(page.getByText(/of the demand weight of the top 15 skills/)).toBeVisible();
+  await page.getByRole("option", { name: /^SQL/ }).first().click();
+  await expect(page.getByRole("button", { name: "Remove SQL" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /You have \d+ of the \d+ skills .* ask for most/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: "What to learn next" })).toBeVisible();
-  await expect(page.getByText("You have SQL.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Remove SQL" })).toBeVisible();
 });
 
 test("compare keeps global filters and allows all-vs-all", async ({ page }) => {
@@ -165,14 +193,14 @@ test("compare keeps global filters and allows all-vs-all", async ({ page }) => {
   await expect(page).toHaveURL(/cmp=1/);
   await expect(page).not.toHaveURL(/a\.country/);
   await expect(page).toHaveURL(/country=Egypt/);
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills" }).click();
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills in demand" }).click();
   await expect(page).toHaveURL(/\/skills\?country=Egypt/);
 });
 
 test("the lattice survives a filter change while a cell is focused", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/market");
   const cells = page.getByRole("grid", { name: /Share of each role/ }).getByRole("gridcell");
   await cells.first().focus();
   for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowDown");
@@ -185,18 +213,19 @@ test("the lattice survives a filter change while a cell is focused", async ({ pa
 
 test("search keeps spaces typed after a pause", async ({ page }) => {
   await page.goto("/explorer");
-  const box = page.getByPlaceholder("Search titles or employers");
+  const box = page.getByPlaceholder("Search jobs by title or employer");
   await box.pressSequentially("data ");
   await page.waitForTimeout(700);
   await box.pressSequentially("engineer");
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/q=data\+engineer/);
   await expect(box).toHaveValue("data engineer");
 });
 
 test("out-of-range pages snap back to the last page", async ({ page }) => {
   await page.goto("/explorer?page=99999");
-  await expect(page.getByText(/postings · page \d+ of \d+/)).toBeVisible();
-  await expect(page.locator("tbody tr").first()).toBeVisible();
+  await expect(page.getByText(/Page \d+ of \d+/)).toBeVisible();
+  await expect(page.getByRole("main").getByRole("listitem").first()).toBeVisible();
 });
 
 test("compare presets define both segments", async ({ page }) => {
@@ -215,8 +244,8 @@ test("builder disables measures that do not apply per skill", async ({ page }) =
 
 test("the methodology page ignores the filter bar", async ({ page }) => {
   await page.goto("/quality");
-  await expect(page.getByRole("heading", { name: "Pipeline stages" })).toBeVisible();
-  await expect(page.getByPlaceholder("Search titles or employers")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "How the dataset was built" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filter by market" })).toHaveCount(0);
 });
 
 test("skip link reaches the main content", async ({ page }) => {
@@ -225,7 +254,7 @@ test("skip link reaches the main content", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
 });
 
-for (const path of ["/", "/explorer?job=demo000001", "/career?have=SQL", "/quality"]) {
+for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/quality"]) {
   test(`no serious accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState("networkidle");
