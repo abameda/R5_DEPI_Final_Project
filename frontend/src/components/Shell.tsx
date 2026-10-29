@@ -1,6 +1,7 @@
+import * as Popover from "@radix-ui/react-popover";
 import clsx from "clsx";
 import {
-  BarChart3, Briefcase, Building2, Clock3, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
+  BarChart3, Briefcase, Building2, ChevronDown, Clock3, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
   Menu, Milestone, Moon, Route, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -14,8 +15,10 @@ import { useProfile } from "../lib/profile";
 import { FilterBar } from "./FilterBar";
 import { Segmented } from "./ui";
 
+type NavItem = { to: string; label: string; icon: typeof Home; filters?: boolean; advanced?: boolean };
+
 /** `advanced` pages hold the analysis and methodology; Simple mode leaves them out of the menu. */
-export const nav = (): { group: string; items: { to: string; label: string; icon: typeof Home; filters?: boolean; advanced?: boolean }[] }[] => [
+export const nav = (): { group: string; items: NavItem[] }[] => [
   { group: t("Discover", "اكتشف"), items: [
     { to: "/", label: t("Home", "الرئيسية"), icon: Home, filters: false },
     { to: "/explorer", label: t("Jobs", "الوظائف"), icon: Briefcase },
@@ -33,11 +36,9 @@ export const nav = (): { group: string; items: { to: string; label: string; icon
     { to: "/trends", label: t("Over time", "عبر الزمن"), icon: Clock3, advanced: true },
     { to: "/compare", label: t("Compare markets", "مقارنة الأسواق"), icon: GitCompareArrows, filters: false, advanced: true },
   ] },
-  { group: t("Tools", "أدوات"), items: [
+  { group: t("Tools & data", "أدوات وبيانات"), items: [
     { to: "/insights", label: t("Guided insights", "رؤى موجّهة"), icon: BarChart3, advanced: true },
     { to: "/builder", label: t("Insight builder", "منشئ التحليلات"), icon: FlaskConical, advanced: true },
-  ] },
-  { group: t("About the data", "عن البيانات"), items: [
     { to: "/quality", label: t("Data & methodology", "البيانات والمنهجية"), icon: ShieldCheck, filters: false, advanced: true },
   ] },
 ];
@@ -75,31 +76,34 @@ export function Shell({ children }: { children: ReactNode }) {
   const showFilters = !NO_FILTERS.has(loc.pathname);
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+    <div className="min-h-screen">
       <a href="#main" className="sr-only z-50 rounded-lg bg-panel p-2 focus:not-sr-only focus:fixed focus:start-2 focus:top-2">{t("Skip to content", "تخطَّ إلى المحتوى")}</a>
-      <aside className={clsx("z-40 flex-col border-line bg-panel lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-e",
-        open ? "fixed inset-x-0 top-14 bottom-0 flex overflow-auto" : "hidden")} aria-label={t("Sidebar", "الشريط الجانبي")}>
-        <div className="hidden h-16 shrink-0 items-center px-5 lg:flex"><Brand /></div>
-        <ModeSwitch />
-        <Nav />
-        <SideFooter builtAt={meta?.built_at} />
-      </aside>
-      <div className="min-w-0">
-        {meta?.dataset_kind === "synthetic" && (
-          <div role="alert" className="bg-crit px-4 py-1.5 text-center text-sm font-medium text-white">
-            {t("Synthetic demo data — generated for testing. These numbers are not research results.", "بيانات تجريبية مُولَّدة للاختبار — هذه الأرقام ليست نتائج بحثية.")}
-          </div>
-        )}
-        <div ref={headRef} className="sticky top-0 z-30">
-          <TopBar open={open} onMenu={() => setOpen(!open)} />
-          {showFilters && <FilterBar />}
+      {meta?.dataset_kind === "synthetic" && (
+        <div role="alert" className="bg-crit px-4 py-1.5 text-center text-sm font-medium text-white">
+          {t("Synthetic demo data — generated for testing. These numbers are not research results.", "بيانات تجريبية مُولَّدة للاختبار — هذه الأرقام ليست نتائج بحثية.")}
         </div>
-        <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
-        <footer className="mx-auto max-w-[1600px] border-t border-line px-4 py-5 text-xs text-ink-3 sm:px-6 lg:px-8">
+      )}
+      <div ref={headRef} className="sticky top-0 z-30">
+        <TopBar open={open} onMenu={() => setOpen(!open)} />
+        {showFilters && <FilterBar />}
+      </div>
+      {/* below xl the menu folds into a drawer under the top bar */}
+      <aside id="nav-drawer" aria-label={t("Menu", "القائمة")}
+        className={clsx("fixed inset-x-0 top-14 bottom-0 z-40 flex-col overflow-auto bg-panel xl:hidden", open ? "flex" : "hidden")}>
+        <ModeSwitch hint />
+        <Nav />
+      </aside>
+      <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+      <footer className="mx-auto flex max-w-[1600px] flex-wrap justify-between gap-x-6 gap-y-2 border-t border-line px-4 py-5 text-xs leading-5 text-ink-3 sm:px-6 lg:px-8">
+        <p>
+          {t("Data built", "تاريخ بناء البيانات:")} {meta?.built_at ? fmtDate(meta.built_at.slice(0, 10)) : "…"}.{" "}
+          {t("Findings describe the collected sample, not the whole job market.", "النتائج تصف العينة المجمَّعة، لا سوق العمل بأكمله.")}
+        </p>
+        <p>
           {t("Created by", "صُنع بواسطة")}{" "}
           <a href="https://abdelhmeed.com" target="_blank" rel="noopener" dir="ltr" className="font-medium text-ink-2 hover:text-ink">abdelhmeed.com</a>
-        </footer>
-      </div>
+        </p>
+      </footer>
     </div>
   );
 }
@@ -119,12 +123,9 @@ export function BrandMark({ size = 28 }: { size?: number }) {
 
 function Brand() {
   return (
-    <NavLink to="/" className="flex items-center gap-2.5 rounded-lg text-ink no-underline">
+    <NavLink to="/" title={t("Your tech career compass", "بوصلتك في سوق شغل التكنولوجيا")} className="flex shrink-0 items-center gap-2.5 rounded-lg text-ink no-underline">
       <BrandMark />
-      <span className="leading-tight">
-        <span className="block text-sm font-semibold tracking-[-0.01em]">{t("Bosla", "بوصلة")}</span>
-        <span className="block text-xs text-ink-3">{t("Your tech career compass", "بوصلتك في سوق شغل التكنولوجيا")}</span>
-      </span>
+      <span className="text-sm font-semibold tracking-[-0.01em]">{t("Bosla", "بوصلة")}</span>
     </NavLink>
   );
 }
@@ -134,25 +135,30 @@ function TopBar({ open, onMenu }: { open: boolean; onMenu: () => void }) {
   const [lang, setLang] = useLang();
   const { profile } = useProfile();
   return (
-    <div className="flex h-14 items-center gap-2 border-b border-line bg-panel/90 px-3 backdrop-blur-md sm:px-4 lg:h-16 lg:gap-3 lg:px-8">
-      <button type="button" aria-label={open ? t("Close navigation", "إغلاق التنقل") : t("Open navigation", "فتح التنقل")} aria-expanded={open} onClick={onMenu}
-        className="grid size-9 shrink-0 place-items-center rounded-lg text-ink-2 hover:bg-panel-2 lg:hidden">
+    <div className="flex h-14 items-center gap-2 border-b border-line bg-panel/90 px-3 backdrop-blur-md sm:px-4 lg:gap-3 lg:px-8 xl:h-16">
+      <button type="button" aria-label={open ? t("Close navigation", "إغلاق التنقل") : t("Open navigation", "فتح التنقل")} aria-expanded={open}
+        aria-controls="nav-drawer" onClick={onMenu}
+        className="grid size-9 shrink-0 place-items-center rounded-lg text-ink-2 hover:bg-panel-2 xl:hidden">
         {open ? <X size={20} /> : <Menu size={20} />}
       </button>
-      <div className="lg:hidden"><NavLink to="/" aria-label={t("Home", "الرئيسية")}><BrandMark /></NavLink></div>
+      <div className="xl:hidden"><NavLink to="/" aria-label={t("Home", "الرئيسية")}><BrandMark /></NavLink></div>
+      <div className="me-2 hidden xl:block"><Brand /></div>
+      <TopNav />
       <JobSearch />
-      <div className="ms-auto flex items-center gap-1">
-        <NavLink to="/career" className="hidden h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 no-underline hover:bg-panel-2 hover:text-ink sm:inline-flex">
+      <div className="ms-auto flex shrink-0 items-center gap-1">
+        {/* from xl the menu already links to the plan; the chip returns once there is room */}
+        <NavLink to="/career" className="hidden h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 no-underline hover:bg-panel-2 hover:text-ink sm:inline-flex xl:hidden 2xl:inline-flex">
           <Route size={15} className="text-accent" />
           {profile.role || profile.skills.length
             ? <span className="max-w-[220px] truncate"><span className="font-medium text-ink">{profile.role ? tv(profile.role) : t("Your profile", "ملفك")}</span>
               <span className="tnum text-ink-3"> · {t(`${profile.skills.length} skills`, `${profile.skills.length} مهارات`)}</span></span>
             : <span>{t("Add your skills", "أضف مهاراتك")}</span>}
         </NavLink>
+        <div className="hidden px-1 xl:block"><ModeSwitch /></div>
         <button type="button" onClick={() => setLang(lang === "ar" ? "en" : "ar")}
           lang={lang === "ar" ? "en" : "ar"} title={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}
           className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm text-ink-2 hover:bg-panel-2 hover:text-ink">
-          <Languages size={16} /> <span className="hidden sm:inline">{lang === "ar" ? "English" : "العربية"}</span>
+          <Languages size={16} /> <span className="hidden sm:inline xl:hidden 2xl:inline">{lang === "ar" ? "English" : "العربية"}</span>
         </button>
         <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           aria-label={theme === "dark" ? t("Switch to light theme", "التبديل إلى الوضع الفاتح") : t("Switch to dark theme", "التبديل إلى الوضع الداكن")}
@@ -178,7 +184,7 @@ function JobSearch() {
     navigate({ pathname: "/explorer", search: sp.toString() ? `?${sp}` : "" }, { replace: loc.pathname === "/explorer" });
   };
   return (
-    <form role="search" onSubmit={submit} className="min-w-0 flex-1 sm:max-w-md">
+    <form role="search" onSubmit={submit} className="min-w-0 flex-1 sm:max-w-md xl:max-w-xs">
       <label className="relative flex h-9 items-center">
         <Search size={16} className="pointer-events-none absolute start-3 text-ink-3" />
         <span className="sr-only">{t("Search jobs by title or employer", "ابحث في الوظائف بالمسمى أو جهة التوظيف")}</span>
@@ -191,7 +197,7 @@ function JobSearch() {
 }
 
 /** Simple or Advanced: how much of the analysis the menu and the pages show. */
-function ModeSwitch() {
+function ModeSwitch({ hint = false }: { hint?: boolean }) {
   const [mode, setMode] = useMode();
   const loc = useLocation();
   const navigate = useNavigate();
@@ -200,10 +206,14 @@ function ModeSwitch() {
     // the page just left the menu: go back to the start of the job seeker's path
     if (m === "simple" && nav().some((g) => g.items.some((i) => i.advanced && i.to === loc.pathname))) navigate("/");
   };
+  const control = (
+    <Segmented label={t("Level of detail", "مستوى التفاصيل")} value={mode} onChange={change}
+      options={[{ value: "simple", label: t("Simple", "بسيط") }, { value: "advanced", label: t("Advanced", "متقدم") }]} />
+  );
+  if (!hint) return control;
   return (
-    <div className="shrink-0 px-5 pt-4 pb-1 lg:pt-1">
-      <Segmented label={t("Level of detail", "مستوى التفاصيل")} value={mode} onChange={change}
-        options={[{ value: "simple", label: t("Simple", "بسيط") }, { value: "advanced", label: t("Advanced", "متقدم") }]} />
+    <div className="shrink-0 px-5 pt-4 pb-1">
+      {control}
       <p className="mt-1.5 text-xs leading-5 text-ink-3">{mode === "simple"
         ? t("The essentials: jobs, your match and what to learn next.", "الأساسيات: الوظائف، ومدى توافقك، وما تتعلمه بعد ذلك.")
         : t("Everything: market analysis, tools and how each number was made.", "كل شيء: تحليل السوق، والأدوات، وكيف حُسب كل رقم.")}</p>
@@ -211,41 +221,80 @@ function ModeSwitch() {
   );
 }
 
-function Nav() {
+/** The menu for the current mode; links carry the global filters to the pages that use them. */
+function useMenu() {
   const { filters } = useFilters();
   const [mode] = useMode();
   const qs = new URLSearchParams(filterParams(filters)).toString();
   const groups = nav().map((g) => ({ ...g, items: g.items.filter((i) => mode === "advanced" || !i.advanced) })).filter((g) => g.items.length);
+  const to = (it: NavItem) => ({ pathname: it.to, search: qs && it.filters !== false ? `?${qs}` : "" });
+  return { groups, to };
+}
+
+type LinkTo = ReturnType<typeof useMenu>["to"];
+
+const barItem = "inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-3 text-sm no-underline transition-colors";
+const barState = (active: boolean) => active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-panel-2 hover:text-ink";
+
+/** xl and up: small groups sit in the bar as links, larger ones open as a dropdown. */
+function TopNav() {
+  const { groups, to } = useMenu();
   return (
-    <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="flex-1 overflow-y-auto px-3 pt-2 pb-4 lg:pt-0">
-      {groups.map((g) => (
-        <div key={g.group} className="mt-4 first:mt-1">
-          <p className="px-2.5 pb-1.5 text-xs font-medium text-ink-3">{g.group}</p>
-          <ul className="space-y-px">
-            {g.items.map((it) => (
-              <li key={it.to}>
-                <NavLink to={{ pathname: it.to, search: qs && it.filters !== false ? `?${qs}` : "" }} end={it.to === "/"}
-                  className={({ isActive }) => clsx("group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm no-underline transition-colors",
-                    isActive ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-panel-2 hover:text-ink")}>
-                  {({ isActive }) => (<>
-                    <it.icon size={16} strokeWidth={1.75} aria-hidden className={isActive ? "text-accent" : "text-ink-3 group-hover:text-ink-2"} />
-                    {it.label}
-                  </>)}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="hidden items-center gap-0.5 xl:flex">
+      {groups.flatMap((g) => g.items.length <= 2
+        ? g.items.map((it) => (
+          <NavLink key={it.to} to={to(it)} end={it.to === "/"} className={({ isActive }) => clsx(barItem, barState(isActive))}>{it.label}</NavLink>
+        ))
+        : [<NavMenu key={g.group} label={g.group} items={g.items} to={to} />])}
     </nav>
   );
 }
 
-function SideFooter({ builtAt }: { builtAt?: string }) {
+function NavMenu({ label, items, to }: { label: string; items: NavItem[]; to: LinkTo }) {
+  const [open, setOpen] = useState(false);
+  const loc = useLocation();
   return (
-    <div className="border-t border-line px-5 py-4 text-xs leading-5 text-ink-3">
-      <p>{t("Data built", "تاريخ بناء البيانات:")} {builtAt ? fmtDate(builtAt.slice(0, 10)) : "…"}</p>
-      <p>{t("Findings describe the collected sample, not the whole job market.", "النتائج تصف العينة المجمَّعة، لا سوق العمل بأكمله.")}</p>
-    </div>
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger className={clsx(barItem, barState(items.some((i) => i.to === loc.pathname)))}>
+        {label}
+        <ChevronDown size={14} aria-hidden className={clsx("transition-transform", open && "rotate-180")} />
+      </Popover.Trigger>
+      {/* not portalled, so the links stay inside the navigation landmark */}
+      <Popover.Content align="start" sideOffset={6} collisionPadding={12} className="z-50 w-60 rounded-xl border border-line bg-panel p-1.5 shadow-panel">
+        <ul className="space-y-px">
+          {items.map((it) => <li key={it.to}><MenuLink item={it} to={to} onClick={() => setOpen(false)} /></li>)}
+        </ul>
+      </Popover.Content>
+    </Popover.Root>
+  );
+}
+
+function MenuLink({ item, to, onClick }: { item: NavItem; to: LinkTo; onClick?: () => void }) {
+  return (
+    <NavLink to={to(item)} end={item.to === "/"} onClick={onClick}
+      className={({ isActive }) => clsx("group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm no-underline transition-colors",
+        isActive ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-panel-2 hover:text-ink")}>
+      {({ isActive }) => (<>
+        <item.icon size={16} strokeWidth={1.75} aria-hidden className={isActive ? "text-accent" : "text-ink-3 group-hover:text-ink-2"} />
+        {item.label}
+      </>)}
+    </NavLink>
+  );
+}
+
+/** Below xl, the drawer lists every group under its heading. */
+function Nav() {
+  const { groups, to } = useMenu();
+  return (
+    <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="flex-1 px-3 pt-2 pb-4">
+      {groups.map((g) => (
+        <div key={g.group} className="mt-4 first:mt-1">
+          <p className="px-2.5 pb-1.5 text-xs font-medium text-ink-3">{g.group}</p>
+          <ul className="space-y-px">
+            {g.items.map((it) => <li key={it.to}><MenuLink item={it} to={to} /></li>)}
+          </ul>
+        </div>
+      ))}
+    </nav>
   );
 }

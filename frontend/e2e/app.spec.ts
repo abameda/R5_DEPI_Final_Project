@@ -57,7 +57,9 @@ test("a facet filter updates the URL, the chips and the population", async ({ pa
 
 test("filters survive navigation between modules", async ({ page }) => {
   await page.goto("/market?country=Egypt");
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills in demand" }).click();
+  const menu = page.getByRole("navigation", { name: "Main navigation" });
+  await menu.getByRole("button", { name: "Market" }).click();
+  await menu.getByRole("link", { name: "Skills in demand" }).click();
   await expect(page).toHaveURL(/\/skills\?country=Egypt/);
   await expect(page.getByRole("button", { name: "Remove Egypt" })).toBeVisible();
 });
@@ -160,6 +162,7 @@ test("Simple mode keeps the job seeker's pages and hides the analysis", async ({
   await page.reload();
   await expect(page.getByRole("radio", { name: "Simple" })).toHaveAttribute("aria-checked", "true");
   await page.getByRole("radio", { name: "Advanced" }).click();
+  await menu.getByRole("button", { name: "Market" }).click();
   await expect(menu.getByRole("link", { name: "Market overview" })).toBeVisible();
   await expect(page.getByRole("radiogroup", { name: "Skills view" })).toBeVisible();
 });
@@ -229,7 +232,9 @@ test("compare keeps global filters and allows all-vs-all", async ({ page }) => {
   await expect(page).toHaveURL(/cmp=1/);
   await expect(page).not.toHaveURL(/a\.country/);
   await expect(page).toHaveURL(/country=Egypt/);
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Skills in demand" }).click();
+  const menu = page.getByRole("navigation", { name: "Main navigation" });
+  await menu.getByRole("button", { name: "Market" }).click();
+  await menu.getByRole("link", { name: "Skills in demand" }).click();
   await expect(page).toHaveURL(/\/skills\?country=Egypt/);
 });
 
@@ -290,7 +295,7 @@ test("skip link reaches the main content", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
 });
 
-for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/quality"]) {
+for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/roadmap", "/quality"]) {
   test(`no serious accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState("networkidle");
