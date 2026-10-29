@@ -94,15 +94,24 @@ export function Shell({ children }: { children: ReactNode }) {
         <Nav />
       </aside>
       <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
-      <footer className="mx-auto flex max-w-[1600px] flex-wrap justify-between gap-x-6 gap-y-2 border-t border-line px-4 py-5 text-xs leading-5 text-ink-3 sm:px-6 lg:px-8">
+      <footer className="mx-auto max-w-[1600px] border-t border-line px-4 py-6 text-xs leading-5 text-ink-3 sm:px-6 lg:px-8">
         <p>
           {t("Data built", "تاريخ بناء البيانات:")} {meta?.built_at ? fmtDate(meta.built_at.slice(0, 10)) : "…"}.{" "}
           {t("Findings describe the collected sample, not the whole job market.", "النتائج تصف العينة المجمَّعة، لا سوق العمل بأكمله.")}
         </p>
-        <p>
-          {t("Created by", "صُنع بواسطة")}{" "}
-          <a href="https://abdelhmeed.com" target="_blank" rel="noopener" dir="ltr" className="font-medium text-ink-2 hover:text-ink">abdelhmeed.com</a>
-        </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          <p className="flex items-center gap-2 text-ink-2">
+            <BrandMark size={18} />
+            <span>© {new Date().getFullYear()} {t("Bosla. All rights reserved.", "بوصلة. جميع الحقوق محفوظة.")}</span>
+          </p>
+          <p>
+            {t("Designed and built by", "تصميم وتطوير")}{" "}
+            <a href="https://abdelhmeed.com" target="_blank" rel="noopener" dir="ltr"
+              className="font-medium text-ink-2 underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink-3">
+              Abdelhmeed Elshorbagy
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );
