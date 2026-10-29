@@ -25,3 +25,6 @@ frontend/*.tsbuildinfo
 .vercel
 .env*
 .superpowers/
+# generated: graphify's AST cache and design review screenshots
+graphify-out/cache/
+.impeccable/review/
