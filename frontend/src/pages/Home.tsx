@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CoverageStrip } from "../components/Coverage";
 import { SkillPicker } from "../components/SkillPicker";
-import { Skeleton, TextLink } from "../components/ui";
+import { Advanced, Skeleton, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
 import { fmtCompact, fmtDate, fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
 import { useMeta } from "../lib/hooks";
@@ -72,11 +72,11 @@ export default function Home() {
         <NewestJobs role={role} weights={new Map(gap.data?.skills.map((s) => [s.skill, s.share]) ?? [])} />
         <div className="space-y-8">
           <InDemand ov={ov.data} />
-          <Markets ov={ov.data} />
+          <Advanced><Markets ov={ov.data} /></Advanced>
         </div>
       </section>
 
-      {ov.data && (() => {
+      <Advanced>{ov.data && (() => {
         const kaggle = ov.data.cohorts.find((c) => c.key === "kaggle_2023")?.share ?? 0;
         return (
           <p className="max-w-3xl border-t border-line pt-6 text-sm leading-6 text-ink-3">
@@ -85,7 +85,7 @@ export default function Home() {
             <TextLink to="/quality">{t("How the data was built", "كيف بُنيت البيانات")}</TextLink>
           </p>
         );
-      })()}
+      })()}</Advanced>
     </div>
   );
 }
@@ -156,7 +156,7 @@ function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; l
             </div>
           )}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-rail-line pt-5">
-            <span className="text-xs text-rail-ink-2">{t(`Based on ${fmtInt(gap.denominator)} postings that list skills`, `استنادًا إلى ${fmtInt(gap.denominator)} إعلانًا تذكر مهارات`)}</span>
+            <Advanced><span className="text-xs text-rail-ink-2">{t(`Based on ${fmtInt(gap.denominator)} postings that list skills`, `استنادًا إلى ${fmtInt(gap.denominator)} إعلانًا تذكر مهارات`)}</span></Advanced>
             <Link to="/career" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-panel px-3.5 text-sm font-medium text-ink no-underline hover:bg-panel-2">
               {t("Open your plan", "افتح خطتك")} <ArrowRight size={15} className="rtl:rotate-180" />
             </Link>

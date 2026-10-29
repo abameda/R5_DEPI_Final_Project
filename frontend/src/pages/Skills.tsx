@@ -6,6 +6,7 @@ import { Chart } from "../components/Chart";
 import { HBar, MonthLines, SkillBars } from "../components/charts";
 import { Lattice } from "../components/Lattice";
 import { Callout, ChartPanel, ErrorState, Guard, PageHeader, Panel, Segmented, Select, Skeleton } from "../components/ui";
+import { useAdvanced } from "../lib/mode";
 import { useApi } from "../lib/api";
 import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
@@ -29,7 +30,10 @@ function useHave() {
 }
 
 export default function Skills() {
-  const [tab, setTab] = useParam("tab", "demand");
+  const advanced = useAdvanced();
+  const [tabParam, setTab] = useParam("tab", "demand");
+  // Simple mode keeps the one ranking a job seeker needs; the other views are analysis
+  const tab = advanced ? tabParam : "demand";
   const [view, setView] = useParam("view", "");
   const { any } = useHave();
   return (
@@ -40,8 +44,8 @@ export default function Skills() {
             "ما المهارات التي تطلبها الإعلانات، وكيف يتغير ذلك حسب الدور والسوق، وأي المهارات تُطلب معًا. تُحسب النسب من الإعلانات التي تذكر مهارة واحدة على الأقل فقط. اختر مهارة لعرض ملفها الكامل.")}
           {any && t(" Skills you have are shown in teal.", " المهارات التي لديك تظهر باللون الأخضر.")}
         </>}>
-        <Segmented label={t("Skills view", "عرض المهارات")} value={tab} onChange={setTab} options={[
-          { value: "demand", label: t("Most requested", "الأكثر طلبًا") }, { value: "by", label: t("By role or market", "حسب الدور أو السوق") }, { value: "pairs", label: t("Asked for together", "تُطلب معًا") }]} />
+        {advanced && <Segmented label={t("Skills view", "عرض المهارات")} value={tab} onChange={setTab} options={[
+          { value: "demand", label: t("Most requested", "الأكثر طلبًا") }, { value: "by", label: t("By role or market", "حسب الدور أو السوق") }, { value: "pairs", label: t("Asked for together", "تُطلب معًا") }]} />}
       </PageHeader>
       {view && <SkillProfile skill={view} onClose={() => setView(null)} />}
       {tab === "demand" && <Demand onPick={setView} />}
@@ -58,12 +62,13 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
   const [category, setCategory] = useParam("category", "");
   const [kind, setKind] = useParam("kind", "all");
   const technical = kind === "all" ? undefined : kind === "technical";
+  const advanced = useAdvanced();
   const q = useApi<TopSkills>("/skills/top", filters, { limit: 30, category: category || undefined, technical });
-  const cats = useApi<{ denominator: number; rows: { category: string; postings: number; share: number | null; is_technical: boolean; skills: number }[] }>("/skills/categories", filters);
-  const soft = useApi<TopSkills>("/skills/top", filters, { limit: 10, technical: false });
+  const cats = useApi<{ denominator: number; rows: { category: string; postings: number; share: number | null; is_technical: boolean; skills: number }[] }>("/skills/categories", filters, {}, advanced);
+  const soft = useApi<TopSkills>("/skills/top", filters, { limit: 10, technical: false }, advanced);
   const teal = any ? t(" Teal = you have it.", " الأخضر = لديك.") : "";
   return (
-    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className={clsx("grid items-start gap-4", advanced && "xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]")}>
       <ChartPanel title={t("Most requested skills", "المهارات الأكثر طلبًا")}
         meta={q.data ? t(`Share of ${fmtInt(q.data.denominator)} postings that list skills${category ? ` · ${category}` : ""}. Select a bar for the skill's profile.${teal}`,
           `النسبة من ${fmtInt(q.data.denominator)} إعلان يذكر مهارات${category ? ` · ${tv(category)}` : ""}. اختر شريطًا لعرض ملف المهارة.${teal}`) : undefined}
@@ -91,7 +96,7 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
           </Guard>
         </>)}
       </ChartPanel>
-      <div className="grid content-start gap-4">
+      {advanced && <div className="grid content-start gap-4">
         <ChartPanel title={t("Skill categories", "فئات المهارات")} meta={t("Share of postings listing at least one skill in the category. Select a category to rank its skills.", "نسبة الإعلانات التي تذكر مهارة واحدة على الأقل من الفئة. اختر فئة لترتيب مهاراتها.")}
           info={t("Categories come from the Kaggle dataset's own skill grouping (programming, cloud, libraries…) where it exists, otherwise from a documented curated list. 'Uncategorized' skills are not guessed.",
             "تأتي الفئات من تصنيف المهارات في مجموعة بيانات Kaggle نفسها (البرمجة، السحابة، المكتبات…) حيثما وُجد، وإلا من قائمة منسقة وموثقة. لا يُخمَّن تصنيف المهارات «غير المصنفة».")}
@@ -111,7 +116,7 @@ function Demand({ onPick }: { onPick: (s: string) => void }) {
             {(d) => <SkillBars handle={h} rows={d.rows} denominator={d.denominator} observedOnly={filters.provenance === "observed"} onSelect={onPick} have={any ? has : undefined} />}
           </Guard>}
         </ChartPanel>
-      </div>
+      </div>}
     </div>
   );
 }

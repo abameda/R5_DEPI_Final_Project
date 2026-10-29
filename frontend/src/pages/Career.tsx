@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CoverageStrip } from "../components/Coverage";
 import { SkillPicker } from "../components/SkillPicker";
-import { Callout, Empty, Guard, InfoTip, PageHeader, Panel, Segmented, TextLink } from "../components/ui";
+import { Advanced, Callout, Empty, Guard, InfoTip, PageHeader, Panel, Segmented, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
 import { drillHref } from "../lib/filters";
 import { fmtDate, fmtInt, fmtPct } from "../lib/format";
@@ -128,6 +128,7 @@ function Results({ g, onRole, onHave }: { g: CareerGap; onRole: (r: string) => v
         {t(`You have ${haveTop} of the ${top.length} skills ${tv(g.role)} postings ask for most, about ${fmtPct(a.score, 0)} of the demand.`,
           `لديك ${haveTop} من أكثر ${top.length} مهارة تطلبها إعلانات ${tv(g.role)}، أي نحو ${fmtPct(a.score, 0)} من الطلب.`)}
       </h2>
+      <Advanced>
       <p className="mt-2 flex flex-wrap items-center gap-x-1 text-sm leading-6 text-rail-ink-2">
         {m ? t(`Of ${fmtInt(m.postings)} postings in this role, you have every listed skill for ${fmtPct(m.full_match / m.postings, 0)}, half or more for ${fmtPct(m.half_match / m.postings, 0)}, and at least one for ${fmtPct(m.any_match / m.postings, 0)}.`,
           `من ${fmtInt(m.postings)} إعلانًا لهذا الدور، لديك كل المهارات المذكورة في ${fmtPct(m.full_match / m.postings, 0)}، والنصف فأكثر في ${fmtPct(m.half_match / m.postings, 0)}، وواحدة على الأقل في ${fmtPct(m.any_match / m.postings, 0)}.`)
@@ -137,6 +138,7 @@ function Results({ g, onRole, onHave }: { g: CareerGap; onRole: (r: string) => v
             `تُوزن كل مهارة من أكثر ${a.top_k} مهارة طلبًا بمدى تكرار طلبها. التوافق = نسب المهارات التي لديك ÷ نسب المهارات الـ${a.top_k} كلها. يصف التداخل مع عينة الإعلانات هذه؛ وليس احتمالًا للتوظيف.`)}
         </InfoTip></span>
       </p>
+      </Advanced>
       <div className="mt-5 rounded-xl bg-panel p-4 text-ink">
         <CoverageStrip label={t(`The ${top.length} skills ${tv(g.role)} postings ask for most`, `أكثر ${top.length} مهارة تطلبها إعلانات ${tv(g.role)}`)}
           context={t(`${tv(g.role)} postings`, `إعلانات ${tv(g.role)}`)}
@@ -229,6 +231,7 @@ function Results({ g, onRole, onHave }: { g: CareerGap; onRole: (r: string) => v
       </ul>
     </Panel>
 
+    <Advanced>
     <details className="group rounded-xl border border-line bg-panel">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
         <span><span className="block text-[0.9375rem] font-semibold text-ink">{t("Every skill this role asks for", "كل المهارات التي يطلبها هذا الدور")}</span>
@@ -250,5 +253,6 @@ function Results({ g, onRole, onHave }: { g: CareerGap; onRole: (r: string) => v
       <Callout tone="info">{t("Rankings include skills the team added after collection (marked “mostly team-added” when they dominate). To count only what postings wrote, choose “Written in posting” in the filter bar on the Jobs or Market pages.",
         "تشمل الترتيبات مهارات أضافها الفريق بعد الجمع (وتُميَّز بعبارة «أضافها الفريق غالبًا» حين تغلب). لاحتساب ما كتبته الإعلانات فقط، اختر «مذكورة في الإعلان» في شريط التصفية بصفحات الوظائف أو السوق.")}</Callout>
     )}
+    </Advanced>
   </div>);
 }

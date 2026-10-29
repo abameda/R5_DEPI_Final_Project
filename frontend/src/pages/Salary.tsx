@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import { Chart } from "../components/Chart";
 import { HBar, Histogram } from "../components/charts";
-import { Callout, ChartPanel, Empty, ErrorState, Guard, PageHeader, Segmented, Select, Skeleton } from "../components/ui";
+import { Advanced, Callout, ChartPanel, Empty, ErrorState, Guard, PageHeader, Segmented, Select, Skeleton } from "../components/ui";
 import { useApi } from "../lib/api";
 import { axisStyle, baseOption, esc, HUE } from "../lib/echarts";
 import { fmtInt, fmtPct, fmtUsd, fmtUsdFull } from "../lib/format";
 import { useFilters, useLabels, useMeta, useParam } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
+import { useAdvanced } from "../lib/mode";
 import type { SalarySummary } from "../lib/types";
 
 const dims = () => [
@@ -32,9 +33,10 @@ export default function Salary() {
   const [dim, setDim] = useParam("dim", "role_category");
   const [period, setPeriod] = useParam("period", "");
   const periodParam = period ? [period] : undefined;
+  const advanced = useAdvanced();
   const cov = useApi<Coverage>("/salary/coverage", filters);
   const sum = useApi<SalarySummary>("/salary/summary", filters, { dim, kind, period: periodParam, limit: 20 });
-  const hist = useApi<{ bins: { bin: number; n: number }[]; bin_width: number; cap: number }>("/salary/histogram", filters, { kind, period: periodParam });
+  const hist = useApi<{ bins: { bin: number; n: number }[]; bin_width: number; cap: number }>("/salary/histogram", filters, { kind, period: periodParam }, advanced);
   const bench = kind === "benchmark";
   const DIMS = dims();
   const dimLabel = DIMS.find((d) => d.value === dim)?.label ?? dim;
@@ -47,9 +49,11 @@ export default function Salary() {
       <PageHeader title={t("Salaries", "الرواتب")}
         description={t("What job postings advertise as pay, in approximate US dollars per year, by role, country, seniority and skill. Team benchmarks are a separate view and are never mixed in.",
           "ما تعلنه إعلانات الوظائف من أجور، بالدولار الأمريكي سنويًا تقريبًا، حسب الدور والدولة ومستوى الخبرة والمهارة. الرواتب المرجعية التي أرفقها الفريق عرض منفصل ولا تُخلط أبدًا.")}>
+        {advanced && <>
         <Segmented label={t("Salary type", "نوع الراتب")} value={kind} onChange={setKind} options={[{ value: "advertised", label: t("Advertised pay", "رواتب معلنة") }, { value: "benchmark", label: t("Market benchmarks", "رواتب مرجعية للسوق") }]} />
         <Select label={t("Stated per", "محدد لكل")} value={period} onChange={(v) => setPeriod(v || null)}
           options={[{ value: "", label: t("Any period", "أي فترة") }, { value: "year", label: t("Year", "سنة") }, { value: "month", label: t("Month", "شهر") }, { value: "hour", label: t("Hour", "ساعة") }]} />
+        </>}
       </PageHeader>
 
       {bench && (
@@ -64,7 +68,7 @@ export default function Salary() {
 
       <Answer sum={sum} cov={cov.data} bench={bench} period={period} />
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className={clsx("mt-4 grid gap-4", advanced && "xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]")}>
         <ChartPanel title={t(`${bench ? "Benchmark" : "Advertised"} salary by ${dimLabel.toLowerCase()}`, `${bench ? "الراتب المرجعي" : "الراتب المعلن"} حسب ${dimLabel}`)}
           meta={sum.data ? (<>
             {t(`USD per year, approx. Box = middle half (P25–P75), line = median, whiskers = P10–P90. Groups need ≥ ${sum.data.min_n} salaries${sum.data.groups_hidden_small_n ? `; ${sum.data.groups_hidden_small_n} smaller groups hidden` : ""}.`,
@@ -108,6 +112,7 @@ export default function Salary() {
           }}</Guard>}
         </ChartPanel>
 
+        <Advanced>
         <div className="grid content-start gap-4">
           <ChartPanel title={t("How salaries spread", "كيف تتوزع الرواتب")} meta={bench ? t("Benchmark annual salary, USD (approx.)", "الراتب السنوي المرجعي بالدولار الأمريكي (تقريبي)") : t("Advertised annual salary, USD (approx.)", "الراتب السنوي المعلن بالدولار الأمريكي (تقريبي)")}
             table={hist.data ? { columns: [t("From (USD/yr)", "من (دولار/سنة)"), t("Postings", "الإعلانات")], filename: "salary-distribution", rows: hist.data.bins.map((b) => [b.bin, b.n]) } : undefined}>
@@ -123,8 +128,10 @@ export default function Salary() {
             }}</Guard>}
           </ChartPanel>
         </div>
+        </Advanced>
       </div>
 
+      <Advanced>
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <ChartPanel title={t("Which sources state pay", "أي المصادر تذكر الأجر")} meta={t("Share of each source's postings with an advertised salary", "نسبة إعلانات كل مصدر التي تذكر راتبًا معلنًا")}
           table={cov.data ? { columns: [t("Source", "المصدر"), t("Postings", "الإعلانات"), t("Advertised", "معلن"), t("Benchmark", "مرجعي")], filename: "salary-coverage",
@@ -141,6 +148,7 @@ export default function Salary() {
           }}</Guard>}
         </ChartPanel>
       </div>
+      </Advanced>
     </>
   );
 }

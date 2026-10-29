@@ -10,7 +10,7 @@ import { haveSet, useProfile } from "../lib/profile";
 import type { CareerGap, Job } from "../lib/types";
 import { CoverageStrip } from "./Coverage";
 import { SkillPicker } from "./SkillPicker";
-import { ErrorState, Pill, Skeleton } from "./ui";
+import { Advanced, ErrorState, Pill, Skeleton } from "./ui";
 
 const PERIODS: Record<string, string> = { year: "سنة", month: "شهر", week: "أسبوع", day: "يوم", hour: "ساعة" };
 const period = (p: string | null) => (p ? t(p, PERIODS[p] ?? p) : "");
@@ -52,7 +52,7 @@ export function JobDetail({ id, onClose }: { id: string; onClose: () => void }) 
             <Match j={j} />
             <About j={j} />
             {j.description && <Description j={j} />}
-            <Provenance j={j} />
+            <Advanced><Provenance j={j} /></Advanced>
           </div>
         )}
       </div>

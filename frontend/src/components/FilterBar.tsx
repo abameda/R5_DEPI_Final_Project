@@ -9,7 +9,8 @@ import { fmtCompact, fmtInt, fmtPct } from "../lib/format";
 import { useFilters, useLabels, useMeta } from "../lib/hooks";
 import type { Count } from "../lib/types";
 import { t, tv } from "../lib/i18n";
-import { Segmented } from "./ui";
+import { useAdvanced } from "../lib/mode";
+import { Advanced, Segmented } from "./ui";
 
 interface Option { value: string; label: string; n?: number; group?: string }
 
@@ -59,11 +60,13 @@ export function FilterBar() {
               onToggle={(v) => toggle(f.key, v)} onClear={() => set(f.key, [])} grouped={f.key === "country"} />)}
         <MoreFilters filters={filters} optionsFor={optionsFor} />
         </div>
+        <Advanced>
         <div className="flex items-center gap-2 lg:ms-auto">
           <Segmented label={t("Which skills to count", "المهارات المحتسبة")} value={filters.provenance ?? "all"}
             onChange={(v) => set("provenance", v === "all" ? undefined : v)}
             options={[{ value: "all", label: t("All skills", "كل المهارات") }, { value: "observed", label: t("Written in posting", "مذكورة في الإعلان") }]} />
         </div>
+        </Advanced>
       </div>
       <ActiveChips filters={filters} onRemove={(k, v) => (Array.isArray(filters[k as keyof Filters]) ? toggle(k as ListKey, v) : set(k as keyof Filters, undefined as never))}
         onReset={reset} count={n} />
@@ -271,6 +274,7 @@ function Population() {
   const { filters } = useFilters();
   const { data: meta } = useMeta();
   const labels = useLabels();
+  const advanced = useAdvanced();
   const q = useApi<Count[]>("/breakdown", filters, { dim: "cohort" });
   const total = q.data?.reduce((a, r) => a + r.n, 0);
   const all = meta?.totals.postings;
@@ -283,11 +287,12 @@ function Population() {
         <strong className="tnum font-semibold text-ink">{total == null ? "…" : fmtInt(total)}</strong>
         {all != null && total !== all && <> {t("of", "من")} {fmtInt(all)}</>} {t("unique postings", "إعلانًا فريدًا")}
       </span>
-      {mix && <span className="text-ink-3">{mix}</span>}
+      {mix && advanced && <span className="text-ink-3">{mix}</span>}
       {(filters.date_from || filters.date_to) && <span className="text-ink-3">{t("Undated postings are excluded while a date is set", "تُستبعد الإعلانات غير المؤرَّخة ما دام التاريخ محددًا")}</span>}
-      <span className="text-ink-3">
+      {/* a shared link can still count posting-written skills only: say so in either mode */}
+      {(advanced || filters.provenance === "observed") && <span className="text-ink-3">
         {t("Skills:", "المهارات:")} {filters.provenance === "observed" ? t("only those written in the posting data", "المذكورة في بيانات الإعلان فقط") : t("includes skills the team added after collection", "تشمل مهارات أضافها الفريق بعد الجمع")}
-      </span>
+      </span>}
     </div>
   );
 }

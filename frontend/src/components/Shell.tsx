@@ -9,10 +9,13 @@ import { filterParams } from "../lib/filters";
 import { fmtDate } from "../lib/format";
 import { useFilters, useMeta, useTheme } from "../lib/hooks";
 import { t, tv, useLang } from "../lib/i18n";
+import { useMode, type Mode } from "../lib/mode";
 import { useProfile } from "../lib/profile";
 import { FilterBar } from "./FilterBar";
+import { Segmented } from "./ui";
 
-export const nav = (): { group: string; items: { to: string; label: string; icon: typeof Home; filters?: boolean }[] }[] => [
+/** `advanced` pages hold the analysis and methodology; Simple mode leaves them out of the menu. */
+export const nav = (): { group: string; items: { to: string; label: string; icon: typeof Home; filters?: boolean; advanced?: boolean }[] }[] => [
   { group: t("Discover", "اكتشف"), items: [
     { to: "/", label: t("Home", "الرئيسية"), icon: Home, filters: false },
     { to: "/explorer", label: t("Jobs", "الوظائف"), icon: Briefcase },
@@ -21,20 +24,20 @@ export const nav = (): { group: string; items: { to: string; label: string; icon
     { to: "/career", label: t("My skills & plan", "مهاراتي وخطتي"), icon: Route, filters: false },
   ] },
   { group: t("Market", "السوق"), items: [
-    { to: "/market", label: t("Market overview", "نظرة على السوق"), icon: LayoutGrid },
+    { to: "/market", label: t("Market overview", "نظرة على السوق"), icon: LayoutGrid, advanced: true },
     { to: "/skills", label: t("Skills in demand", "المهارات المطلوبة"), icon: Sparkles },
     { to: "/salary", label: t("Salaries", "الرواتب"), icon: Wallet },
-    { to: "/geography", label: t("Locations", "المواقع"), icon: Globe2 },
-    { to: "/employers", label: t("Employers", "جهات التوظيف"), icon: Building2 },
-    { to: "/trends", label: t("Over time", "عبر الزمن"), icon: Clock3 },
-    { to: "/compare", label: t("Compare markets", "مقارنة الأسواق"), icon: GitCompareArrows, filters: false },
+    { to: "/geography", label: t("Locations", "المواقع"), icon: Globe2, advanced: true },
+    { to: "/employers", label: t("Employers", "جهات التوظيف"), icon: Building2, advanced: true },
+    { to: "/trends", label: t("Over time", "عبر الزمن"), icon: Clock3, advanced: true },
+    { to: "/compare", label: t("Compare markets", "مقارنة الأسواق"), icon: GitCompareArrows, filters: false, advanced: true },
   ] },
   { group: t("Tools", "أدوات"), items: [
-    { to: "/insights", label: t("Guided insights", "رؤى موجّهة"), icon: BarChart3 },
-    { to: "/builder", label: t("Insight builder", "منشئ التحليلات"), icon: FlaskConical },
+    { to: "/insights", label: t("Guided insights", "رؤى موجّهة"), icon: BarChart3, advanced: true },
+    { to: "/builder", label: t("Insight builder", "منشئ التحليلات"), icon: FlaskConical, advanced: true },
   ] },
   { group: t("About the data", "عن البيانات"), items: [
-    { to: "/quality", label: t("Data & methodology", "البيانات والمنهجية"), icon: ShieldCheck, filters: false },
+    { to: "/quality", label: t("Data & methodology", "البيانات والمنهجية"), icon: ShieldCheck, filters: false, advanced: true },
   ] },
 ];
 
@@ -76,6 +79,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <aside className={clsx("z-40 flex-col border-line bg-panel lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-e",
         open ? "fixed inset-x-0 top-14 bottom-0 flex overflow-auto" : "hidden")} aria-label={t("Sidebar", "الشريط الجانبي")}>
         <div className="hidden h-16 shrink-0 items-center px-5 lg:flex"><Brand /></div>
+        <ModeSwitch />
         <Nav />
         <SideFooter builtAt={meta?.built_at} />
       </aside>
@@ -185,12 +189,35 @@ function JobSearch() {
   );
 }
 
+/** Simple or Advanced: how much of the analysis the menu and the pages show. */
+function ModeSwitch() {
+  const [mode, setMode] = useMode();
+  const loc = useLocation();
+  const navigate = useNavigate();
+  const change = (m: Mode) => {
+    setMode(m);
+    // the page just left the menu: go back to the start of the job seeker's path
+    if (m === "simple" && nav().some((g) => g.items.some((i) => i.advanced && i.to === loc.pathname))) navigate("/");
+  };
+  return (
+    <div className="shrink-0 px-5 pt-4 pb-1 lg:pt-1">
+      <Segmented label={t("Level of detail", "مستوى التفاصيل")} value={mode} onChange={change}
+        options={[{ value: "simple", label: t("Simple", "بسيط") }, { value: "advanced", label: t("Advanced", "متقدم") }]} />
+      <p className="mt-1.5 text-xs leading-5 text-ink-3">{mode === "simple"
+        ? t("The essentials: jobs, your match and what to learn next.", "الأساسيات: الوظائف، ومدى توافقك، وما تتعلمه بعد ذلك.")
+        : t("Everything: market analysis, tools and how each number was made.", "كل شيء: تحليل السوق، والأدوات، وكيف حُسب كل رقم.")}</p>
+    </div>
+  );
+}
+
 function Nav() {
   const { filters } = useFilters();
+  const [mode] = useMode();
   const qs = new URLSearchParams(filterParams(filters)).toString();
+  const groups = nav().map((g) => ({ ...g, items: g.items.filter((i) => mode === "advanced" || !i.advanced) })).filter((g) => g.items.length);
   return (
     <nav aria-label={t("Main navigation", "التنقل الرئيسي")} className="flex-1 overflow-y-auto px-3 pt-2 pb-4 lg:pt-0">
-      {nav().map((g) => (
+      {groups.map((g) => (
         <div key={g.group} className="mt-4 first:mt-1">
           <p className="px-2.5 pb-1.5 text-xs font-medium text-ink-3">{g.group}</p>
           <ul className="space-y-px">

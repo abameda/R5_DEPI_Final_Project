@@ -18,6 +18,12 @@ function watchErrors(page: Page) {
 
 const population = (page: Page) => page.getByText(/unique postings/).first();
 
+// These tests check the full analysis, so they start in Advanced mode (Simple is the visitor default)
+// unless a test has already picked a mode itself.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => { if (!localStorage.getItem("jmi-mode")) localStorage.setItem("jmi-mode", "advanced"); });
+});
+
 for (const [path, heading] of ROUTES) {
   test(`route ${path} renders without errors`, async ({ page }) => {
     const errors = watchErrors(page);
@@ -139,6 +145,23 @@ test("theme choice persists across reloads", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("data-theme", now);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", now);
+});
+
+test("Simple mode keeps the job seeker's pages and hides the analysis", async ({ page }) => {
+  await page.goto("/market");
+  const menu = page.getByRole("navigation", { name: "Main navigation" });
+  await page.getByRole("radio", { name: "Simple" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(menu.getByRole("link", { name: "Market overview" })).toHaveCount(0);
+  await expect(menu.getByRole("link", { name: "My skills & plan" })).toBeVisible();
+  await page.goto("/skills");
+  await expect(page.getByRole("radiogroup", { name: "Skills view" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "Written in posting" })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("radio", { name: "Simple" })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radio", { name: "Advanced" }).click();
+  await expect(menu.getByRole("link", { name: "Market overview" })).toBeVisible();
+  await expect(page.getByRole("radiogroup", { name: "Skills view" })).toBeVisible();
 });
 
 test("Arabic switches the interface to right-to-left and persists", async ({ page }) => {

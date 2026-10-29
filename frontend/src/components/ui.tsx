@@ -4,7 +4,13 @@ import { AlertTriangle, Download, Info, Table2, BarChart3, RefreshCw, SearchX } 
 import { useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { isRtl, t, tv } from "../lib/i18n";
+import { useAdvanced } from "../lib/mode";
 import type { ChartHandle } from "./Chart";
+
+/** Detail (breakdowns, sample sizes, methodology) that only Advanced mode shows. */
+export function Advanced({ children }: { children: ReactNode }) {
+  return useAdvanced() ? <>{children}</> : null;
+}
 
 export function PageHeader({ title, description, children }: { title: string; description: ReactNode; children?: ReactNode }) {
   return (
