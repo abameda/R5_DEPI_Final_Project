@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import {
   BarChart3, Briefcase, Building2, Clock3, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
-  Menu, Moon, Route, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
+  Menu, Milestone, Moon, Route, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -22,6 +22,7 @@ export const nav = (): { group: string; items: { to: string; label: string; icon
   ] },
   { group: t("You", "أنت"), items: [
     { to: "/career", label: t("My skills & plan", "مهاراتي وخطتي"), icon: Route, filters: false },
+    { to: "/roadmap", label: t("Roadmap", "خارطة الطريق"), icon: Milestone, filters: false },
   ] },
   { group: t("Market", "السوق"), items: [
     { to: "/market", label: t("Market overview", "نظرة على السوق"), icon: LayoutGrid, advanced: true },

@@ -36,8 +36,14 @@ export function useProfile() {
   const setRole = useCallback((role: string) => write({ ...snapshot, role }), []);
   const setSkills = useCallback((skills: string[]) => write({ ...snapshot, skills }), []);
   const addSkill = useCallback((s: string) => write({ ...snapshot, skills: [...snapshot.skills, s] }), []);
-  const removeSkill = useCallback((s: string) => write({ ...snapshot, skills: snapshot.skills.filter((x) => x !== s) }), []);
+  const removeSkill = useCallback((s: string) => write({ ...snapshot, skills: withoutSkill(snapshot.skills, s) }), []);
   return { profile, setRole, setSkills, addSkill, removeSkill, replace: write };
+}
+
+/** Drops every spelling of a skill, so removal matches the case-insensitive ticks of `haveSet`. */
+export function withoutSkill(skills: string[], skill: string) {
+  const k = skill.toLowerCase();
+  return skills.filter((x) => x.toLowerCase() !== k);
 }
 
 /** Case-insensitive membership, so "sql" typed elsewhere still counts as SQL. */

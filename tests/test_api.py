@@ -201,6 +201,34 @@ def test_career_gap_too_few_postings(demo):
     assert res["status"] == "too_few_postings" and res["priorities"] == []
 
 
+def test_roadmap_stages_do_not_overlap(demo):
+    res = get(demo, "/api/career/roadmap", target_role="Data Analysis & BI", have=["SQL"])
+    assert res["status"] == "ok"
+    names = [s["skill"] for st in res["stages"] for s in st["skills"]]
+    assert len(names) == len(set(names))
+    assert [st["key"] for st in res["stages"]][:2] == ["foundations", "core"]
+    assert all(s["have"] == (s["skill"] == "SQL") for st in res["stages"] for s in st["skills"])
+    for st in res["stages"]:
+        if st["key"] == "stand_out":
+            assert all(s["share"] < 0.05 and s["premium"] > 0 and s["salary_n"] >= 30 for s in st["skills"])
+
+
+def test_roadmap_too_few_postings(demo):
+    res = get(demo, "/api/career/roadmap", target_role="Mobile", country="Egypt", seniority="Intern")
+    assert res["status"] == "too_few_postings" and res["stages"] == []
+
+
+def test_roadmap_drops_excluded_skills(demo, monkeypatch):
+    from api.queries import roadmap
+    monkeypatch.setitem(roadmap.EXCLUDE, "Data Analysis & BI", frozenset({"SQL"}))
+    res = get(demo, "/api/career/roadmap", target_role="Data Analysis & BI", country="Egypt")  # fresh cache key
+    assert "SQL" not in [s["skill"] for st in res["stages"] for s in st["skills"]]
+
+
+def test_roadmap_rejects_unknown_role(demo):
+    assert demo["client"].get("/api/career/roadmap", params={"target_role": "Astronaut"}).status_code == 422
+
+
 def test_trends_never_mix_cohorts_in_one_point(demo):
     res = get(demo, "/api/trends", series="Python")
     for p in res["skill_trend"]["series"][0]["points"]:

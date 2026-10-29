@@ -15,6 +15,7 @@ const Skills = lazy(() => import("./pages/Skills"));
 const Salary = lazy(() => import("./pages/Salary"));
 const Geography = lazy(() => import("./pages/Geography"));
 const Career = lazy(() => import("./pages/Career"));
+const Roadmap = lazy(() => import("./pages/Roadmap"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Employers = lazy(() => import("./pages/Employers"));
 const Trends = lazy(() => import("./pages/Trends"));
@@ -59,6 +60,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/salary" element={<Salary />} />
               <Route path="/geography" element={<Geography />} />
               <Route path="/career" element={<Career />} />
+              <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/compare" element={<Compare />} />
               <Route path="/employers" element={<Employers />} />
               <Route path="/trends" element={<Trends />} />

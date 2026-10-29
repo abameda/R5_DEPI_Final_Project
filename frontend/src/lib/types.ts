@@ -52,6 +52,14 @@ export interface CareerGap {
   postings: { job_id: string; title: string; company: string | null; country: string | null; market_type: string; posted_date: string | null; url: string | null; matched: number; listed: number; missing: string[] | null }[];
 }
 
+/** /career/roadmap: a role's skills ordered into stages; stand_out skills carry a within-market pay premium. */
+export type RoadmapSkill = GapSkill & { premium?: number; salary_n?: number; markets?: string[] };
+export interface Roadmap {
+  role: string; denominator: number; min_group: number; provenance: string;
+  status: "ok" | "too_few_postings";
+  stages: { key: "foundations" | "core" | "stand_out"; skills: RoadmapSkill[] }[];
+}
+
 export interface SkillChip { skill: string; observed: boolean; category: string }
 export interface Job {
   job_id: string; title: string; company: string | null; company_is_placeholder: boolean; role_category: string;

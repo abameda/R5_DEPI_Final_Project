@@ -25,7 +25,7 @@ from .db import ROOT, cache, get_store
 from .filters import Filters, filters_from_query
 from .labels import (COHORT_LABELS, COHORT_NOTES, DIMENSION_LABELS, MIN_GROUP_POSTINGS, MIN_SALARY_N,
                      RELIABLE_SALARY_N, SOURCE_LABELS)
-from .queries import builder, compare, market, quality, salary, skills, trends
+from .queries import builder, compare, market, quality, roadmap, salary, skills, trends
 
 log = logging.getLogger("jmi.api")
 app = FastAPI(title="Job Market Intelligence API", version="1.0.0",
@@ -203,6 +203,14 @@ def career_gap(f: F, target_role: Annotated[str, Query(max_length=60)],
     return cached("career", f, lambda: skills.career_gap(get_store(), f, target_role, have),
                   role=target_role, have=sorted(set(have)))
 
+
+
+@app.get("/api/career/roadmap")
+def career_roadmap(f: F, target_role: Annotated[str, Query(max_length=60)],
+                   have: Annotated[list[str], Query(max_length=60)] = []):  # noqa: B006
+    have = [h for h in have if 0 < len(h) <= 120]
+    return cached("roadmap", f, lambda: roadmap.career_roadmap(get_store(), f, target_role, have),
+                  role=target_role, have=sorted(set(have)))
 
 # --- salary ----------------------------------------------------------------
 Kind = Literal["advertised", "benchmark"]

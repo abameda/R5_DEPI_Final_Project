@@ -5,7 +5,7 @@ const ROUTES: [string, string][] = [
   ["/", "Understand the job market. See where you fit. Know what comes next."], ["/market", "Market overview"],
   ["/explorer", "Jobs"], ["/geography", "Locations"], ["/employers", "Employers"],
   ["/skills", "Skills in demand"], ["/salary", "Salaries"], ["/trends", "Over time"], ["/compare", "Compare markets"],
-  ["/career", "My skills & plan"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
+  ["/career", "My skills & plan"], ["/roadmap", "Roadmap"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
 ];
 
 /** Fails the test on any console error or failed API call. */
@@ -207,6 +207,19 @@ test("the plan ranks missing skills and remembers your skills", async ({ page })
   await expect(page.getByRole("heading", { name: "What to learn next" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "Remove SQL" })).toBeVisible();
+});
+
+test("the roadmap orders skills and shares your profile with the plan", async ({ page }) => {
+  await page.goto("/roadmap");
+  await page.getByLabel("Role you want").selectOption("Data Analysis & BI");
+  await expect(page.getByRole("heading", { name: "Foundations" })).toBeVisible();
+  const done = page.getByText(/\d+ of \d+ done/);
+  const before = await done.textContent();
+  await page.getByRole("button", { name: /^I have / }).first().click();
+  await expect(done).not.toHaveText(before!);
+  await expect(page.getByRole("link", { name: /roadmap\.sh/ }).first()).toHaveAttribute("target", "_blank");
+  await page.goto("/career");
+  await expect(page.getByRole("button", { name: /^Remove / }).first()).toBeVisible();
 });
 
 test("compare keeps global filters and allows all-vs-all", async ({ page }) => {
