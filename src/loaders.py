@@ -248,6 +248,35 @@ def load_cybersecurity() -> pd.DataFrame:
     return _finish(out)
 
 
+FRESH = RAW / "fresh"
+
+
+def load_fresh() -> pd.DataFrame:
+    """Postings collected by src/collectors.py from public job APIs, one folder
+    per run (data/raw/fresh/<YYYY-MM-DD>/<source>.csv). A posting seen in
+    several runs is kept once, from the latest run; one missing from the latest
+    run keeps no link (it has closed). Its skills were found in
+    the posting's own tags, title and description, so they count as written in
+    the posting (observed). No runs yet -> no rows."""
+    files = sorted(FRESH.glob("*/*.csv"))
+    if not files:
+        return _finish(pd.DataFrame())
+    df = pd.concat([pd.read_csv(f, dtype=str).assign(collector=f.stem) for f in files], ignore_index=True)
+    df = df.sort_values("collected_at").drop_duplicates(["source", "id"], keep="last")
+    # A posting missing from its collector's latest run has closed or expired.
+    # It stays in the statistics, but its link is dropped so it is never shown
+    # as an open job (Himalayas and Jobicy terms ask for exactly this).
+    latest = df.groupby("collector")["collected_at"].transform("max")
+    df["link"] = df["link"].where(df["collected_at"].eq(latest))
+    return _finish(df.assign(
+        source_dataset="fresh_api_collection", source_platform=df["source"], source_record_id=df["id"],
+        location=df["location_raw"], country_raw=df["country"], work_mode_raw=df["work_mode"],
+        job_type_raw=df["job_type"], skills_raw=df["skills"], skills_observed_raw=df["skills"],
+        salary_text=df["salary"], salary_is_estimate=False, posted_raw=df["updated"],
+        url=df["link"], role_hint=df["category"],
+    ))
+
+
 LOADERS = {
     "jooble_careerjet_foreign": load_jooble_careerjet,
     "remote_boards": load_remote_boards,
@@ -256,4 +285,5 @@ LOADERS = {
     "kaggle_2023_international": load_international,
     "arab_jobs": load_arab_jobs,
     "cybersecurity_manual": load_cybersecurity,
+    "fresh_api_collection": load_fresh,
 }

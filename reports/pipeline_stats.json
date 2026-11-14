@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-10-25T16:38:05",
+  "generated_at": "2026-11-14T15:37:26",
   "stages": [
     {
       "stage": "1. raw rows loaded (all sources)",
-      "rows": 775155
+      "rows": 777831
     },
     {
       "stage": "2-5. after cleaning & standardizing (no rows removed)",
-      "rows": 775155
+      "rows": 777831
     },
     {
       "stage": "6. after dropping missing-title & non-tech rows",
-      "rows": 773374
+      "rows": 776050
     },
     {
       "stage": "7a. after removing exact duplicates",
-      "rows": 770956
+      "rows": 773632
     },
     {
       "stage": "7b. after removing near-duplicates (title+company+location)",
-      "rows": 588545
+      "rows": 591142
     }
   ],
   "dropped": {
@@ -32,6 +32,7 @@
     "jooble_careerjet_foreign": 18583,
     "all_tech_jobs": 6693,
     "startup_jobs": 3543,
+    "fresh_api_collection": 2676,
     "remote_boards": 1075,
     "arab_jobs": 439,
     "cybersecurity_manual": 58
@@ -48,5 +49,5 @@
       "Oman": 1
     }
   },
-  "runtime_seconds": 137.7
+  "runtime_seconds": 283.0
 }

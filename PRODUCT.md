@@ -50,7 +50,8 @@ coexists in postings (titles and descriptions may be Arabic, right-to-left).
 
 ## Capabilities and Constraints
 
-- 588,545 unique postings, 159 countries, 1,475 skills, 8 sources; ~97% of postings come from
+- 591,142 unique postings, 159 countries, 1,475 skills, 9 sources (the 9th is a fresh
+  collection from official public job APIs, `src/collectors.py`); ~97% of postings come from
   the Kaggle "data jobs 2023" archive, so data roles dominate.
 - Advertised salary on ~33.6k postings; benchmark figures on ~14.9k, kept separate.
 - Two collection cohorts that are not a longitudinal sample.

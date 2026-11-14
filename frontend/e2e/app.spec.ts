@@ -29,7 +29,7 @@ for (const [path, heading] of ROUTES) {
     const errors = watchErrors(page);
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-    await expect(page.getByText("Synthetic demo data")).toBeVisible();
+    await expect(page.getByText("Synthetic demo data").first()).toBeVisible();
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("alert").filter({ hasText: "could not be loaded" })).toHaveCount(0);
     expect(errors).toEqual([]);
@@ -295,7 +295,43 @@ test("skip link reaches the main content", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
 });
 
-for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/roadmap", "/quality"]) {
+test("the plan shows where to search for the target role", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/career?target=Data%20Engineering");
+  const panel = page.getByRole("region", { name: "Where to search for these jobs" });
+  await expect(panel.getByText(/would have reached \d+% of the [\d,]+ postings we can trace to a board/)).toBeVisible();
+  await panel.getByRole("button", { name: "Show as table" }).click();
+  await expect(panel.getByRole("columnheader", { name: "Only on this board" })).toBeVisible();
+  await expect(panel.getByRole("cell", { name: "Synthetic Board A" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("a posting found on several boards lists each of them", async ({ page }) => {
+  const res = await page.request.get("/api/jobs?sort=most_listed&page_size=1");
+  const job = (await res.json()).rows[0];
+  expect(job.duplicate_count).toBeGreaterThan(1);
+  await page.goto(`/explorer?job=${job.job_id}`);
+  const detail = page.getByRole("complementary", { name: "Job details" });
+  await expect(detail.getByRole("heading", { name: /Also posted on \d+ more boards?/ })).toBeVisible();
+  await expect(detail.getByRole("listitem").filter({ hasText: /^Synthetic Board/ })).toHaveCount(job.duplicate_count);
+});
+
+test("an employer profile compares what its postings state with the market", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/employers");
+  await page.getByLabel("Sort").selectOption("pay_stated");
+  await expect(page).toHaveURL(/esort=pay_stated/);
+  await expect(page.getByRole("columnheader", { name: "States pay" })).toBeVisible();
+  await page.getByRole("main").getByRole("row").nth(1).getByRole("button").first().click();
+  const card = page.getByRole("region", { name: "What its postings tell you" });
+  for (const item of ["States the pay", "Lists the skills it needs", "Says the seniority level", "Says remote, hybrid or on-site"]) {
+    await expect(card.getByText(item)).toBeVisible();
+  }
+  await expect(card.getByText(/of its postings \(\d+ of \d+\) · market \d+%/).first()).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/roadmap", "/quality", "/employers?name=Synthetic%20Employer%2001"]) {
   test(`no serious accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState("networkidle");

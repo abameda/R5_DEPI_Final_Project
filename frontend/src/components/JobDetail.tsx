@@ -3,7 +3,7 @@ import { ArrowRight, Check, ExternalLink, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useApi } from "../lib/api";
-import { fmtDate, fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
+import { advertRel, fmtDate, fmtInt, fmtPct, fmtUsdFull, isWebLink } from "../lib/format";
 import { useLabels } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
 import { haveSet, useProfile } from "../lib/profile";
@@ -51,6 +51,7 @@ export function JobDetail({ id, onClose }: { id: string; onClose: () => void }) 
             <Facts j={j} />
             <Match j={j} />
             <About j={j} />
+            <AlsoPostedOn j={j} />
             {j.description && <Description j={j} />}
             <Advanced><Provenance j={j} /></Advanced>
           </div>
@@ -75,8 +76,8 @@ function Facts({ j }: { j: Job }) {
             <Pill tone="warn">{t("Benchmark, not this posting’s pay", "قيمة مرجعية، لا راتب هذا الإعلان")}</Pill></p>
         ) : <p className="mt-0.5 text-sm text-ink-2">{t("Not stated in the posting", "غير مذكور في الإعلان")}</p>}
       </div>
-      {j.url && /^https?:\/\//i.test(j.url) ? (
-        <a href={j.url} target="_blank" rel="noopener noreferrer nofollow"
+      {isWebLink(j.url) ? (
+        <a href={j.url} target="_blank" rel={advertRel(j.url)}
           className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white no-underline hover:bg-accent-ink dark:text-[#0b0f17]">
           {t("Open original posting", "افتح الإعلان الأصلي")} <ExternalLink size={15} />
         </a>
@@ -211,12 +212,44 @@ function Description({ j }: { j: Job }) {
   );
 }
 
+const UNATTRIBUTED = "Not attributed";
+
+/** Every board this posting was found on. De-duplication counted it once; each listing keeps its own link. */
+function AlsoPostedOn({ j }: { j: Job }) {
+  const boards = (j.listings ?? []).filter((l) => l.platform !== UNATTRIBUTED);
+  if (boards.length < 2) return null;
+  return (
+    <section aria-labelledby="listed-h" className="border-t border-line pt-6">
+      <h3 id="listed-h" className="text-base font-semibold text-ink">{t(`Also posted on ${boards.length - 1} more ${boards.length === 2 ? "board" : "boards"}`, `منشورة أيضًا في ${boards.length - 1} ${boards.length === 2 ? "موقع آخر" : "مواقع أخرى"}`)}</h3>
+      <p className="mt-0.5 text-xs text-ink-3">{t(`We found this job ${boards.length} times and counted it once. Compare the listings before you apply: dates and details can differ.`,
+        `وجدنا هذه الوظيفة ${boards.length} مرات واحتسبناها مرة واحدة. قارن الإعلانات قبل التقديم، فقد تختلف التواريخ والتفاصيل.`)}</p>
+      <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+        {boards.map((l) => (
+          <li key={l.platform} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+            <span className="min-w-0">
+              <span className="block font-medium text-ink" dir="auto">{tv(l.platform)}</span>
+              {l.source_platform && l.source_platform.toLowerCase() !== l.platform.toLowerCase() && <span className="block truncate text-xs text-ink-3" dir="auto">{l.source_platform}</span>}
+            </span>
+            <span className="flex shrink-0 items-center gap-3 text-xs text-ink-3">
+              <span className="tnum">{fmtDate(l.posted_date)}</span>
+              {isWebLink(l.url)
+                ? <a href={l.url} target="_blank" rel={advertRel(l.url)} className="inline-flex items-center gap-1 font-medium text-accent-ink no-underline hover:underline">
+                    {t("Open", "فتح")}<ExternalLink size={12} aria-hidden /><span className="sr-only">{t(` the listing on ${l.platform} (opens in a new tab)`, ` الإعلان على ${l.platform} (يفتح في علامة تبويب جديدة)`)}</span></a>
+                : <span>{t("no link", "بلا رابط")}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function Provenance({ j }: { j: Job }) {
   const labels = useLabels();
   return (
     <div className="space-y-1 border-t border-line pt-4 text-xs leading-5 text-ink-3">
       <p>{t("Source: ", "المصدر: ")}{labels.source(j.source_dataset)}{j.source_platform ? t(` · via ${j.source_platform}`, ` · عبر ${j.source_platform}`) : ""}</p>
-      {j.duplicate_count > 1 && <p>{t(`Found ${j.duplicate_count} times across boards (${j.sources}); counted once.`, `وُجد ${j.duplicate_count} مرات في مواقع مختلفة (${j.sources})؛ احتُسب مرة واحدة.`)}</p>}
+      {j.duplicate_count > 1 && <p>{t(`Found ${j.duplicate_count} times across sources; counted once.`, `وُجد ${j.duplicate_count} مرات في المصادر؛ احتُسب مرة واحدة.`)}</p>}
       <p>{t(`Skills: ${j.skills_observed_count} written in the posting, ${j.skills_count - j.skills_observed_count} added by the team (marked “added”).`,
         `المهارات: ${j.skills_observed_count} مذكورة في الإعلان، و${j.skills_count - j.skills_observed_count} أضافها الفريق (موسومة بـ«مُضافة»).`)}</p>
     </div>

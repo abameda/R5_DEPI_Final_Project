@@ -80,8 +80,8 @@ export default function Home() {
         const kaggle = ov.data.cohorts.find((c) => c.key === "kaggle_2023")?.share ?? 0;
         return (
           <p className="max-w-3xl border-t border-line pt-6 text-sm leading-6 text-ink-3">
-            {t(`About this data: ${fmtInt(ov.data.kpis.postings)} unique postings after removing duplicates across 8 sources. ${fmtPct(kaggle, 0)} come from a 2023 archive of data jobs, so data roles and data skills lead most rankings. Figures describe this collected sample, not the whole job market.`,
-              `عن هذه البيانات: ${fmtInt(ov.data.kpis.postings)} إعلانًا فريدًا بعد إزالة التكرار بين 8 مصادر. ${fmtPct(kaggle, 0)} منها من أرشيف وظائف البيانات لعام 2023، لذا تتصدر وظائف البيانات ومهاراتها معظم الترتيبات. الأرقام تصف هذه العينة المجمَّعة، لا سوق العمل بأكمله.`)}{" "}
+            {t(`About this data: ${fmtInt(ov.data.kpis.postings)} unique postings after removing duplicates across ${fmtInt(ov.data.kpis.sources)} sources. ${fmtPct(kaggle, 0)} come from a 2023 archive of data jobs, so data roles and data skills lead most rankings. Figures describe this collected sample, not the whole job market.`,
+              `عن هذه البيانات: ${fmtInt(ov.data.kpis.postings)} إعلانًا فريدًا بعد إزالة التكرار بين ${fmtInt(ov.data.kpis.sources)} مصادر. ${fmtPct(kaggle, 0)} منها من أرشيف وظائف البيانات لعام 2023، لذا تتصدر وظائف البيانات ومهاراتها معظم الترتيبات. الأرقام تصف هذه العينة المجمَّعة، لا سوق العمل بأكمله.`)}{" "}
             <TextLink to="/quality">{t("How the data was built", "كيف بُنيت البيانات")}</TextLink>
           </p>
         );

@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from ..db import Store
 from ..filters import Filters
-from ..labels import MIN_GROUP_POSTINGS, MIN_SALARY_N, salary_confidence, share
+from ..labels import MIN_GROUP_POSTINGS, MIN_SALARY_N, salary_confidence, share, wilson_interval
 
 # Columns that may be used as a GROUP BY dimension (whitelist -> SQL is never built from input).
 BREAKDOWN_DIMS = {"role_category", "country", "region", "market_type", "seniority", "job_type",
@@ -165,9 +165,10 @@ def job_detail(store: Store, job_id: str) -> dict:
                       [job_id])
     if not rows:
         raise HTTPException(404, "Posting not found")
+    from .platforms import listings
     _attach_skills(store, rows)
     row = rows[0]
-    row.pop("jid")
+    row["listings"] = listings(store, row.pop("jid"))
     return row
 
 
@@ -242,7 +243,11 @@ def crosstab(store: Store, f: Filters, row_dim: str, col_dim: str, rows_limit: i
 # Employers
 # ---------------------------------------------------------------------------
 COMPANY_SORTS = {"postings": "postings DESC, company", "name": "company",
-                 "salary": "CASE WHEN salary_n >= 10 THEN salary_median END DESC NULLS LAST, postings DESC, company", "recent": "last_posted DESC NULLS LAST, company"}
+                 "salary": "CASE WHEN salary_n >= 10 THEN salary_median END DESC NULLS LAST, postings DESC, company",
+                 "recent": "last_posted DESC NULLS LAST, company",
+                 # share of postings that state pay, ranked only for employers with enough postings
+                 "pay_stated": "CASE WHEN postings >= 10 THEN pay_stated / postings END DESC NULLS LAST, "
+                               "postings DESC, company"}
 
 
 def companies(store: Store, f: Filters, search: str | None, page: int, page_size: int, sort: str,
@@ -264,6 +269,7 @@ def companies(store: Store, f: Filters, search: str | None, page: int, page_size
                any_value(company_is_placeholder) AS is_placeholder,
                count(*) FILTER (WHERE salary_kind = 'advertised') AS salary_n,
                median(salary_usd_annual) FILTER (WHERE salary_kind = 'advertised') AS salary_median,
+               count(*) FILTER (WHERE {REPORT_CARD['pay']}) AS pay_stated,
                max(posted_date) AS last_posted
         FROM f WHERE {where} GROUP BY company ORDER BY {COMPANY_SORTS[sort]} LIMIT ? OFFSET ?""",
                       [*params, *extra, page_size, (page - 1) * page_size])
@@ -272,6 +278,43 @@ def companies(store: Store, f: Filters, search: str | None, page: int, page_size
         if r["salary_n"] < MIN_SALARY_N:
             r["salary_median"] = None
     return {"total": total, "page": page, "page_size": page_size, "rows": rows}
+
+
+# What an employer's postings state, each compared with every named employer in
+# the same selection. A posting "states pay" when it advertises a salary (team
+# benchmarks do not count) and "states skills" when skills are written in it.
+REPORT_CARD = {
+    "pay": "salary_kind IN ('advertised', 'advertised_unusable')",
+    "skills": "skills_observed_count > 0",
+    "seniority": "seniority <> 'Not specified'",
+    "work_mode": "work_mode <> 'Not specified'",
+}
+MIN_REPORT_POSTINGS = 10
+
+
+def report_card(store: Store, f: Filters, company: str) -> dict:
+    """Per item: the employer's share with a 95% Wilson interval and the market
+    share. 'above' / 'below' only when the market share lies outside the
+    employer's interval, so small employers are not judged on noise."""
+    sel = ", ".join(f"count(*) FILTER (WHERE {cond}) AS {key}" for key, cond in REPORT_CARD.items())
+    cte, params = f.model_copy(update={"company": [company]}).cte()
+    emp = store.one(f"{cte} SELECT count(*) AS n, {sel} FROM f", params)
+    cte, params = f.without("company").cte()
+    market = store.one(f"""{cte} SELECT count(*) AS n, count(DISTINCT company) AS employers, {sel}
+        FROM f WHERE company IS NOT NULL AND NOT company_is_placeholder""", params)
+    n, mn = emp["n"] or 0, market["n"] or 0
+    items = []
+    for key in REPORT_CARD:
+        lo, hi = wilson_interval(emp[key] or 0, n)
+        m = share(market[key] or 0, mn)
+        if n < MIN_REPORT_POSTINGS or m is None:
+            verdict = "too_few"
+        else:
+            verdict = "above" if m < lo else "below" if m > hi else "similar"
+        items.append({"key": key, "k": emp[key] or 0, "n": n, "share": share(emp[key] or 0, n),
+                      "low": round(lo, 4), "high": round(hi, 4), "market_share": m, "verdict": verdict})
+    return {"postings": n, "market_postings": mn, "market_employers": market["employers"] or 0,
+            "min_postings": MIN_REPORT_POSTINGS, "items": items}
 
 
 def company_profile(store: Store, f: Filters, company: str) -> dict:
@@ -297,4 +340,5 @@ def company_profile(store: Store, f: Filters, company: str) -> dict:
         "cohorts": breakdown(store, g, "cohort"),
         "top_skills": top_skills(store, g, limit=15),
         "salary": salary_summary(store, g, "role_category", "advertised", None),
+        "report_card": report_card(store, f, company),
     }

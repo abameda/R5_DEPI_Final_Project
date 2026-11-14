@@ -46,17 +46,20 @@ SENIORITY = ["Not specified", "Senior", "Junior", "Lead / Principal", "Intern", 
 SOURCES = {"kaggle_2023_international": 0.55, "kaggle_2023_arab_search": 0.15, "jooble_careerjet_foreign": 0.15,
            "all_tech_jobs": 0.1, "arab_jobs": 0.05}
 USD = {"USD": 1, "GBP": 1.3, "EUR": 1.1, "INR": 0.0115, "EGP": 1 / 48.5, "SAR": 1 / 3.75, "AED": 1 / 3.6725}
+# Synthetic boards: a posting is "listed" on 1-3 of them, so the per-board
+# coverage view and "Also posted on" have something to show.
+BOARDS = {"Synthetic Board A": 0.45, "Synthetic Board B": 0.3, "Synthetic Board C": 0.15, "Synthetic Board D": 0.1}
 BASE_USD = {"United States": 120_000, "United Kingdom": 75_000, "Germany": 70_000, "India": 20_000,
             "Egypt": 9_000, "Saudi Arabia": 45_000, "United Arab Emirates": 55_000, None: 90_000}
 
 
-def generate(n: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+def generate(n: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict, pd.DataFrame]:
     rng = np.random.default_rng(seed)
     roles = rng.choice(list(ROLES), n, p=[w for w, _ in ROLES.values()])
     countries = rng.choice(len(COUNTRIES), n, p=[w for w, *_ in COUNTRIES.values()])
     country_names = list(COUNTRIES)
     sources = rng.choice(list(SOURCES), n, p=list(SOURCES.values()))
-    rows, skill_rows = [], []
+    rows, skill_rows, listing_rows = [], [], []
     for i in range(n):
         role, country = roles[i], country_names[countries[i]]
         _, region, currency = COUNTRIES[country]
@@ -81,6 +84,9 @@ def generate(n: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
             local = usd / USD[currency] / (12 if per == "month" else 1)
             smin, smax, cur = round(local * 0.9), round(local * 1.1), currency
             estimate = salary_kind >= 0.25
+        boards = list(rng.choice(list(BOARDS), int(rng.integers(1, 4)), replace=False, p=list(BOARDS.values())))
+        listing_rows += [{"job_id": job_id, "platform": b, "source_platform": b, "source_dataset": source,
+                          "url": None, "posted_date": date.date()} for b in boards]
         rows.append({
             "job_id": job_id, "title": f"{seniority + ' ' if seniority in ('Senior', 'Junior') else ''}"
                                        f"{role.split(' &')[0]} specialist",
@@ -94,7 +100,7 @@ def generate(n: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
             "salary_min": smin, "salary_max": smax, "salary_currency": cur, "salary_period": per,
             "salary_usd_annual": usd, "salary_is_estimate": estimate,
             "posted_date": date.date(), "posted_year": date.year, "source_dataset": source,
-            "source_platform": "synthetic", "sources": "synthetic", "duplicate_count": int(rng.integers(1, 3)),
+            "source_platform": boards[0], "sources": "; ".join(sorted(boards)), "duplicate_count": len(boards),
             "url": None, "search_keyword": None,
         })
         skill_rows += [{"job_id": job_id, "skill": s, "is_observed": s in observed} for s in skills]
@@ -109,15 +115,16 @@ def generate(n: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
                                                      {"stage": "7b. after removing near-duplicates", "rows": n}],
              "dropped": {}, "raw_rows_by_source": jobs["source_dataset"].value_counts().to_dict(),
              "sudan_search_location_rows": None, "runtime_seconds": 0}
-    return jobs, long, dim, stats
+    return jobs, long, dim, stats, pd.DataFrame(listing_rows)
 
 
 def write(out: Path, n: int = 4000, seed: int = 7) -> None:
-    jobs, long, dim, stats = generate(n, seed)
+    jobs, long, dim, stats, listings = generate(n, seed)
     out.mkdir(parents=True, exist_ok=True)
     jobs.to_csv(out / "jobs_clean.csv", index=False)
     long.to_csv(out / "job_skills.csv", index=False)
     dim.to_csv(out / "skills_dim.csv", index=False)
+    listings.to_csv(out / "job_listings.csv", index=False)
     (out / "pipeline_stats.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
 

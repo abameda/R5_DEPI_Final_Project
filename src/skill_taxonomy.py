@@ -16,6 +16,8 @@ Keys are the canonical lower-case skill keys produced by
 """
 from __future__ import annotations
 
+import re
+
 # Kaggle group -> category shown in the dashboard. 'async' and 'sync' are the
 # dataset's two kinds of collaboration tools (Jira / Slack) and are merged.
 KAGGLE_TYPE_LABELS = {
@@ -204,3 +206,60 @@ def is_technical(category: str) -> bool:
     """Soft skills and spoken languages are the only non-technical groups.
     Uncategorized skills are counted as technical (they come from tech postings)."""
     return category not in NON_TECHNICAL
+
+
+# ---------------------------------------------------------------------------
+# Skills written in a posting's text (fresh API collection, src/collectors.py)
+# ---------------------------------------------------------------------------
+# Most job APIs give a title and a description but no skill list. A skill counts
+# as written in the posting when one of these patterns matches its title, tags
+# or description. Names are the dataset's canonical display names, so extracted
+# skills merge with the existing ones. Ambiguous words are left out or need
+# context: "R" only before a list separator / "programming"; "Go" only as
+# "Golang" or "Go developer"; "C" is not extracted; "Flow", "Word", "Zoom" are
+# not extracted because they are ordinary English words.
+EXTRACT_PATTERNS = {
+    "Python": r"\bpython\b", "SQL": r"\bsql\b", "AWS": r"\baws\b|amazon web services",
+    "Azure": r"\bazure\b", "GCP": r"\bgcp\b|google cloud", "Tableau": r"\btableau\b",
+    "Spark": r"\b(?:apache )?spark\b", "PySpark": r"\bpyspark\b", "Excel": r"\b(?:ms |microsoft )?excel\b(?! at| in)",
+    "Java": r"\bjava\b(?!\s*script)", "JavaScript": r"\bjavascript\b", "TypeScript": r"\btypescript\b",
+    "Power BI": r"\bpower ?bi\b", "Git": r"\bgit\b", "GitHub": r"\bgithub\b", "GitLab": r"\bgitlab\b",
+    "Docker": r"\bdocker\b", "Kubernetes": r"\bkubernetes\b|\bk8s\b", "Terraform": r"\bterraform\b",
+    "Ansible": r"\bansible\b", "Jenkins": r"\bjenkins\b", "CI/CD": r"\bci ?/ ?cd\b",
+    "Linux": r"\blinux\b", "Kafka": r"\bkafka\b", "Airflow": r"\bairflow\b", "Scala": r"\bscala\b",
+    "Snowflake": r"\bsnowflake\b", "Databricks": r"\bdatabricks\b", "dbt": r"\bdbt\b",
+    "Hadoop": r"\bhadoop\b", "NoSQL": r"\bnosql\b", "MongoDB": r"\bmongo ?db\b", "PostgreSQL": r"\bpostgres(?:ql)?\b",
+    "MySQL": r"\bmysql\b", "SQL Server": r"\bsql server\b|\bmssql\b", "Oracle": r"\boracle\b", "Redis": r"\bredis\b",
+    "Elasticsearch": r"\belasticsearch\b", "BigQuery": r"\bbigquery\b", "Redshift": r"\bredshift\b",
+    "TensorFlow": r"\btensorflow\b", "PyTorch": r"\bpytorch\b", "Scikit-learn": r"\bscikit[- ]learn\b|\bsklearn\b",
+    "Pandas": r"\bpandas\b", "NumPy": r"\bnumpy\b", "Machine Learning": r"\bmachine learning\b",
+    "Deep Learning": r"\bdeep learning\b", "LLMs": r"\bllms?\b|large language models?", "MLOps": r"\bmlops\b",
+    "Hugging Face": r"\bhugging ?face\b", "Statistics": r"\bstatistics\b", "Looker": r"\blooker\b",
+    "SAS": r"\bsas\b", "SAP": r"\bsap\b", "Jira": r"\bjira\b", "Confluence": r"\bconfluence\b",
+    "React": r"\breact(?:\.?js)?\b(?! native)", "React Native": r"\breact native\b", "Angular": r"\bangular(?:js)?\b",
+    "Vue": r"\bvue(?:\.?js)?\b", "Node.js": r"\bnode\.?js\b", "Express": r"\bexpress\.?js\b",
+    "Django": r"\bdjango\b", "Flask": r"\bflask\b", "FastAPI": r"\bfastapi\b", "Spring": r"\bspring ?boot\b|\bspring framework\b",
+    ".NET": r"(?<![\w.])\.net\b|\bdotnet\b", "ASP.NET": r"\basp\.net\b", "C#": r"(?<![\w])c#", "C++": r"(?<![\w])c\+\+",
+    "PHP": r"\bphp\b", "Laravel": r"\blaravel\b", "Ruby": r"\bruby\b", "Ruby on Rails": r"\brails\b",
+    "Go": r"\bgolang\b|\bgo (?:developer|engineer|programming|language)\b", "Rust": r"\brust\b",
+    "Kotlin": r"\bkotlin\b", "Swift": r"\bswift\b", "Flutter": r"\bflutter\b", "Dart": r"\bdart\b",
+    "Android": r"\bandroid\b", "iOS": r"\bios\b", "HTML": r"\bhtml5?\b", "CSS": r"\bcss3?\b",
+    "GraphQL": r"\bgraphql\b", "REST API": r"\brest(?:ful)? ?apis?\b", "Microservices": r"\bmicro-?services\b",
+    "Redux": r"\bredux\b", "Next.js": r"\bnext\.?js\b", "Selenium": r"\bselenium\b", "Cypress": r"\bcypress\b",
+    "Playwright": r"\bplaywright\b", "Jest": r"\bjest\b", "Postman": r"\bpostman\b",
+    "Test Automation": r"\btest automation\b|\bautomated testing\b", "Agile": r"\bagile\b", "Scrum": r"\bscrum\b",
+    "Bash": r"\bbash\b", "PowerShell": r"\bpowershell\b", "Prometheus": r"\bprometheus\b", "Grafana": r"\bgrafana\b",
+    "Splunk": r"\bsplunk\b", "SIEM": r"\bsiem\b", "Penetration Testing": r"\bpenetration test|\bpen ?test",
+    "Network Security": r"\bnetwork security\b", "Incident Response": r"\bincident response\b",
+    "ISO 27001": r"\biso ?27001\b", "Figma": r"\bfigma\b", "MATLAB": r"\bmatlab\b", "Alteryx": r"\balteryx\b",
+    "Embedded C": r"\bembedded c\b", "FPGA": r"\bfpga\b", "RTOS": r"\brtos\b", "Firebase": r"\bfirebase\b",
+    "R": r"(?<![\w.-])R(?=\s*(?:,|/|\)|;|and\b|or\b|programming|language|studio))",
+}
+_EXTRACT = [(name, re.compile(rx, 0 if name == "R" else re.I)) for name, rx in EXTRACT_PATTERNS.items()]
+
+
+def extract_skills(text: str | None) -> list[str]:
+    """Canonical names of the skills written in a piece of posting text."""
+    if not text:
+        return []
+    return [name for name, rx in _EXTRACT if rx.search(text)]

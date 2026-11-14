@@ -45,3 +45,10 @@ export function fmtMonth(d: string): string {
   const dt = new Date(`${d.slice(0, 7)}-01T00:00:00`);
   return dt.toLocaleDateString(locale(), { month: "short", year: "numeric" });
 }
+
+/** Only http(s) links to original adverts are rendered. */
+export const isWebLink = (url: string | null | undefined): url is string => !!url && /^https?:\/\//i.test(url);
+
+/** rel for a link to an original advert. Remote OK's API terms ask for a followed
+ *  link back, so it alone drops "nofollow"; every link keeps "noopener". */
+export const advertRel = (url: string) => (/^https?:\/\/([^/]+\.)?remoteok\.com\//i.test(url) ? "noopener" : "noopener noreferrer nofollow");

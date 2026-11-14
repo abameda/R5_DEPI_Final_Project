@@ -69,7 +69,7 @@ export interface Job {
   salary_currency: string | null; salary_period: string | null; posted_date: string | null; cohort: string;
   source_dataset: string; source_platform: string | null; duplicate_count: number; url: string | null;
   skills_count: number; skills_observed_count: number; skill_list: SkillChip[];
-  description?: string | null; sources?: string | null; search_keyword?: string | null;
+  description?: string | null; sources?: string | null; search_keyword?: string | null; listings?: Listing[];
 }
 export interface JobPage { total: number; page: number; page_size: number; sort: string; rows: Job[] }
 
@@ -117,3 +117,18 @@ export interface Insight {
   /** The values the sentence is built from (used to render it in Arabic). */
   args?: Record<string, unknown>;
 }
+
+/** One board a posting was listed on (cross-source de-duplication keeps them all). */
+export interface Listing { platform: string; source_platform: string | null; url: string | null; posted_date: string | null }
+
+export interface PlatformRow { platform: string; postings: number; share: number | null; only_here: number; only_here_share: number | null; with_link: number; last_posted: string | null; queried_directly: boolean }
+export interface PlatformCoverage {
+  postings: number; attributed: number; not_attributed: number; kaggle_2023_share: number | null;
+  platform_count: number; platforms: PlatformRow[];
+  combination: { platforms: string[]; added: number; reached: number; share: number | null }[];
+  small_sample: boolean;
+}
+
+export type ReportKey = "pay" | "skills" | "seniority" | "work_mode";
+export interface ReportItem { key: ReportKey; k: number; n: number; share: number | null; low: number; high: number; market_share: number | null; verdict: "above" | "similar" | "below" | "too_few" }
+export interface ReportCard { postings: number; market_postings: number; market_employers: number; min_postings: number; items: ReportItem[] }

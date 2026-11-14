@@ -99,6 +99,41 @@ For a target role in the chosen market (other filters apply too):
   requested skills (roles with ≥ 30 postings-with-skills).
 * A skill whose mentions are > 50% team-added is flagged "mostly team-added".
 
+## Where to search (job boards)
+
+Computed from `job_listings`: one row per (posting, platform) the posting was found on,
+before cross-source de-duplication merged the copies. Raw platform spellings ("BeBee
+India", "lever:veeva", "إنديد") are grouped by `clean_utils.platform_family`; file names
+and collection methods ("arab_tech_jobs", "manual collection") are **Not attributed**.
+
+* **Attributed postings** = unique postings in the selection with at least one named platform.
+* **Board share** = attributed postings listed on the board ÷ attributed postings. A posting
+  on three boards counts once in the denominator and once for each board, so shares sum
+  above 100%.
+* **Only on this board** = postings whose only named platform is this one.
+* **Best N boards** (N ≤ 3): greedy set cover. Pick the board with the most postings, then
+  the board adding the most postings not yet reached, and so on. Shown as the share of
+  attributed postings the chosen boards reach together.
+* Fewer than 30 attributed postings → flagged as a hint, not a measurement. When most of the
+  selection is the 2023 archive (Google Jobs), the panel says so; otherwise it warns that the
+  recent collection reflects how Bosla collects. Boards Bosla reads through their own API
+  (`QUERIED_DIRECTLY` in `api/queries/platforms.py`) are named as over-represented.
+* Describes where the team's collection found postings, not each board's full inventory.
+
+## Employer report card
+
+For one employer within the current filters, four items, each the share of its postings that:
+states the pay (`salary_kind` advertised, team benchmarks excluded), lists skills written in
+the posting (`skills_observed_count > 0`), states a seniority level, states a work mode.
+
+* **Market** = the same share over every named employer (placeholders and job boards
+  excluded) under the same filters, with the employer filter removed.
+* **Verdict**: "more often" / "less often" only when the market share lies outside the
+  employer's 95% Wilson interval; otherwise "about the same". Employers with fewer than
+  10 postings are not compared. No composite score is computed.
+* The directory's **States pay** column and sort use the same pay rule; the sort ranks only
+  employers with at least 10 postings.
+
 ## Geography
 
 * Concentration: top-3 share and HHI = Σ (country share)² over postings with a country.

@@ -3,7 +3,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HBar, SkillBars } from "../components/charts";
-import { Button, Callout, ChartPanel, Empty, ErrorState, Guard, IconButton, PageHeader, Pill, Select } from "../components/ui";
+import { Button, Callout, ChartPanel, Empty, ErrorState, Guard, IconButton, PageHeader, Panel, Pill, Select } from "../components/ui";
 import { useApi } from "../lib/api";
 import { HUE } from "../lib/echarts";
 import { drillHref } from "../lib/filters";
@@ -11,10 +11,10 @@ import { fmtDate, fmtInt, fmtPct, fmtUsd } from "../lib/format";
 import { useFilters, useLabels, useParam, useUpdateParams } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
 import { haveSet, useProfile } from "../lib/profile";
-import type { Count, Kpis, SalarySummary, TopSkills } from "../lib/types";
+import type { Count, Kpis, ReportCard, ReportItem, ReportKey, SalarySummary, TopSkills } from "../lib/types";
 
-interface Row { company: string; postings: number; appearances: number; countries: number; top_role: string; is_placeholder: boolean; salary_n: number; salary_median: number | null; last_posted: string | null }
-interface EmployerData { company: string; is_placeholder: boolean; kpis: Kpis; titles: Count[]; roles: Count[]; countries: Count[]; seniority: Count[]; work_mode: Count[]; cohorts: Count[]; top_skills: TopSkills; salary: SalarySummary }
+interface Row { company: string; postings: number; appearances: number; countries: number; top_role: string; is_placeholder: boolean; salary_n: number; salary_median: number | null; pay_stated: number; last_posted: string | null }
+interface EmployerData { company: string; is_placeholder: boolean; kpis: Kpis; titles: Count[]; roles: Count[]; countries: Count[]; seniority: Count[]; work_mode: Count[]; cohorts: Count[]; top_skills: TopSkills; salary: SalarySummary; report_card: ReportCard }
 
 const PAGE_SIZE = 25;
 
@@ -60,7 +60,7 @@ export default function Employers() {
             </label>
             <Select label={t("Sort", "الترتيب")} value={sort} onChange={(v) => update({ esort: v === "postings" ? null : v, epage: null })} options={[
               { value: "postings", label: t("Most postings", "الأكثر إعلانات") }, { value: "salary", label: t("Highest median pay", "أعلى وسيط أجر") },
-              { value: "recent", label: t("Most recent", "الأحدث") }, { value: "name", label: t("Name", "الاسم") }]} />
+              { value: "pay_stated", label: t("Most often state pay", "الأكثر ذكرًا للأجر") }, { value: "recent", label: t("Most recent", "الأحدث") }, { value: "name", label: t("Name", "الاسم") }]} />
           </div>
           <label className="flex basis-full items-center gap-2 text-sm text-ink-2">
             <input type="checkbox" checked={boards === "1"} onChange={(e) => update({ boards: e.target.checked ? "1" : null, epage: null })} className="size-4 accent-[var(--accent-ink)]" />
@@ -77,6 +77,7 @@ export default function Employers() {
                       <th scope="col" className="px-3 py-2.5 text-end font-medium" title={t("Unique postings after de-duplication; below, listings across all boards before de-duplication", "الإعلانات الفريدة بعد إزالة التكرار؛ وتحتها الإدراجات في كل المواقع قبل إزالة التكرار")}>{t("Postings", "الإعلانات")}</th>
                       <th scope="col" className="px-3 py-2.5 text-end font-medium">{t("Countries", "الدول")}</th>
                       <th scope="col" className="px-3 py-2.5 text-end font-medium" title={t("Median advertised salary, shown when at least 10 postings state one", "وسيط الراتب المعلن، يظهر عندما يذكره 10 إعلانات على الأقل")}>{t("Median pay", "وسيط الأجر")}</th>
+                      <th scope="col" className="px-3 py-2.5 text-end font-medium" title={t("Share of its postings that state the pay (team benchmarks not counted)", "نسبة إعلاناتها التي تذكر الأجر (دون القيم المرجعية التي أضافها الفريق)")}>{t("States pay", "يذكر الأجر")}</th>
                       <th scope="col" className="py-2.5 ps-3 pe-5 text-end font-medium">{t("Latest posting", "أحدث إعلان")}</th>
                     </tr>
                   </thead>
@@ -102,6 +103,7 @@ export default function Employers() {
                               <span className="tnum block text-xs text-ink-3">n = {fmtInt(r.salary_n)}</span>
                             </> : <span className="text-ink-3">—</span>}
                           </td>
+                          <td className="tnum px-3 py-3 text-end text-ink-2">{fmtPct(r.pay_stated / r.postings, 0)}</td>
                           <td className="tnum py-3 ps-3 pe-5 text-end whitespace-nowrap text-ink-3">{fmtDate(r.last_posted)}</td>
                         </tr>
                       );
@@ -173,6 +175,8 @@ function EmployerProfile({ name, onClose }: { name: string; onClose: () => void 
                   <Fact label={t("Collection", "دفعة الجمع")} value={p.cohorts.map((c) => fmtPct(c.share ?? 0, 0)).join(" / ")} sub={p.cohorts.map((c) => labels.cohort(c.key)).join(" / ")} />
                 </dl>
 
+                {!p.is_placeholder && <ReportCardPanel card={p.report_card} />}
+
                 <ChartPanel title={t("Skills this employer asks for", "المهارات التي تطلبها جهة التوظيف هذه")}
                   meta={<>
                     {t(`Share of its ${fmtInt(p.top_skills.denominator)} postings that list skills`, `النسبة من ${fmtInt(p.top_skills.denominator)} إعلانًا لها يذكر مهارات`)}
@@ -205,6 +209,58 @@ function EmployerProfile({ name, onClose }: { name: string; onClose: () => void 
         </Guard>
       )}
     </section>
+  );
+}
+
+const REPORT_LABELS: Record<ReportKey, () => string> = {
+  pay: () => t("States the pay", "يذكر الأجر"),
+  skills: () => t("Lists the skills it needs", "يذكر المهارات المطلوبة"),
+  seniority: () => t("Says the seniority level", "يحدد مستوى الخبرة"),
+  work_mode: () => t("Says remote, hybrid or on-site", "يحدد العمل عن بُعد أو الهجين أو من المقر"),
+};
+const VERDICTS: Record<ReportItem["verdict"], { tone: "good" | "warn" | "neutral"; label: () => string }> = {
+  above: { tone: "good", label: () => t("More often than the market", "أكثر من السوق") },
+  similar: { tone: "neutral", label: () => t("About the same as the market", "مثل السوق تقريبًا") },
+  below: { tone: "warn", label: () => t("Less often than the market", "أقل من السوق") },
+  too_few: { tone: "neutral", label: () => t("Too few postings to compare", "إعلانات أقل من أن تُقارن") },
+};
+
+/** What this employer's postings tell a job seeker, each compared with every named employer in the same selection. */
+function ReportCardPanel({ card }: { card: ReportCard }) {
+  return (
+    <Panel title={t("What its postings tell you", "ما تخبرك به إعلاناتها")}
+      meta={t(`Share of its ${fmtInt(card.postings)} postings, compared with ${fmtInt(card.market_postings)} postings from ${fmtInt(card.market_employers)} named employers in your selection`,
+        `النسبة من ${fmtInt(card.postings)} إعلانًا لها، مقارنةً بـ${fmtInt(card.market_postings)} إعلانًا من ${fmtInt(card.market_employers)} جهة توظيف معلنة ضمن اختيارك`)}
+      info={t(`“More” or “less often” only when the market share is outside this employer's 95% confidence interval (the light band), so a few postings cannot decide the result. Employers with fewer than ${card.min_postings} postings are not compared. It describes the postings in this sample, not the company.`,
+        `«أكثر» أو «أقل» فقط عندما تقع نسبة السوق خارج فترة الثقة 95% لجهة التوظيف (الشريط الفاتح)، حتى لا تحسم بضعة إعلانات النتيجة. لا تُقارن الجهات التي لديها أقل من ${card.min_postings} إعلانات. يصف هذا الإعلانات في العينة، لا الشركة.`)}>
+      <ul className="divide-y divide-line">
+        {card.items.map((i) => {
+          const v = VERDICTS[i.verdict];
+          return (
+            <li key={i.key} className="grid gap-x-6 gap-y-2 py-3 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto] sm:items-center">
+              <span className="text-sm font-medium text-ink">{REPORT_LABELS[i.key]()}</span>
+              <span className="min-w-0">
+                <span className="relative block h-2 rounded-full bg-panel-2" aria-hidden>
+                  <span className="absolute inset-y-0 rounded-full bg-accent/35" style={{ insetInlineStart: `${i.low * 100}%`, width: `${(i.high - i.low) * 100}%` }} />
+                  <span className="absolute inset-y-0 start-0 rounded-full bg-accent" style={{ width: `${(i.share ?? 0) * 100}%` }} />
+                  {i.market_share != null && <span className="absolute -inset-y-1 w-0.5 rounded-full bg-ink" style={{ insetInlineStart: `calc(${i.market_share * 100}% - 1px)` }} />}
+                </span>
+                <span className="tnum mt-1 block text-xs text-ink-3">
+                  {t(`${fmtPct(i.share, 0)} of its postings (${fmtInt(i.k)} of ${fmtInt(i.n)}) · market ${fmtPct(i.market_share, 0)}`,
+                    `${fmtPct(i.share, 0)} من إعلاناتها (${fmtInt(i.k)} من ${fmtInt(i.n)}) · السوق ${fmtPct(i.market_share, 0)}`)}
+                </span>
+              </span>
+              <span className="sm:text-end"><Pill tone={v.tone}>{v.label()}</Pill></span>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-3">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-accent" aria-hidden />{t("this employer", "جهة التوظيف هذه")}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-accent/35" aria-hidden />{t("95% confidence interval", "فترة الثقة 95%")}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-0.5 rounded-full bg-ink" aria-hidden />{t("market", "السوق")}</span>
+      </p>
+    </Panel>
   );
 }
 

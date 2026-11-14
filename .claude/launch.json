@@ -46,6 +46,15 @@
         ".venv/Scripts/python.exe -m uvicorn api.main:app --port 8012 & JMI_API=http://127.0.0.1:8012 npm --prefix frontend run dev -- --port 5176 --strictPort"
       ],
       "port": 5176
+    },
+    {
+      "name": "stack-5186",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-c",
+        ".venv/Scripts/python.exe -m uvicorn api.main:app --port 8022 & JMI_API=http://127.0.0.1:8022 npm --prefix frontend run dev -- --port 5186 --strictPort"
+      ],
+      "port": 5186
     }
   ]
 }

@@ -4,7 +4,7 @@ What the dataset can and cannot prove, and how the dashboard keeps each limit vi
 
 ## It is a sample of postings, not the labour market
 
-* 588,545 unique postings collected from 8 sources. Counts describe **this sample**:
+* 591,142 unique postings collected from 9 sources. Counts describe **this sample**:
   not hiring volumes, vacancies, company size or the whole market (project scope,
   section 1.1 "Out of scope").
 * Shown on: the rail footer, the methodology page, the Employers page header and
@@ -73,6 +73,30 @@ Evidence: `reports/pipeline_stats.json` → Data & methodology page.
 
 * 17,099 postings name a job board or a hidden employer ("Confidential", Dice, Upwork,
   Emprego …). They are excluded from employer counts and flagged in the directory.
+* The report card compares what postings *state*, not how a company treats staff. In the
+  2023 archive "states pay" depends on what Google Jobs extracted, so archive-heavy
+  employers can look less transparent than they were.
+
+## Job boards ("Where to search", "Also posted on")
+
+* Board shares describe where **this collection** found postings, not each board's size.
+  The 2023 archive comes through Google Jobs (`job_via`), which lists many boards. The
+  2024–26 collection comes from the specific APIs the team queries (Careerjet, Jooble,
+  startup.jobs, remote boards, employers' careers pages), so those are over-represented
+  there; the panel names them.
+* Wuzzuf, Bayt and LinkedIn appear only where another source saw their listings. Bosla
+  never collects from them directly (their terms forbid it).
+* A posting merged from copies on several boards keeps every listing, but near-duplicate
+  matching (title + company + location) can miss copies whose text differs.
+
+## Fresh API collection
+
+* The free public APIs are mostly global or remote boards. Few of their postings are in
+  Egypt or the Gulf (see [COMPETITORS.md](COMPETITORS.md#the-data-gap-to-fix-before-anything-else)).
+* Skills come from matching the posting's own tags, title and description against
+  `skill_taxonomy.EXTRACT_PATTERNS`. They count as written in the posting. Ambiguous words
+  (Go, R, C, Excel) need context or are not extracted, so some real mentions are missed.
+* A posting missing from its source's latest run keeps its statistics but loses its link.
 
 ## Missing fields
 

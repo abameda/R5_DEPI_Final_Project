@@ -19,6 +19,7 @@ SOURCE_LABELS = {
     "remote_boards": "Remote job boards",
     "arab_jobs": "Arab job boards & ArabJobs corpus",
     "cybersecurity_manual": "Manual cybersecurity collection",
+    "fresh_api_collection": "Fresh collection from public job APIs",
 }
 COHORT_LABELS = {
     "kaggle_2023": "2023 Kaggle archive",
@@ -26,7 +27,8 @@ COHORT_LABELS = {
 }
 COHORT_NOTES = {
     "kaggle_2023": "Google-Jobs postings for data roles, posted Jan–Dec 2023 (Kaggle dataset).",
-    "collected_2026": "Postings collected by the team from APIs and job boards, mostly Sep–Oct 2026.",
+    "collected_2026": "Postings collected by the team from APIs and job boards since 2024, mostly from "
+                      "Sep 2026 on; refreshed by src/collectors.py.",
 }
 DIMENSION_LABELS = {
     "role_category": "Role", "country": "Country", "region": "Region", "market_type": "Market",
@@ -37,17 +39,22 @@ DIMENSION_LABELS = {
 }
 
 
-def wilson_lower(k: int, n: int, z: float = 1.96) -> float:
-    """Lower bound of the 95% Wilson score interval for a proportion k/n.
-    Used to rank skills so a share from a tiny sample does not outrank a
-    slightly smaller share from a large one."""
+def wilson_interval(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """95% Wilson score interval for a proportion k/n."""
     if n <= 0:
-        return 0.0
+        return 0.0, 1.0
     p = k / n
     denom = 1 + z * z / n
     centre = p + z * z / (2 * n)
     margin = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
-    return max(0.0, (centre - margin) / denom)
+    return max(0.0, (centre - margin) / denom), min(1.0, (centre + margin) / denom)
+
+
+def wilson_lower(k: int, n: int, z: float = 1.96) -> float:
+    """Lower bound of the 95% Wilson score interval for a proportion k/n.
+    Used to rank skills so a share from a tiny sample does not outrank a
+    slightly smaller share from a large one."""
+    return wilson_interval(k, n, z)[0] if n > 0 else 0.0
 
 
 def share(k, n) -> float | None:

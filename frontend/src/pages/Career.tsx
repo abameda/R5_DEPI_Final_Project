@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CoverageStrip } from "../components/Coverage";
 import { SkillPicker } from "../components/SkillPicker";
+import { WhereToSearch } from "../components/WhereToSearch";
 import { Advanced, Callout, Empty, Guard, InfoTip, PageHeader, Panel, Segmented, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
 import { drillHref } from "../lib/filters";
@@ -230,6 +231,8 @@ function Results({ g, onRole, onHave }: { g: CareerGap; onRole: (r: string) => v
         ))}
       </ul>
     </Panel>
+
+    <WhereToSearch filters={{ ...filters, role: [g.role] }} subject={t(`${tv(g.role)} postings`, `إعلانات ${tv(g.role)}`)} />
 
     <Advanced>
     <details className="group rounded-xl border border-line bg-panel">

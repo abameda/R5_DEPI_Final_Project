@@ -78,6 +78,47 @@ def match_key(s: pd.Series) -> pd.Series:
             .str.replace(r"\s+", " ", regex=True).str.strip())
 
 
+# Job board / channel a posting was found on. `source_platform` has ~7k raw
+# spellings ("BeBee India", "Trabajo.org - Vacantes ...", "LinkedIn Hungary",
+# "lever:spotify", "إنديد"); this maps them to one name per platform so postings
+# can be counted per board. Checked top to bottom, first match wins.
+PLATFORM_RULES = [
+    ("LinkedIn", r"linkedin"), ("Indeed", r"indeed|انديد"), ("BeBee", r"bebee"),
+    ("Trabajo.org", r"trabajo\s*\.\s*org"), ("Glassdoor", r"glassdoor"), ("ZipRecruiter", r"ziprecruiter"),
+    ("Jooble", r"jooble"), ("Careerjet", r"careerjet"), ("Talent.com", r"talent\.com"),
+    ("Adzuna", r"adzuna"), ("Jobrapido", r"jobrapido"), ("Recruit.net", r"recruit\.net"),
+    ("SimplyHired", r"simplyhired"), ("Snagajob", r"snagajob"), ("Dice", r"^dice\b"),
+    ("Monster", r"monster"), ("CareerBuilder", r"careerbuilder"), ("XING", r"^xing\b"),
+    ("Wuzzuf", r"wuzzuf"), ("Bayt", r"bayt"), ("Tanqeeb", r"tanqeeb|تنقيب"), ("Forasna", r"forasna"),
+    ("Naukrigulf", r"naukrigulf"), ("GulfTalent", r"gulftalent"), ("Foundit", r"foundit|monstergulf"),
+    ("Himalayas", r"himalayas"), ("Arbeitnow", r"arbeitnow"), ("We Work Remotely", r"weworkremotely|we work remotely"),
+    ("Remote OK", r"remote\s*ok"), ("Remotive", r"remotive"), ("Jobicy", r"jobicy"),
+    ("startup.jobs", r"startup\.?\s*jobs"), ("The Muse", r"the muse"),
+    ("Workable job board", r"^(workable jobs|jobs by workable)$"),
+    # Applicant-tracking systems host the employer's own careers page.
+    ("Employer careers page", r"^(greenhouse|lever|ashby|smartrecruiters|workable|workday|recruitee|teamtailor)\b"
+                              r"|career site|careers? page|careers -|careers$"),
+]
+# Values that name a file or a collection method, not a place a job seeker can search.
+UNATTRIBUTED_PLATFORMS = {"", "nan", "arab_tech_jobs", "arabjobs_tech_only", "manual collection",
+                          "theirstack", "synthetic", "وظائف", "jobs"}
+UNATTRIBUTED = "Not attributed"
+_PLATFORM_RES = [(name, re.compile(rx, re.I)) for name, rx in PLATFORM_RULES]
+
+
+def platform_family(value) -> str:
+    """One platform name per job board: 'BeBee India' -> 'BeBee', 'lever:veeva' ->
+    'Employer careers page', 'arab_tech_jobs' (a file name) -> 'Not attributed'.
+    Platforms without a rule keep their own (normalized) name."""
+    text = normalize_text(value) if isinstance(value, str) else ""
+    if not isinstance(text, str) or text.lower().strip() in UNATTRIBUTED_PLATFORMS:
+        return UNATTRIBUTED
+    for name, rx in _PLATFORM_RES:
+        if rx.search(text):
+            return name
+    return text
+
+
 # ---------------------------------------------------------------------------
 # 2. Personal data removal (FR-06 / NFR-05)
 # ---------------------------------------------------------------------------

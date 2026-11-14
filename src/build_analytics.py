@@ -11,6 +11,9 @@ The store adds no new facts. It only:
     (a market figure the team attached) so they are never averaged together;
   * flags placeholder employers ('Confidential', job boards) using the same
     list the pipeline uses for deduplication;
+  * keeps every platform each posting was listed on (`job_listings`), so a
+    posting found on three boards can be counted once and still credited to
+    each board;
   * stores the pipeline statistics (pipeline_stats.json) for the methodology page.
 """
 from __future__ import annotations
@@ -76,6 +79,29 @@ def build(processed: Path, out: Path, stats_file: Path | None, synthetic: bool) 
         JOIN jobs j USING (job_id)
         ORDER BY j.jid
     """)
+    # every platform each posting was listed on ("Also posted on", "Where should I search?").
+    # Older processed folders have no listings file: fall back to the kept listing only.
+    if (processed / "job_listings.csv").exists():
+        con.execute(f"""
+            CREATE TABLE job_listings AS
+            SELECT j.jid, l.platform, l.source_platform, l.source_dataset, l.url,
+                   TRY_CAST(l.posted_date AS DATE) AS posted_date
+            FROM read_csv('{csv('job_listings.csv')}', header=true, all_varchar=true) l
+            JOIN jobs j USING (job_id)
+            ORDER BY j.jid
+        """)
+    else:
+        names = con.execute("SELECT DISTINCT source_platform FROM jobs").df()["source_platform"]
+        con.execute("CREATE TEMP TABLE platform_names(source_platform VARCHAR, platform VARCHAR)")
+        con.executemany("INSERT INTO platform_names VALUES (?, ?)",
+                        [[p, cu.platform_family(p)] for p in names])
+        con.execute("""
+            CREATE TABLE job_listings AS
+            SELECT j.jid, coalesce(p.platform, 'Not attributed') AS platform, j.source_platform,
+                   j.source_dataset, j.url, j.posted_date
+            FROM jobs j LEFT JOIN platform_names p ON p.source_platform IS NOT DISTINCT FROM j.source_platform
+            ORDER BY j.jid
+        """)
     # per-skill totals (unfiltered) used for search / autocomplete ranking
     con.execute("""
         CREATE TABLE skill_totals AS
@@ -93,7 +119,7 @@ def build(processed: Path, out: Path, stats_file: Path | None, synthetic: bool) 
     con.execute("CREATE TABLE meta(key VARCHAR PRIMARY KEY, value JSON)")
     con.executemany("INSERT INTO meta VALUES (?, ?)", [[k, json.dumps(v)] for k, v in meta.items()])
 
-    counts = {t: con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in ("jobs", "job_skills", "skills")}
+    counts = {t: con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in ("jobs", "job_skills", "skills", "job_listings")}
     orphans = con.execute("SELECT count(*) FROM job_skills s ANTI JOIN skills d USING (skill)").fetchone()[0]
     if orphans:
         raise ValueError(f"{orphans} job_skills rows have no entry in skills_dim.csv")

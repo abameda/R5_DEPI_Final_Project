@@ -36,6 +36,8 @@ export const locale = () => (getLang() === "ar" ? "ar-EG-u-nu-latn" : "en-GB");
 // titles and employers are data and are shown as written.
 const VALUES: Record<string, string> = {
   // role_category
+  // job-board groups (platform names are otherwise shown as written)
+  "Employer careers page": "صفحة الوظائف لدى جهة التوظيف", "Workable job board": "موقع وظائف Workable",
   "Backend": "الواجهات الخلفية",
   "Cybersecurity": "الأمن السيبراني",
   "Data Analysis & BI": "تحليل البيانات وذكاء الأعمال",

@@ -92,10 +92,11 @@ hatched = < 30 postings); concentration KPIs (top-3 share, HHI); sortable countr
 Arab League breakdown; role mix in the 15 largest countries; the "Sudan" correction note.
 
 ### Employers
-Directory (search, sort by postings / pay / recency / name, job boards and hidden employers
-excluded by default, unique postings vs listings). Profile (`?name=`): KPIs, most advertised
-titles, countries, seniority, requested skills, link to its postings; warning when the name
-is a job board.
+Directory (search, sort by postings / pay / share stating pay / recency / name, job boards
+and hidden employers excluded by default, unique postings vs listings, "States pay" column).
+Profile (`?name=`): KPIs, a **report card** (what its postings state: pay, skills, seniority,
+work mode, each against the market with a 95% interval), most advertised titles, countries,
+seniority, requested skills, link to its postings; warning when the name is a job board.
 
 ### Time & cohorts
 Cohort cards; monthly skill-share lines within the 2023 archive (add up to six skills);
@@ -117,8 +118,10 @@ skill alignment (share-weighted coverage of the top 15, with its formula and lim
 postings already matched (all / half / one listed skill), what to learn next (ranked, with
 "at least X%" bounds and "mostly team-added" flags), all requested skills, adjacent roles
 (cosine similarity of skill profiles, plus your alignment with each) and the
-closest-matching postings with their missing skills. Too-small populations get the UC-04
-alternative flow ("broaden the filters").
+closest-matching postings with their missing skills, and **where to search**: the job boards
+that listed the role's postings, the share each reached, postings found only there, and the
+best combination of up to three boards. Too-small populations get the UC-04 alternative flow
+("broaden the filters").
 
 ### Guided insights
 Template sentences computed from the same queries as the charts, each with n, denominator,
