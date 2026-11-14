@@ -13,16 +13,10 @@ import { drillHref, type Filters } from "../lib/filters";
 import { fmtDate, fmtInt, fmtMonth, fmtPct } from "../lib/format";
 import { useFilters, useLabels, useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
-import { matchFilters, placeName, scopeText, type Recency } from "../lib/match";
+import { matchFilters, placeName, scopeText, whereOptions, type Recency } from "../lib/match";
 import { broaderWhere, haveSet, useProfile, WHERE_VALUES, type Where } from "../lib/profile";
 import { skillAnchor } from "../lib/roadmaps";
 import type { CareerGap, Overview } from "../lib/types";
-
-export const whereOptions = (): { value: Where; label: string }[] => [
-  { value: "egypt", label: t("Egypt", "مصر") }, { value: "arab", label: t("Arab", "عربي") },
-  { value: "remote", label: t("Remote", "عن بُعد") }, { value: "international", label: t("Int’l", "دولي") },
-  { value: "any", label: t("Anywhere", "أي مكان") },
-];
 
 /**
  * Your compass: the role you want, the skills you have and where you want to

@@ -1,75 +1,51 @@
 import clsx from "clsx";
-import { ArrowRight, Search, X } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { ArrowRight, Check, Search, X } from "lucide-react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CompassDial } from "../components/CompassDial";
 import { CoverageStrip } from "../components/Coverage";
 import { SkillPicker } from "../components/SkillPicker";
-import { Advanced, Skeleton, TextLink } from "../components/ui";
+import { Advanced, Segmented, Skeleton, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
+import { EMPTY_FILTERS } from "../lib/filters";
 import { fmtCompact, fmtDate, fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
 import { useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
-import { haveSet, useProfile } from "../lib/profile";
+import { matchFilters, placeName, scopeText, whereOptions } from "../lib/match";
+import { useCountUp } from "../lib/motion";
+import { haveSet, useProfile, whereFilters, type Where } from "../lib/profile";
 import type { CareerGap, JobPage, Overview } from "../lib/types";
 
 export default function Home() {
   const { data: meta } = useMeta();
-  const { profile, setRole, addSkill, removeSkill } = useProfile();
+  const { profile } = useProfile();
   const roles = meta?.dimensions.role_category.filter((r) => r.value !== "Other / Unclassified") ?? [];
   const role = profile.role || roles[0]?.value || "";
   const ov = useApi<Overview>("/overview", null);
-  const gap = useApi<CareerGap>("/career/gap", null, { target_role: role, have: profile.skills }, !!role);
-  const k = ov.data?.kpis;
+  // the same global match as the Compass: location never changes it
+  const gap = useApi<CareerGap>("/career/gap", matchFilters(EMPTY_FILTERS, "global", profile.where, "all"), { target_role: role, have: profile.skills }, !!role);
 
   return (
     <div className="space-y-10 lg:space-y-14">
       <section className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] xl:gap-12">
         <div className="max-w-2xl pt-1 xl:pt-4">
           <h1 className="text-[2rem] leading-[2.375rem] font-semibold tracking-[-0.03em] text-ink sm:text-[2.75rem] sm:leading-[3.125rem]">
-            {t("Understand the job market. See where you fit. Know what comes next.", "افهم سوق العمل. اعرف موقعك. واعرف خطوتك التالية.")}
+            {t("Understand the job market. See where you fit. Know what comes next.", "افهم سوق العمل. اعرف موقعك. واعرف خطوتك الجاية.")}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-ink-2">
-            {k ? t(`Search ${fmtInt(k.postings)} tech job postings from ${fmtInt(k.countries)} countries, compare them with your skills, and see which skills each role asks for most.`,
-              `ابحث في ${fmtInt(k.postings)} إعلان وظيفة تقنية من ${fmtInt(k.countries)} دولة، وقارنها بمهاراتك، واعرف المهارات التي يطلبها كل دور أكثر من غيرها.`)
-              : t("Search tech job postings, compare them with your skills, and see which skills each role asks for most.", "ابحث في إعلانات الوظائف التقنية، وقارنها بمهاراتك، واعرف المهارات التي يطلبها كل دور أكثر من غيرها.")}
+            {t("Search tech job postings, compare them with your skills, and see what each role asks for and pays. Free, with no sign-up.",
+              "ابحث في إعلانات الوظائف التقنية، وقارنها بمهاراتك، واعرف كل دور بيطلب إيه وبيدفع كام. مجانًا ومن غير تسجيل.")}
           </p>
           <HeroSearch />
-
-          <div className="mt-8 border-t border-line pt-6">
-            <h2 className="text-sm font-semibold text-ink">{t("Tell us where you are", "أخبرنا أين أنت الآن")}</h2>
-            <p className="mt-0.5 text-sm text-ink-3">{t("Saved in this browser only. Every page uses it to show your match.", "تُحفظ في هذا المتصفح فقط، وتستخدمها كل الصفحات لعرض مدى توافقك.")}</p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-ink-2">{t("Role you want", "الدور الذي تريده")}</span>
-                <select value={role} onChange={(e) => setRole(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink">
-                  {roles.map((r) => <option key={r.value} value={r.value}>{tv(r.value)}</option>)}
-                </select>
-              </label>
-              <div>
-                <span className="mb-1.5 block text-xs font-medium text-ink-2">{t("Skills you have", "مهاراتك")}</span>
-                <div className="flex min-h-10 flex-wrap items-center gap-1.5">
-                  {profile.skills.map((s) => (
-                    <span key={s} className="inline-flex h-8 items-center gap-1 rounded-lg bg-good-soft ps-2.5 pe-1 text-sm font-medium text-good">
-                      {s}
-                      <button type="button" aria-label={t(`Remove ${s}`, `إزالة ${s}`)} onClick={() => removeSkill(s)}
-                        className="grid size-6 place-items-center rounded-md hover:bg-panel/70"><X size={13} /></button>
-                    </span>
-                  ))}
-                  <SkillPicker selected={profile.skills} onAdd={addSkill}
-                    suggestions={gap.data?.skills.slice(0, 12).map((s) => s.skill) ?? []}
-                    suggestionsTitle={t(`Most requested for ${tv(role)}`, `الأكثر طلبًا لدور ${tv(role)}`)} />
-                </div>
-              </div>
-            </div>
-          </div>
+          <Counts ov={ov.data} />
+          <Steps role={role} roles={roles.map((r) => r.value)} suggestions={gap.data?.skills.slice(0, 12).map((s) => s.skill) ?? []} />
         </div>
 
         <MatchPreview role={role} gap={gap.data} loading={gap.isLoading} />
       </section>
 
       <section className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] xl:gap-12">
-        <NewestJobs role={role} weights={new Map(gap.data?.skills.map((s) => [s.skill, s.share]) ?? [])} />
+        <NewestJobs role={role} where={profile.where} weights={new Map(gap.data?.skills.map((s) => [s.skill, s.share]) ?? [])} />
         <div className="space-y-8">
           <InDemand ov={ov.data} />
           <Advanced><Markets ov={ov.data} /></Advanced>
@@ -87,6 +63,84 @@ export default function Home() {
         );
       })()}</Advanced>
     </div>
+  );
+}
+
+/** Three live figures from the dataset, counted up once, with how fresh the newest posting is. */
+function Counts({ ov }: { ov?: Overview }) {
+  const k = ov?.kpis;
+  const postings = useCountUp(k?.postings, 900, true);
+  const countries = useCountUp(k?.countries, 900, true);
+  const skills = useCountUp(k?.distinct_skills, 900, true);
+  const items: [number | undefined, string][] = [
+    [postings, t("job postings", "إعلان وظيفة")], [countries, t("countries", "دولة")], [skills, t("skills tracked", "مهارة نتابعها")],
+  ];
+  return (
+    <div className="mt-6">
+      <dl className="flex flex-wrap gap-x-8 gap-y-3">
+        {items.map(([v, label]) => (
+          <div key={label} className="flex flex-col-reverse">
+            <dt className="text-sm text-ink-2">{label}</dt>
+            <dd className="tnum text-2xl leading-8 font-semibold tracking-[-0.02em] text-ink">{v === undefined ? "–" : fmtInt(Math.round(v))}</dd>
+          </div>
+        ))}
+      </dl>
+      {k?.last_posted && <p className="mt-2 text-xs text-ink-3">{t(`Updated ${fmtDate(k.last_posted)} · ${fmtInt(k.sources)} sources`, `آخر تحديث ${fmtDate(k.last_posted)} · ${fmtInt(k.sources)} مصادر`)}</p>}
+    </div>
+  );
+}
+
+/** Role → skills → place, answered in place. Each step shows a check once it is done. */
+function Steps({ role, roles, suggestions }: { role: string; roles: string[]; suggestions: string[] }) {
+  const { profile, setRole, addSkill, removeSkill, setWhere } = useProfile();
+  const [picked, setPicked] = useState(false); // "Anywhere" chosen on purpose also counts
+  const pickWhere = (w: Where) => { setPicked(true); setWhere(w); };
+  return (
+    <div className="mt-8 border-t border-line pt-6">
+      <h2 className="text-lg font-semibold text-ink">{t("Get your compass", "اعرف بوصلتك")}</h2>
+      <p className="mt-0.5 text-sm text-ink-3">{t("Three quick answers. Saved in this browser only.", "تلات إجابات سريعة. بتتحفظ في المتصفح ده بس.")}</p>
+      <ol aria-label={t("Get your compass", "اعرف بوصلتك")} className="mt-5 space-y-5">
+        <Step n={1} done={!!profile.role} title={t("Role you want", "الدور الذي تريده")}>
+          <select aria-label={t("Role you want", "الدور الذي تريده")} value={role} onChange={(e) => setRole(e.target.value)}
+            className="h-10 w-full max-w-xs rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink">
+            {roles.map((r) => <option key={r} value={r}>{tv(r)}</option>)}
+          </select>
+        </Step>
+        <Step n={2} done={profile.skills.length > 0} title={t("Skills you have", "مهاراتك")}>
+          <div className="flex min-h-10 flex-wrap items-center gap-1.5">
+            {profile.skills.map((s) => (
+              <span key={s} className="inline-flex h-8 motion-safe:animate-[rise_400ms_ease-out] items-center gap-1 rounded-lg bg-good-soft ps-2.5 pe-1 text-sm font-medium text-good">
+                {s}
+                <button type="button" aria-label={t(`Remove ${s}`, `إزالة ${s}`)} onClick={() => removeSkill(s)}
+                  className="grid size-6 place-items-center rounded-md hover:bg-panel/70"><X size={13} /></button>
+              </span>
+            ))}
+            <SkillPicker selected={profile.skills} onAdd={addSkill} suggestions={suggestions}
+              suggestionsTitle={t(`Most requested for ${tv(role)}`, `الأكثر طلبًا لدور ${tv(role)}`)} />
+          </div>
+        </Step>
+        <Step n={3} done={picked || profile.where !== "any"} title={t("Where you’d work", "فين حابب تشتغل")}>
+          <Segmented label={t("Where you’d work", "فين حابب تشتغل")} value={profile.where} onChange={pickWhere} options={whereOptions()} />
+          <p className="mt-1.5 text-xs text-ink-3">{t("Sets pay and jobs. Your skill match stays global.", "يحدد الأجور والوظائف. توافق مهاراتك يظل عالميًا.")}</p>
+        </Step>
+      </ol>
+    </div>
+  );
+}
+
+function Step({ n, done, title, children }: { n: number; done: boolean; title: string; children: ReactNode }) {
+  return (
+    <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+      <span role="img" aria-label={done ? t(`Step ${n} done`, `الخطوة ${n} تمت`) : t(`Step ${n}`, `الخطوة ${n}`)}
+        className={clsx("tnum grid size-8 place-items-center rounded-full text-sm font-semibold transition-colors",
+          done ? "bg-good-fill text-white dark:text-[#0b0f17]" : "bg-panel-2 text-ink-2 ring-1 ring-line-strong ring-inset")}>
+        {done ? <Check size={16} strokeWidth={2.5} aria-hidden /> : n}
+      </span>
+      <div className="min-w-0">
+        <p className="mb-2 pt-1 text-sm font-medium text-ink">{title}</p>
+        {children}
+      </div>
+    </li>
   );
 }
 
@@ -114,28 +168,36 @@ function HeroSearch() {
 }
 
 /** The one navy surface on the page: the visitor's role, read through the coverage strip. */
+/** The one navy surface on the page: your Global Skill Match for the role, as on the Compass. */
 function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; loading: boolean }) {
   const { profile, addSkill } = useProfile();
   const top = gap?.skills.slice(0, 15) ?? [];
   const missing = gap?.priorities.slice(0, 3) ?? [];
   const a = gap?.alignment;
+  const scope = scopeText("global");
   return (
     <section aria-label={t("Your match preview", "معاينة توافقك")} className="rounded-2xl bg-rail p-6 text-rail-ink sm:p-8">
       <h2 className="text-xl font-semibold tracking-[-0.01em]">{tv(role)}</h2>
       {loading || !gap ? <div className="mt-6 space-y-3 opacity-30"><Skeleton h={36} /><Skeleton h={80} /></div>
         : gap.status !== "ok" ? <p className="mt-4 text-sm text-rail-ink-2">{t("Too few postings list skills for this role to rank them.", "عدد الإعلانات التي تذكر مهارات لهذا الدور قليل جدًا لترتيبها.")}</p>
         : (<>
-          {profile.skills.length ? (
-            <p className="mt-3 max-w-lg text-xl leading-8 font-semibold tracking-[-0.015em]">
-              {t(`You have ${top.filter((s) => s.have).length} of the ${top.length} skills it asks for most, about ${fmtPct(a?.score ?? 0, 0)} of the demand.`,
-                `لديك ${top.filter((s) => s.have).length} من أكثر ${top.length} مهارة يطلبها، أي نحو ${fmtPct(a?.score ?? 0, 0)} من الطلب.`)}
-            </p>
-          ) : (
-            <p className="mt-4 max-w-md text-[0.9375rem] leading-6 text-rail-ink-2">
-              {t(`These are the ${a?.top_k} skills this role asks for most. Click the ones you have, or use “Add skill”, to see your match.`,
-                `هذه أكثر ${a?.top_k} مهارة يطلبها هذا الدور. انقر على ما لديك منها، أو استخدم «إضافة مهارة»، لترى مدى توافقك.`)}
-            </p>
-          )}
+          <div className="mt-4 grid items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)]">
+            <div className="justify-self-center"><CompassDial score={a?.score ?? 0} name={scope.name} size="sm" /></div>
+            <div>
+              {profile.skills.length ? (
+                <p className="text-lg leading-7 font-semibold tracking-[-0.015em]">
+                  {t(`You have ${top.filter((s) => s.have).length} of the ${top.length} skills it asks for most worldwide, about ${fmtPct(a?.score ?? 0, 0)} of the demand.`,
+                    `لديك ${top.filter((s) => s.have).length} من أكثر ${top.length} مهارة يطلبها حول العالم، أي نحو ${fmtPct(a?.score ?? 0, 0)} من الطلب.`)}
+                </p>
+              ) : (
+                <p className="text-[0.9375rem] leading-6 text-rail-ink-2">
+                  {t(`These are the ${a?.top_k} skills this role asks for most. Click the ones you have, or use “Add skill”, to see your match.`,
+                    `دي أكثر ${a?.top_k} مهارة بيطلبها الدور ده. دوس على اللي عندك منها، أو استخدم «إضافة مهارة»، علشان تشوف توافقك.`)}
+                </p>
+              )}
+              <p className="mt-2 text-sm text-rail-ink-2">{t(`Based on ${fmtInt(gap.denominator)} postings that list skills.`, `استنادًا إلى ${fmtInt(gap.denominator)} إعلانًا تذكر مهارات.`)} {scope.note}</p>
+            </div>
+          </div>
           <div className="mt-6 rounded-xl bg-panel p-4 text-ink">
             <CoverageStrip label={t(`Top ${top.length} skills in ${tv(role)} postings`, `أهم ${top.length} مهارة في إعلانات ${tv(role)}`)}
               context={t(`${tv(role)} postings`, `إعلانات ${tv(role)}`)}
@@ -144,7 +206,7 @@ function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; l
           </div>
           {missing.length > 0 && (
             <div className="mt-6">
-              <p className="text-sm font-medium">{t("Learn next", "تعلّم بعد ذلك")}</p>
+              <p className="text-sm font-medium">{t("Learn next", "خطوتك الجاية")}</p>
               <ol className="mt-2 divide-y divide-rail-line">
                 {missing.map((s) => (
                   <li key={s.skill} className="flex items-center justify-between gap-3 py-2 text-sm">
@@ -155,10 +217,9 @@ function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; l
               </ol>
             </div>
           )}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-rail-line pt-5">
-            <Advanced><span className="text-xs text-rail-ink-2">{t(`Based on ${fmtInt(gap.denominator)} postings that list skills`, `استنادًا إلى ${fmtInt(gap.denominator)} إعلانًا تذكر مهارات`)}</span></Advanced>
-            <Link to="/compass" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-panel px-3.5 text-sm font-medium text-ink no-underline hover:bg-panel-2">
-              {t("Open your plan", "افتح خطتك")} <ArrowRight size={15} className="rtl:rotate-180" />
+          <div className="mt-6 flex justify-end border-t border-rail-line pt-5">
+            <Link to="/compass" className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-panel px-4 text-sm font-medium text-ink no-underline hover:bg-panel-2">
+              {t("Open your compass", "افتح بوصلتك")} <ArrowRight size={15} className="rtl:rotate-180" />
             </Link>
           </div>
         </>)}
@@ -166,14 +227,14 @@ function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; l
   );
 }
 
-function NewestJobs({ role, weights }: { role: string; weights: Map<string, number | null> }) {
+function NewestJobs({ role, where, weights }: { role: string; where: Where; weights: Map<string, number | null> }) {
   const { profile } = useProfile();
   const has = haveSet(profile.skills);
-  const q = useApi<JobPage>("/jobs", { role: [role] }, { page: 1, page_size: 6, sort: "newest" }, !!role);
+  const q = useApi<JobPage>("/jobs", { role: [role], ...whereFilters(where) }, { page: 1, page_size: 6, sort: "newest" }, !!role);
   return (
     <section aria-labelledby="newest-h">
       <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 id="newest-h" className="text-lg font-semibold tracking-[-0.01em] text-ink">{t(`Newest ${tv(role)} jobs`, `أحدث وظائف ${tv(role)}`)}</h2>
+        <h2 id="newest-h" className="text-lg font-semibold tracking-[-0.01em] text-ink">{where === "any" ? t(`Newest ${tv(role)} jobs`, `أحدث وظائف ${tv(role)}`) : t(`Newest ${tv(role)} jobs in ${placeName(where)}`, `أحدث وظائف ${tv(role)} في ${placeName(where)}`)}</h2>
         <TextLink to={`/explorer?role=${encodeURIComponent(role)}`}>{q.data ? t(`All ${fmtInt(q.data.total)}`, `الكل (${fmtInt(q.data.total)})`) : t("All jobs", "كل الوظائف")}</TextLink>
       </div>
       <div className="overflow-hidden rounded-xl border border-line bg-panel">

@@ -394,3 +394,24 @@ test("share my compass copies a link that restores the profile", async ({ page, 
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/\/compass\?target=Backend&have=SQL&where=remote$/);
 });
+
+test("Home steps tick off and open the compass", async ({ page }) => {
+  await page.goto("/");
+  const steps = page.getByRole("list", { name: "Get your compass" });
+  await expect(steps.getByLabel(/^Step \d done$/)).toHaveCount(0);
+  await steps.getByLabel("Role you want").selectOption("Data Engineering");
+  await steps.getByRole("button", { name: "Add skill" }).click();
+  await page.getByPlaceholder("Type a skill").fill("SQL");
+  await page.getByRole("option", { name: /^SQL/ }).first().click();
+  await steps.getByRole("radio", { name: "Egypt" }).click();
+  await expect(steps.getByLabel(/^Step \d done$/)).toHaveCount(3);
+  await page.getByRole("link", { name: "Open your compass" }).click();
+  await expect(page).toHaveURL(/\/compass$/);
+  await expect(page.getByRole("radio", { name: "Egypt" })).toHaveAttribute("aria-checked", "true");
+});
+
+test("Home counts the dataset and says how fresh it is", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText(/^Updated .+ · \d+ sources$/)).toBeVisible();
+  await expect(page.getByText("job postings", { exact: true })).toBeVisible();
+});

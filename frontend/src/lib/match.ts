@@ -30,6 +30,13 @@ export function scopeText(scope: MatchScope): { name: string; note: string } {
     : { name: t("Local Skill Match", "التوافق المحلي للمهارات"), note: "" };
 }
 
+/** The five places, short enough for one segmented control. */
+export const whereOptions = (): { value: Where; label: string }[] => [
+  { value: "egypt", label: t("Egypt", "مصر") }, { value: "arab", label: t("Arab", "عربي") },
+  { value: "remote", label: t("Remote", "عن بُعد") }, { value: "international", label: t("Int’l", "دولي") },
+  { value: "any", label: t("Anywhere", "أي مكان") },
+];
+
 /** A place as people say it, for headings and buttons ("in Egypt", "See Arab countries instead"). */
 export function placeName(w: Where): string {
   switch (w) {
