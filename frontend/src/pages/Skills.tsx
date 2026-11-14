@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Chart } from "../components/Chart";
 import { HBar, MonthLines, SkillBars } from "../components/charts";
 import { Lattice } from "../components/Lattice";
+import { KeyPoints } from "../components/KeyPoints";
 import { Callout, ChartPanel, ErrorState, Guard, PageHeader, Panel, Segmented, Select, Skeleton } from "../components/ui";
 import { useAdvanced } from "../lib/mode";
 import { useApi } from "../lib/api";
@@ -48,11 +49,31 @@ export default function Skills() {
           { value: "demand", label: t("Most requested", "الأكثر طلبًا") }, { value: "by", label: t("By role or market", "حسب الدور أو السوق") }, { value: "pairs", label: t("Asked for together", "تُطلب معًا") }]} />}
       </PageHeader>
       {view && <SkillProfile skill={view} onClose={() => setView(null)} />}
+      {tab === "demand" && <Findings />}
       {tab === "demand" && <Demand onPick={setView} />}
       {tab === "by" && <BySegment />}
       {tab === "pairs" && <Pairings onPick={setView} />}
     </>
   );
+}
+
+/** The ranking's answer in words, from the same query the ranking uses (shared cache). */
+function Findings() {
+  const { filters } = useFilters();
+  const [category] = useParam("category", "");
+  const [kind] = useParam("kind", "all");
+  const technical = kind === "all" ? undefined : kind === "technical";
+  const q = useApi<TopSkills>("/skills/top", filters, { limit: 30, category: category || undefined, technical });
+  const { has, any } = useHave();
+  const rows = q.data?.rows ?? [];
+  if (!q.data || rows.length === 0 || rows[0].share == null) return null;
+  const n = q.data.denominator;
+  const [a, b, c] = rows;
+  const points: { text: string; n: number }[] = [];
+  if (b && c) points.push({ text: t(`${b.skill} and ${c.skill} follow, at ${fmtPct(b.share, 0)} and ${fmtPct(c.share, 0)}.`, `تليها ${b.skill} و${c.skill} بنسبة ${fmtPct(b.share, 0)} و${fmtPct(c.share, 0)}.`), n });
+  const top10 = rows.slice(0, 10);
+  if (any) points.push({ text: t(`You have ${top10.filter((r) => has(r.skill)).length} of the 10 most requested.`, `لديك ${top10.filter((r) => has(r.skill)).length} من أكثر 10 مهارات طلبًا.`), n });
+  return <KeyPoints finding={t(`${a.skill} is asked for in ${fmtPct(a.share, 0)} of postings that list skills`, `${a.skill} مطلوبة في ${fmtPct(a.share, 0)} من الإعلانات التي تذكر مهارات`)} points={points} />;
 }
 
 function Demand({ onPick }: { onPick: (s: string) => void }) {

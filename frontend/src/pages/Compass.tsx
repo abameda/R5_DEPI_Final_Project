@@ -14,7 +14,7 @@ import { fmtDate, fmtInt, fmtMonth, fmtPct } from "../lib/format";
 import { useFilters, useLabels, useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
 import { matchFilters, placeName, scopeText, whereOptions, type Recency } from "../lib/match";
-import { broaderWhere, haveSet, useProfile, WHERE_VALUES, type Where } from "../lib/profile";
+import { broaderWhere, haveSet, useProfile, WHERE_VALUES, whereFilters, type Where } from "../lib/profile";
 import { skillAnchor } from "../lib/roadmaps";
 import type { CareerGap, Overview } from "../lib/types";
 
@@ -205,6 +205,7 @@ function Results({ g, recency, onRecency, onRole, onHave }: { g: CareerGap; rece
       </div>
     </section>
 
+    <Evidence role={g.role} />
     <LearnNext g={g} onHave={onHave} />
     <PayLands role={g.role} where={profile.where} />
     <FitJobs role={g.role} recency={recency} />
@@ -260,6 +261,22 @@ function Results({ g, recency, onRecency, onRole, onHave }: { g: CareerGap; rece
     )}
     </Advanced>
   </div>);
+}
+
+/** The pages behind the answer, opened on your role and place. */
+function Evidence({ role }: { role: string }) {
+  const { filters } = useFilters();
+  const { profile } = useProfile();
+  const everywhere: Filters = { ...filters, country: [], region: [], market: [], role: [] };
+  const base: Filters = { ...everywhere, ...whereFilters(profile.where) };
+  return (
+    <nav aria-label={t("See the evidence", "شوف الدليل")} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+      <span className="text-ink-3">{t("See the evidence:", "شوف الدليل:")}</span>
+      <TextLink to={drillHref("/skills", base, { role })}>{t("Skills for this role", "مهارات هذا الدور")}</TextLink>
+      <TextLink to={drillHref("/salary", base, { role })}>{t("Salaries for this role", "رواتب هذا الدور")}</TextLink>
+      <TextLink to={drillHref("/geography", everywhere, { role })}>{t("Where these jobs are", "أماكن هذه الوظائف")}</TextLink>
+    </nav>
+  );
 }
 
 /** The skills you lack, most reliably requested first, each one tap from "I have it" or its Roadmap step. */

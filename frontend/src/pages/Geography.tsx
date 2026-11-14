@@ -153,8 +153,9 @@ function WhereSummary({ g, markets }: { g: Geo; markets?: Overview["markets"] })
     </InfoTip></span>
   );
   return (
-    <section aria-labelledby="where-h" className="rounded-xl border border-line bg-panel px-5 py-5 sm:px-6">
-      <h2 id="where-h" className="text-[0.9375rem] font-semibold text-ink">{t("Where the postings are", "أين الإعلانات")}</h2>
+    <section aria-label={t("Key findings", "أهم النتائج")} className="rounded-xl border border-line bg-panel px-5 py-5 sm:px-6">
+      <h2 id="where-h" className="flex flex-wrap items-baseline gap-x-2 text-base font-semibold text-ink">{t("Where the postings are", "أين الإعلانات")}
+        <span className="tnum text-sm font-normal text-ink-3">{t(`n = ${fmtInt(total)} postings`, `n = ${fmtInt(total)} إعلانًا`)}</span></h2>
       <p className="mt-2 max-w-4xl text-lg leading-7 text-ink-2">
         {getLang() === "ar" ? (<>
           <B>{fmtInt(g.located)}</B> من أصل <B>{fmtInt(total)}</B> إعلان تذكر دولة، موزعة على <B>{fmtInt(g.countries.length)}</B> دولة.

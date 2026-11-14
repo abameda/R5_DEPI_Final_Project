@@ -415,3 +415,19 @@ test("Home counts the dataset and says how fresh it is", async ({ page }) => {
   await expect(page.getByText(/^Updated .+ · \d+ sources$/)).toBeVisible();
   await expect(page.getByText("job postings", { exact: true })).toBeVisible();
 });
+
+for (const path of ["/skills", "/salary", "/geography"]) {
+  test(`${path} opens with a finding and its sample size`, async ({ page }) => {
+    await page.goto(path);
+    const findings = page.getByRole("region", { name: "Key findings" });
+    await expect(findings.getByRole("heading", { level: 2 })).toBeVisible();
+    await expect(findings.getByText(/n = [\d,]+/).first()).toBeVisible();
+  });
+}
+
+test("the Compass links to the evidence for your role and place", async ({ page }) => {
+  await page.goto("/compass?target=Backend&where=remote");
+  await page.getByRole("link", { name: "Salaries for this role" }).click();
+  await expect(page).toHaveURL(/\/salary\?.*role=Backend/);
+  await expect(page).toHaveURL(/market=Remote/);
+});

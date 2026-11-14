@@ -164,20 +164,17 @@ function Answer({ sum, cov, bench, period }: { sum: Q<SalarySummary>; cov?: Cove
   const enough = o && o.median != null && o.confidence !== "insufficient";
   const per = period ? t(`, quoted per ${period}`, `، محدد لكل ${PERIOD_AR[period] ?? period}`) : "";
   return (
-    <section aria-labelledby="salary-answer-h" className="rounded-2xl bg-rail p-6 text-rail-ink sm:p-7">
-      <h2 id="salary-answer-h" className="sr-only">
-        {bench ? t("Median market benchmark for your selection", "وسيط الراتب المرجعي للسوق في اختيارك") : t("Median advertised salary for your selection", "وسيط الراتب المعلن في اختيارك")}
-      </h2>
+    <section aria-label={t("Key findings", "أهم النتائج")} className="rounded-2xl bg-rail p-6 text-rail-ink sm:p-7">
       {sum.error && !sum.data ? <div className="mt-4"><ErrorState error={sum.error} retry={() => sum.refetch()} /></div>
         : !o ? <div className="mt-5 space-y-3 opacity-30" role="status" aria-label={t("Loading", "جارٍ التحميل")}><Skeleton h={52} /><Skeleton h={20} /></div>
         : (
           <div className={clsx("flex flex-wrap items-end justify-between gap-x-10 gap-y-6 transition-opacity", sum.isFetching && "opacity-60")} aria-busy={sum.isFetching}>
             <div className="max-w-2xl">
               {enough ? (<>
-                <p className="text-xl leading-8 font-semibold tracking-[-0.015em] text-balance sm:text-2xl sm:leading-9">
+                <h2 className="text-xl leading-8 font-semibold tracking-[-0.015em] text-balance sm:text-2xl sm:leading-9">
                   {bench ? t("Half the benchmarks are above ", "نصف القيم المرجعية أعلى من ") : t("Half advertise more than ", "النصف يعلن أكثر من ")}
                   <span className="kpi whitespace-nowrap">{fmtUsdFull(o.median)}{t(" a year", " سنويًا")}</span>
-                </p>
+                </h2>
                 <p className="mt-1 text-sm text-rail-ink-2">{bench ? t("Median market benchmark, US dollars, approximate", "وسيط الراتب المرجعي، بالدولار الأمريكي تقريبًا") : t("Median advertised salary for your selection, US dollars, approximate", "وسيط الراتب المعلن في اختيارك، بالدولار الأمريكي تقريبًا")}</p>
                 <p className="mt-3 text-sm leading-6 text-rail-ink-2">
                   {t(`The middle half sits between ${fmtUsd(o.p25)} and ${fmtUsd(o.p75)}. Based on n = ${fmtInt(o.n)} ${bench ? "benchmarks" : "postings that state a salary"}${per}${o.currencies > 1 ? `, converted from ${o.currencies} currencies` : ""}.`,
@@ -190,7 +187,7 @@ function Answer({ sum, cov, bench, period }: { sum: Q<SalarySummary>; cov?: Cove
                   </p>
                 )}
               </>) : (<>
-                <p className="mt-2 text-2xl font-semibold tracking-[-0.01em]">{t("Too few salaries to give a median", "الرواتب قليلة جدًا لحساب وسيط")}</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.01em]">{t("Too few salaries to give a median", "الرواتب قليلة جدًا لحساب وسيط")}</h2>
                 <p className="mt-2 text-sm leading-6 text-rail-ink-2">
                   <span className="me-2 rounded-full bg-warn-soft px-2 py-0.5 text-xs font-medium text-warn">{t("Insufficient", "غير كافية")}</span>
                   {t(`Only n = ${fmtInt(o.n)} ${bench ? "benchmarks" : "advertised salaries"} match this selection${per}; at least ${sum.data?.min_n ?? 10} are needed. Remove a filter or choose “Any period”.`,
