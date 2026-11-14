@@ -6,17 +6,17 @@
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 3, .ico 2, .css 1)
 
 ## Summary
-- 1275 nodes · 3457 edges · 73 communities (64 shown, 7 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 107 edges (avg confidence: 0.92)
+- 1274 nodes · 3444 edges · 74 communities (65 shown, 7 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 109 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8a93edee`
+- Built from commit: `3c1e57b6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- Skills.tsx
+- tv
 - pipeline.py
 - test_clean_utils.py
 - Series
@@ -27,18 +27,18 @@
 - Review Focus
 - load
 - export_for_viewing.py
-- charts.tsx
+- t
 - make_demo_data.py
 - unhandled
 - Compass journey: design
 - Components
 - vitest
-- filters.ts
-- salary.py
-- Shell.tsx
+- hooks.ts
+- share
+- main.tsx
 - package.json
 - compilerOptions
-- Builder.tsx
+- Salary.tsx
 - test_integrity_real.py
 - dependencies
 - devDependencies
@@ -53,11 +53,11 @@
 - Design system
 - roadmap.py
 - Filters
-- t
+- fmtInt
 - Deployment
 - Testing and results
 - app.spec.ts
-- share
+- builder.py
 - Bosla logo — usage guide
 - Architecture
 - scripts
@@ -69,57 +69,58 @@
 - frontend.md
 - AGENTS.md
 - CLAUDE.md
-- compare.py
+- compare_view
 - db.py
-- Employers.tsx
+- types.ts
 - match.ts
 - Review Focus
 - Boundary
-- Salary.tsx
+- Skills.tsx
 - Fresh data sources
 - Compare.tsx
 - salary_to_usd_annual
-- hooks.ts
+- skills.py
 - profile.ts
 - api.ts
 - Competitors and next features
 - vite.config.ts
 - _cell
 - demo
+- filters_from_query
 - benchmark-ui.mjs
 
 ## God Nodes (most connected - your core abstractions)
-1. `t()` - 150 edges
+1. `t()` - 144 edges
 2. `fmtInt()` - 73 edges
 3. `tv()` - 70 edges
 4. `fmtPct()` - 65 edges
 5. `get()` - 61 edges
-6. `Store` - 57 edges
-7. `Filters` - 57 edges
+6. `Filters` - 57 edges
+7. `Store` - 57 edges
 8. `useApi()` - 49 edges
 9. `useFilters()` - 47 edges
 10. `useProfile()` - 35 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `test_merged_observed_skills_uses_added_count_suffix()` --calls--> `_merged_observed_skills()`  [INFERRED]
+  tests/test_clean_utils.py → src/loaders.py
 - `builder_options()` --references--> `get()`  [EXTRACTED]
   api/main.py → tests/test_api.py
 - `spa()` --references--> `get()`  [EXTRACTED]
   api/main.py → tests/test_api.py
-- `test_merged_observed_skills_uses_added_count_suffix()` --calls--> `_merged_observed_skills()`  [INFERRED]
-  tests/test_clean_utils.py → src/loaders.py
-- `main()` --calls--> `reset_store()`  [EXTRACTED]
-  scripts/benchmark_api.py → api/db.py
-- `demo()` --calls--> `reset_store()`  [EXTRACTED]
-  tests/test_api.py → api/db.py
+- `real()` --calls--> `reset_store()`  [EXTRACTED]
+  tests/test_integrity_real.py → api/db.py
+- `breakdown()` --references--> `get()`  [EXTRACTED]
+  api/main.py → tests/test_api.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (73 total, 7 thin omitted)
+## Communities (74 total, 7 thin omitted)
 
-### Community 0 - "Skills.tsx"
-Cohesion: 0.15
-Nodes (20): KeyPoints(), Kpi(), Lattice(), Segmented(), fmtPp(), fmts(), nf(), COUNTRY_CODES (+12 more)
+### Community 0 - "tv"
+Cohesion: 0.10
+Nodes (34): AsyncFacet(), Lattice(), DataTable(), list(), fmtDate(), fmtPp(), fmts(), fmtUsdFull() (+26 more)
 
 ### Community 1 - "pipeline.py"
 Cohesion: 0.14
@@ -157,9 +158,9 @@ Nodes (15): Compass Journey Implementation Plan, Global Constraints, Out of scop
 Cohesion: 0.40
 Nodes (4): load(), DataFrame, Path, Quick peek at every raw file: row count, and per column the dtype, null %,…
 
-### Community 11 - "charts.tsx"
-Cohesion: 0.23
-Nodes (21): ADDED(), BarDatum, CohortMonths(), Handle, HBar(), Histogram(), LineSeries, MonthLines() (+13 more)
+### Community 11 - "t"
+Cohesion: 0.11
+Nodes (33): CoverageItem, CoverageStrip(), growOf(), Facet(), groupBy(), About(), AlsoPostedOn(), Description() (+25 more)
 
 ### Community 12 - "make_demo_data.py"
 Cohesion: 0.18
@@ -178,32 +179,32 @@ Cohesion: 0.06
 Nodes (31): Buttons, Cards / Containers, Chips, Colors, Compass Dial (signature), Components, Coverage Strip (signature), Design System: Bosla (+23 more)
 
 ### Community 16 - "vitest"
-Cohesion: 0.33
-Nodes (4): contrast(), css, luminance(), vitest
+Cohesion: 0.21
+Nodes (7): MAP, roadmapLinks(), skillAnchor(), contrast(), css, luminance(), vitest
 
-### Community 17 - "filters.ts"
-Cohesion: 0.16
-Nodes (16): activeCount(), EMPTY_FILTERS, filterBody(), FilterKey, filterParams(), Filters, isFilterKey(), LIST_KEYS (+8 more)
+### Community 17 - "hooks.ts"
+Cohesion: 0.18
+Nodes (15): activeCount(), EMPTY_FILTERS, FilterKey, filterParams(), isFilterKey(), LIST_KEYS, ListKey, parseFilters() (+7 more)
 
-### Community 18 - "salary.py"
-Cohesion: 0.36
-Nodes (8): salary_confidence(), coverage(), histogram(), _period_clause(), Kind, Salary intelligence. `advertised` = the pay written in the posting (or the…, Quantiles of annualized USD salary, overall and per group of `dim`., salary_summary()
+### Community 18 - "share"
+Cohesion: 0.15
+Nodes (19): The global filter set shared by every analytical endpoint. Filters arrive as…, Human-readable labels, thresholds and small statistics helpers shared by the…, salary_confidence(), share(), compare(), _main_cohort(), Market Comparison Studio: two filter sets side by side. Every number is…, _segment() (+11 more)
 
-### Community 19 - "Shell.tsx"
-Cohesion: 0.16
-Nodes (15): barState(), Brand(), LinkTo, ModeSwitch(), nav(), NavItem, NavMenu(), NO_FILTERS (+7 more)
+### Community 19 - "main.tsx"
+Cohesion: 0.06
+Nodes (42): RouteErrorBoundary(), barState(), Brand(), JobSearch(), LinkTo, ModeSwitch(), nav(), NavItem (+34 more)
 
 ### Community 20 - "package.json"
-Cohesion: 0.11
-Nodes (18): name, private, type, version, cmdk, echarts, @fontsource-variable/geist, @fontsource-variable/readex-pro (+10 more)
+Cohesion: 0.10
+Nodes (19): name, private, type, version, cmdk, echarts, @fontsource-variable/geist, @fontsource-variable/readex-pro (+11 more)
 
 ### Community 21 - "compilerOptions"
 Cohesion: 0.12
 Nodes (16): compilerOptions, isolatedModules, jsx, lib, module, moduleResolution, noEmit, noFallthroughCasesInSwitch (+8 more)
 
-### Community 22 - "Builder.tsx"
-Cohesion: 0.13
-Nodes (18): Chart(), ChartHandle, Handler, Button(), Callout(), each(), flipBox(), HUE (+10 more)
+### Community 22 - "Salary.tsx"
+Cohesion: 0.09
+Nodes (46): Chart(), ChartHandle, Handler, ADDED(), BarDatum, CohortMonths(), Handle, HBar() (+38 more)
 
 ### Community 23 - "test_integrity_real.py"
 Cohesion: 0.22
@@ -230,8 +231,8 @@ Cohesion: 0.13
 Nodes (15): Data limitations and integrity, Employers, Fresh API collection, Geographic imbalance, It is a sample of postings, not the labour market, Job boards ("Where to search", "Also posted on"), Missing fields, One source dominates (+7 more)
 
 ### Community 29 - "Geography.tsx"
-Cohesion: 0.08
-Nodes (39): RouteErrorBoundary(), Band(), ChartPanel(), csvCell(), DataTable(), Empty(), ErrorState(), InfoTip() (+31 more)
+Cohesion: 0.09
+Nodes (38): ActiveChips(), facetLabel(), facets(), more(), MoreFilters(), Option, OptionRow(), Band() (+30 more)
 
 ### Community 30 - "Product"
 Cohesion: 0.15
@@ -254,16 +255,16 @@ Cohesion: 0.17
 Nodes (11): Accessibility, Charts, Colour, Components, Data colours (qamariyya stained glass), Design system, Direction, Interaction patterns (+3 more)
 
 ### Community 35 - "roadmap.py"
-Cohesion: 0.14
-Nodes (24): Human-readable labels, thresholds and small statistics helpers shared by the…, 95% Wilson score interval for a proportion k/n., Lower bound of the 95% Wilson score interval for a proportion k/n. Used to rank…, wilson_interval(), wilson_lower(), assign_stages(), career_roadmap(), excluded() (+16 more)
+Cohesion: 0.19
+Nodes (19): assign_stages(), career_roadmap(), excluded(), market_premium(), Role roadmaps: a role's requested skills ordered into Foundations -> Core ->…, Split ranked skill rows (`skill`, `share`, `wilson_lower`) into disjoint…, Pay premium of a skill over its role, compared market by market. premium =…, Niche skills with a positive within-market pay premium, best first. Salary… (+11 more)
 
 ### Community 36 - "Filters"
-Cohesion: 0.11
-Nodes (16): Filters, BaseModel, Extra condition on job_skills rows for skill metrics., `WITH f AS (filtered jobs)` prefix used by most queries., Only the filters that differ from the defaults (for display/provenance)., Copy with some filters reset, e.g. to compute a chart's own breakdown., SQL condition over the `jobs` table (aliased) + its parameters., cohort_snapshot() (+8 more)
+Cohesion: 0.10
+Nodes (19): Filters, BaseModel, Extra condition on job_skills rows for skill metrics., `WITH f AS (filtered jobs)` prefix used by most queries., Only the filters that differ from the defaults (for display/provenance)., Copy with some filters reset, e.g. to compute a chart's own breakdown., SQL condition over the `jobs` table (aliased) + its parameters., by_dimension() (+11 more)
 
-### Community 37 - "t"
-Cohesion: 0.06
-Nodes (134): CoverageItem, CoverageStrip(), growOf(), ActiveChips(), AsyncFacet(), Facet(), facetLabel(), facets() (+126 more)
+### Community 37 - "fmtInt"
+Cohesion: 0.14
+Nodes (54): FilterBar(), Population(), Match(), PayLands(), TextLink(), WhereToSearch(), useApi(), drillHref() (+46 more)
 
 ### Community 38 - "Deployment"
 Cohesion: 0.20
@@ -277,9 +278,9 @@ Nodes (10): Analytics integrity (KPI S1), API (real store, `python scripts/bench
 Cohesion: 0.15
 Nodes (4): ROUTES, routes, @axe-core/playwright, @playwright/test
 
-### Community 42 - "share"
-Cohesion: 0.13
-Nodes (31): share(), builder_csv(), builder_run(), BuilderRequest, insights(), _metric_sql(), _pct(), BaseModel (+23 more)
+### Community 42 - "builder.py"
+Cohesion: 0.19
+Nodes (18): builder_csv(), builder_run(), BuilderRequest, insights(), _metric_sql(), _pct(), BaseModel, Interactive Insight Builder + guided insights. The builder only combines… (+10 more)
 
 ### Community 43 - "Bosla logo — usage guide"
 Cohesion: 0.25
@@ -294,8 +295,8 @@ Cohesion: 0.29
 Nodes (7): scripts, build, dev, e2e, preview, test, typecheck
 
 ### Community 46 - "Store"
-Cohesion: 0.14
-Nodes (17): Any, Path, Allowed values of every low-cardinality filter (validated on input)., Store, _attach_skills(), breakdown(), companies(), company_profile() (+9 more)
+Cohesion: 0.16
+Nodes (22): Path, Allowed values of every low-cardinality filter (validated on input)., Store, 95% Wilson score interval for a proportion k/n., wilson_interval(), _attach_skills(), breakdown(), breakdowns() (+14 more)
 
 ### Community 47 - "Feature coverage"
 Cohesion: 0.33
@@ -306,56 +307,56 @@ Cohesion: 0.15
 Nodes (12): Anti-goals (a failure even if it works), API, Exclude list, Goals, Left to the builder, Non-goals, Roadmap page: design, roadmap.sh links (+4 more)
 
 ### Community 49 - "main.py"
-Cohesion: 0.16
-Nodes (41): get_store(), filters_from_query(), date, Query, breakdown(), builder_options(), cached(), career_gap() (+33 more)
+Cohesion: 0.19
+Nodes (37): get_store(), breakdown(), builder_options(), cached(), career_gap(), career_roadmap(), companies(), company_profile() (+29 more)
 
 ### Community 50 - "world.ts"
-Cohesion: 0.33
+Cohesion: 0.40
 Nodes (4): ALIASES, loadWorld(), mapName(), topojson-client
 
-### Community 55 - "compare.py"
-Cohesion: 0.22
-Nodes (12): compare_view(), CompareRequest, BaseModel, compare(), _main_cohort(), Market Comparison Studio: two filter sets side by side. Every number is…, _segment(), breakdowns() (+4 more)
+### Community 55 - "compare_view"
+Cohesion: 0.50
+Nodes (4): compare_view(), CompareRequest, BaseModel, Body
 
 ### Community 56 - "db.py"
-Cohesion: 0.12
-Nodes (12): Read-only access to the DuckDB analytical store + a small result cache. The…, Used by tests to point the API at a different store., Thread-safe LRU keyed by (endpoint, normalized parameters)., reset_store(), ResultCache, The global filter set shared by every analytical endpoint. Filters arrive as…, Where postings are listed: per-platform coverage of a segment ("Where should I…, where_to_search() (+4 more)
+Cohesion: 0.13
+Nodes (9): Any, Read-only access to the DuckDB analytical store + a small result cache. The…, Used by tests to point the API at a different store., Thread-safe LRU keyed by (endpoint, normalized parameters)., reset_store(), ResultCache, DuckDBPyConnection, main() (+1 more)
 
-### Community 57 - "Employers.tsx"
-Cohesion: 0.09
-Nodes (29): IconButton(), CategoryRow, CoLink, Cooc, Count, GapSkill, Kpis, Listing (+21 more)
+### Community 57 - "types.ts"
+Cohesion: 0.08
+Nodes (28): CategoryRow, CoLink, Cooc, CountryRow, GapSkill, Geo, Insight, Job (+20 more)
 
 ### Community 58 - "match.ts"
-Cohesion: 0.29
-Nodes (9): at(), CompassDial(), dialAngle(), LOCATION_KEYS, MatchScope, Recency, useCountUp(), usePrefersReducedMotion() (+1 more)
+Cohesion: 0.25
+Nodes (10): at(), CompassDial(), Filters, dialAngle(), LOCATION_KEYS, MatchScope, Recency, base (+2 more)
 
 ### Community 59 - "Review Focus"
 Cohesion: 0.29
 Nodes (6): Global Constraints, Review Focus, Roadmap Page Implementation Plan, Task 1: Pure roadmap helpers, Task 2: Roadmap query and endpoint, Task 3: Roadmap page
 
-### Community 61 - "Salary.tsx"
-Cohesion: 0.21
-Nodes (11): Guard(), PageHeader(), Select(), SkillTrend, TopSkills, Salary, Coverage, PERIOD_AR (+3 more)
+### Community 61 - "Skills.tsx"
+Cohesion: 0.33
+Nodes (11): KeyPoints(), useParam(), useAdvanced(), BySegment(), Demand(), dims(), Findings(), Pairings() (+3 more)
 
 ### Community 62 - "Fresh data sources"
 Cohesion: 0.40
 Nodes (5): Checked and not used, Fresh data sources, Off by default, Rules for the dashboard, Sources used by default (no key)
 
 ### Community 63 - "Compare.tsx"
-Cohesion: 0.18
-Nodes (9): currentSegment(), EDIT_DIMS, MetricRow, PRESETS, readSegment(), Result, Side, SIDE_BG (+1 more)
+Cohesion: 0.14
+Nodes (15): filterBody(), SalaryStats, Compare(), currentSegment(), EDIT_DIMS, groupWords(), MetricRow, PRESETS (+7 more)
 
 ### Community 64 - "salary_to_usd_annual"
 Cohesion: 0.67
 Nodes (3): DataFrame, Mid-point of min/max, annualized and converted to USD. Values outside 500 -…, salary_to_usd_annual()
 
-### Community 65 - "hooks.ts"
-Cohesion: 0.27
-Nodes (9): TopBar(), AR_LABELS, getTheme(), listeners, PAGE_KEYS, setTheme(), Theme, useTheme() (+1 more)
+### Community 65 - "skills.py"
+Cohesion: 0.25
+Nodes (10): Lower bound of the 95% Wilson score interval for a proportion k/n. Used to rank…, wilson_lower(), career_gap(), _cosine(), Skill intelligence: rankings, role/market matrices, co-occurrence, skill…, Skill-share vector per role category (within the filters, ignoring the role…, _role_vectors(), skill_denominator() (+2 more)
 
 ### Community 66 - "profile.ts"
-Cohesion: 0.23
-Nodes (11): broaderWhere(), EMPTY, isWhere(), listeners, Profile, read(), readProfile(), snapshot (+3 more)
+Cohesion: 0.22
+Nodes (11): EMPTY, isWhere(), listeners, Profile, read(), readProfile(), snapshot, Where (+3 more)
 
 ### Community 67 - "api.ts"
 Cohesion: 0.36
@@ -373,25 +374,29 @@ Nodes (3): @tailwindcss/vite, vite, @vitejs/plugin-react
 Cohesion: 0.67
 Nodes (3): _cell(), Neutralize spreadsheet formulas: employer names such as '+OneX' or '@Orchard'., test_builder_csv_neutralizes_formulas()
 
+### Community 72 - "filters_from_query"
+Cohesion: 0.30
+Nodes (4): filters_from_query(), date, Query, meta()
+
 ## Knowledge Gaps
-- **339 isolated node(s):** `ROUTES`, `name`, `private`, `version`, `type` (+334 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 559 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **341 isolated node(s):** `Global exploration`, `Overview`, `Job explorer`, `Skills intelligence`, `Salary lab` (+336 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 560 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `t()` connect `t` to `Skills.tsx`, `hooks.ts`, `charts.tsx`, `filters.ts`, `Shell.tsx`, `Salary.tsx`, `Builder.tsx`, `Employers.tsx`, `match.ts`, `Boundary`, `Geography.tsx`, `Compare.tsx`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `react` connect `Geography.tsx` to `Skills.tsx`, `hooks.ts`, `profile.ts`, `t`, `Shell.tsx`, `package.json`, `Builder.tsx`, `Employers.tsx`, `match.ts`, `Compare.tsx`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `get()` connect `get` to `main.py`?**
+- **Why does `t()` connect `t` to `tv`, `fmtInt`, `Skills.tsx`, `main.tsx`, `Salary.tsx`, `match.ts`, `Boundary`, `Geography.tsx`, `Compare.tsx`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `react` connect `Geography.tsx` to `tv`, `profile.ts`, `fmtInt`, `t`, `hooks.ts`, `main.tsx`, `package.json`, `Salary.tsx`, `match.ts`, `Skills.tsx`, `Compare.tsx`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `tv()` (e.g. with `list()` and `Chip()`) actually correct?**
-  _`tv()` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `ROUTES`, `name`, `private` to the rest of the system?**
-  _339 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `get()` connect `get` to `filters_from_query`, `main.py`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Are the 4 inferred relationships involving `tv()` (e.g. with `list()` and `Compass()`) actually correct?**
+  _`tv()` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Global exploration`, `Overview`, `Job explorer` to the rest of the system?**
+  _341 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `tv` be split into smaller, more focused modules?**
+  _Cohesion score 0.09745293466223699 - nodes in this community are weakly interconnected._
 - **Should `pipeline.py` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `test_clean_utils.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.05202661826981246 - nodes in this community are weakly interconnected._
