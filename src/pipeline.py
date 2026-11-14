@@ -17,6 +17,7 @@ Outputs (data/processed/ and reports/):
     jobs_clean.csv           one row per unique posting
     job_skills.csv           long table: one row per (job_id, skill, is_observed)
     skills_dim.csv           one row per skill: category, category source, technical or not
+    job_listings.csv         one row per (job_id, platform) a posting was listed on, with its link
     data_quality_report.md   counts, missing values, duplicates per source
     pipeline_stats.json      the same stage counts, machine-readable (used by the dashboard)
 """
@@ -244,9 +245,13 @@ def _quality_score(df: pd.DataFrame) -> pd.Series:
             + df["url"].notna() * 2 + df["skills_count"].clip(upper=20) / 20)
 
 
-def deduplicate(df: pd.DataFrame, stages: StageLog) -> pd.DataFrame:
+def deduplicate(df: pd.DataFrame, stages: StageLog) -> tuple[pd.DataFrame, pd.DataFrame]:
     """FR-09: remove exact and near-duplicate postings across sources and keep
-    the list of sources each kept posting was found in."""
+    the list of sources each kept posting was found in.
+
+    Returns the kept postings (with their duplicate-group `_key`) and every
+    listing of every group (`_key`, platform, url, date): the second table is
+    what "Also posted on" and "Where should I search?" are computed from."""
     # 7a. exact duplicates over the cleaned fields
     subset = ["title", "company", "location", "description", "skills", "salary_text",
               "posted_date", "source_platform", "url"]
@@ -272,11 +277,25 @@ def deduplicate(df: pd.DataFrame, stages: StageLog) -> pd.DataFrame:
     counts = df.groupby("_key", sort=False).size()
     sources = (df[["_key", "source_platform"]].dropna().drop_duplicates()
                .sort_values("source_platform").groupby("_key")["source_platform"].agg("; ".join))
+    listings = df[["_key", "source_dataset", "source_platform", "url", "posted_date"]].copy()
     df = df.drop_duplicates("_key", keep="first").copy()
     df["sources"] = df["_key"].map(sources)
     df["duplicate_count"] = df["_key"].map(counts).astype(int)
     stages("7b. after removing near-duplicates (title+company+location)", df)
-    return df.drop(columns=["_key", "_score"])
+    return df.drop(columns=["_score"]), listings
+
+
+def listings_table(kept: pd.DataFrame, listings: pd.DataFrame) -> pd.DataFrame:
+    """One row per (posting, platform) the posting was listed on: the platform
+    family, the original platform spelling, the listing's own link and date.
+    The same posting listed twice on one platform counts once (the dated,
+    linked listing is kept)."""
+    out = listings.assign(job_id=listings["_key"].map(kept.set_index("_key")["job_id"]))
+    out["platform"] = out["source_platform"].map(cu.platform_family)
+    out = (out.assign(_has=out["url"].notna() * 2 + out["posted_date"].notna())
+           .sort_values(["job_id", "platform", "_has"], ascending=[True, True, False])
+           .drop_duplicates(["job_id", "platform"]))
+    return out[["job_id", "platform", "source_platform", "source_dataset", "url", "posted_date"]].reset_index(drop=True)
 
 
 def make_job_id(df: pd.DataFrame) -> pd.Series:
@@ -396,8 +415,9 @@ def main(out: Path = OUT) -> None:
     df = df[~no_title & ~non_tech]
     stages("6. after dropping missing-title & non-tech rows", df)
 
-    df = deduplicate(df, stages)
+    df, listings = deduplicate(df, stages)
     df["job_id"] = make_job_id(df)
+    listings = listings_table(df, listings)
     df = df.sort_values(["source_dataset", "posted_date", "title"], na_position="last")
 
     clean = df[FINAL_COLUMNS].reset_index(drop=True)
@@ -406,6 +426,7 @@ def main(out: Path = OUT) -> None:
     # utf-8-sig = UTF-8 with BOM, so Excel / Power BI show Arabic text correctly.
     clean.to_csv(out / "jobs_clean.csv", index=False, encoding="utf-8-sig")
     skills_long.to_csv(out / "job_skills.csv", index=False, encoding="utf-8-sig")
+    listings.to_csv(out / "job_listings.csv", index=False, encoding="utf-8-sig")
     skills_dim.to_csv(out / "skills_dim.csv", index=False, encoding="utf-8-sig")
     (REPORTS / "data_quality_report.md").write_text(
         quality_report(raw_counts, clean, skills_long, stages, dropped), encoding="utf-8")

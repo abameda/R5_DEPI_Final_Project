@@ -14,7 +14,7 @@ unique postings are in view, their collection mix and how skills are being count
 | | Salaries | `/salary` | What pay is actually advertised, and how does it vary? |
 | | Time & cohorts | `/trends` | How did demand move within 2023, and how do the two collections differ? |
 | | Compare markets | `/compare` | How do two segments differ, normalized and with warnings? |
-| Plan | Career planner | `/career` | What should I learn next for a target role and market? |
+| Plan | Your compass | `/compass` | How do my skills match a role, what should I learn next, and what does it pay where I want to work? |
 | | Guided insights | `/insights` | What stands out in this selection, in plain sentences? |
 | | Insight builder | `/builder` | Let me build my own aggregate view and export it |
 | Trust | Data & methodology | `/quality` | How was this built and what can it not tell me? |
@@ -92,10 +92,11 @@ hatched = < 30 postings); concentration KPIs (top-3 share, HHI); sortable countr
 Arab League breakdown; role mix in the 15 largest countries; the "Sudan" correction note.
 
 ### Employers
-Directory (search, sort by postings / pay / recency / name, job boards and hidden employers
-excluded by default, unique postings vs listings). Profile (`?name=`): KPIs, most advertised
-titles, countries, seniority, requested skills, link to its postings; warning when the name
-is a job board.
+Directory (search, sort by postings / pay / share stating pay / recency / name, job boards
+and hidden employers excluded by default, unique postings vs listings, "States pay" column).
+Profile (`?name=`): KPIs, a **report card** (what its postings state: pay, skills, seniority,
+work mode, each against the market with a 95% interval), most advertised titles, countries,
+seniority, requested skills, link to its postings; warning when the name is a job board.
 
 ### Time & cohorts
 Cohort cards; monthly skill-share lines within the 2023 archive (add up to six skills);
@@ -111,14 +112,28 @@ Warnings first (too few postings, small or mixed-currency salaries, different co
 different sources, different skill counting); side-by-side metrics with differences; skill
 dumbbell chart with gaps in pp and "mainly in A/B"; role and seniority mix.
 
-### Career planner
-Target role, market and current skills (searchable picker; URL `?target=&have=`). Shows
-skill alignment (share-weighted coverage of the top 15, with its formula and limits),
-postings already matched (all / half / one listed skill), what to learn next (ranked, with
-"at least X%" bounds and "mostly team-added" flags), all requested skills, adjacent roles
-(cosine similarity of skill profiles, plus your alignment with each) and the
-closest-matching postings with their missing skills. Too-small populations get the UC-04
-alternative flow ("broaden the filters").
+### Your compass (`/compass`; `/career` redirects with its query string)
+The visitor's role, skills and **where they'd work** (Egypt, Arab countries, Remote,
+International or Anywhere, saved in the browser profile; shareable as
+`/compass?target=&have=&where=`). It shows:
+
+* the **Global Skill Match** dial (share-weighted coverage of the top 15 skills over every
+  posting for the role, wherever it is), with its sample size, posting dates, the share
+  from the 2023 archive, an *All postings / Recent (2024–26)* switch, and the note that it is
+  not specific to Egypt or the chosen place;
+* **what to learn next** as chips, each with "I have this" and a link to that step on the
+  Roadmap;
+* **where your pay lands**: advertised pay for the role in the chosen place (p10–p90 band,
+  middle half, median, per year and per month), naming the leading country and flagging
+  low confidence. When the place has too few salaries, it says so and offers the next wider
+  place as a button. It never widens on its own;
+* **jobs that fit you best** in the chosen place (the same widening rule), adjacent roles,
+  **where to search** for the role in that place, every requested skill (Advanced), and links
+  to the evidence (Skills, Salaries, Locations) opened on the role and place.
+
+Home starts the same journey in three steps (role, skills, place) beside a small dial, with
+live counts of postings, countries and skills and the date of the newest posting. Skills,
+Salaries and Locations open with a finding sentence and its sample size ("Key findings").
 
 ### Guided insights
 Template sentences computed from the same queries as the charts, each with n, denominator,

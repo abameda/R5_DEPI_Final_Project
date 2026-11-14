@@ -10,7 +10,8 @@ const rowHeight = 26;
 const WRITTEN = () => tr("Written in posting", "مذكورة في الإعلان");
 const ADDED = () => tr("Added by team", "أضافها الفريق");
 
-export interface BarDatum { label: string; value: number; share?: number | null; note?: string; muted?: boolean }
+/** `have` marks a bar the visitor already has (a skill in their profile): drawn teal. */
+export interface BarDatum { label: string; value: number; share?: number | null; note?: string; muted?: boolean; have?: boolean }
 
 /** Ranked horizontal bars, largest on top, value + share as direct labels. */
 export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color = 0, maxLabel = 26, by = "value" }: {
@@ -29,7 +30,7 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
         xAxis: { type: "value", show: false },
         yAxis: {
           type: "category", data: rows.map((r) => r.label), ...axisStyle(t), axisLine: { show: false },
-          axisLabel: { color: t.ink2, fontSize: 12, formatter: (v: string) => trunc(tv(v), maxLabel) },
+          axisLabel: { color: t.ink2, fontSize: 13, formatter: (v: string) => trunc(tv(v), maxLabel) },
         },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "item",
@@ -39,13 +40,13 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
           },
         },
         series: [{
-          type: "bar", barMaxWidth: 16, barCategoryGap: "38%",
-          data: rows.map((r) => ({ value: by === "share" ? r.share ?? 0 : r.value, itemStyle: { color: r.muted ? t.lineStrong : t.series[color] } })),
+          type: "bar", barMaxWidth: 14, barCategoryGap: "40%",
+          data: rows.map((r) => ({ value: by === "share" ? r.share ?? 0 : r.value, itemStyle: { color: r.have ? t.goodFill : r.muted ? t.lineStrong : t.series[color] } })),
           itemStyle: { borderRadius: [0, 4, 4, 0] },
-          emphasis: { focus: "self", itemStyle: { color: t.accent } },
+          emphasis: { focus: "self" },
           blur: { itemStyle: { opacity: 0.45 } },
           label: {
-            show: true, position: "right", color: t.ink2, fontSize: 11,
+            show: true, position: "right", color: t.ink2, fontSize: 13,
             formatter: (p: { dataIndex: number }) => {
               const r = rows[p.dataIndex];
               return r.share != null ? `${fmtPct(r.share)}  ${fmtCompact(r.value)}` : valueFmt(r.value);
@@ -57,23 +58,25 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
 }
 
 /** Skill demand split into written-in-posting (solid) and team-added (hatched). */
-export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }: {
+export function SkillBars({ rows, denominator, handle, onSelect, observedOnly, have }: {
   rows: SkillRow[]; denominator: number; handle?: Handle; onSelect?: (skill: string) => void; observedOnly: boolean;
+  /** Skills the visitor has are drawn teal. */
+  have?: (skill: string) => boolean;
 }) {
   const r = [...rows].reverse();
   return (
     <Chart label={tr(`Most requested skills, share of ${fmtInt(denominator)} postings with skills`, `المهارات الأكثر طلبًا، نسبةً إلى ${fmtInt(denominator)} إعلانًا فيها مهارات`)} handleRef={handle}
-      height={Math.max(140, r.length * rowHeight + 40)} deps={[rows, observedOnly]}
+      height={Math.max(140, r.length * rowHeight + 40)} deps={[rows, observedOnly, have]}
       onClick={onSelect ? (p) => onSelect(r[p.dataIndex].skill) : undefined}
       build={(t) => ({
         ...baseOption(t),
         grid: { left: 8, right: 64, top: observedOnly ? 4 : 28, bottom: 4, containLabel: true },
         legend: observedOnly ? undefined : {
-          top: 0, left: 0, itemWidth: 12, itemHeight: 10, textStyle: { color: t.ink2, fontSize: 11 },
+          top: 0, left: 0, itemWidth: 12, itemHeight: 10, textStyle: { color: t.ink2, fontSize: 13 },
           data: [WRITTEN(), ADDED()],
         },
         xAxis: { type: "value", show: false, max: Math.max(...r.map((x) => x.share ?? 0)) * 1.02 },
-        yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(t), axisLine: { show: false }, axisLabel: { color: t.ink2, fontSize: 12 } },
+        yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(t), axisLine: { show: false }, axisLabel: { color: t.ink2, fontSize: 13 } },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: t.accentSoft, opacity: 0.4 } },
           formatter: (ps: { dataIndex: number }[]) => {
@@ -85,11 +88,11 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
           },
         },
         series: (() => {
-          const endLabel = { show: true, position: "right", color: t.ink2, fontSize: 11,
+          const endLabel = { show: true, position: "right", color: t.ink2, fontSize: 13,
             formatter: (p: { dataIndex: number }) => fmtPct(r[p.dataIndex].share) };
           const observed = {
             name: WRITTEN(), type: "bar", stack: "s", barMaxWidth: 16, barCategoryGap: "38%",
-            data: r.map((x) => x.observed / denominator), emphasis: { focus: "series" },
+            data: r.map((x) => ({ value: x.observed / denominator, itemStyle: have?.(x.skill) ? { color: t.goodFill } : undefined })), emphasis: { focus: "series" },
             itemStyle: { color: t.series[HUE.skill], borderRadius: observedOnly ? [0, 4, 4, 0] : 0 },
             label: observedOnly ? endLabel : undefined,
           };
@@ -97,7 +100,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly }:
           return [observed, {
             name: ADDED(), type: "bar", stack: "s", barMaxWidth: 16,
             data: r.map((x) => x.added / denominator), emphasis: { focus: "series" },
-            itemStyle: { color: t.s3Soft, borderColor: t.series[HUE.skill], borderWidth: 1, borderRadius: [0, 4, 4, 0],
+            itemStyle: { color: t.s1Soft, borderColor: t.series[HUE.skill], borderWidth: 1, borderRadius: [0, 4, 4, 0],
               decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 3], rotation: -Math.PI / 4, color: t.series[HUE.skill] } },
             label: endLabel,
           }];
@@ -152,12 +155,12 @@ export function CohortMonths({ months, cohortLabel, handle, min = 30 }: {
                 ...baseOption(t),
                 grid: { left: 4, right: 12, top: 12, bottom: 4, containLabel: true },
                 xAxis: { type: "category", data: p.shown.map((m) => m.month.slice(0, 7)), ...axisStyle(t),
-                  axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: string) => fmtMonth(v).replace(" 20", " ’") } },
-                yAxis: { type: "value", ...axisStyle(t), splitNumber: 3, axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: number) => fmtCompact(v) } },
+                  axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: string) => fmtMonth(v).replace(" 20", " ’") } },
+                yAxis: { type: "value", ...axisStyle(t), splitNumber: 3, axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: number) => fmtCompact(v) } },
                 tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { dataIndex: number }[]) =>
                   `<b>${fmtMonth(p.shown[ps[0].dataIndex].month)}</b><br/>${tr(`${fmtInt(p.shown[ps[0].dataIndex].n)} postings`, `${fmtInt(p.shown[ps[0].dataIndex].n)} إعلانًا`)}` },
                 series: [{ type: "bar", data: p.shown.map((m) => m.n), barMaxWidth: 22,
-                  itemStyle: { color: i === 0 ? t.series[HUE.source] : t.s4Soft, borderColor: t.series[HUE.source], borderWidth: i === 0 ? 0 : 1, borderRadius: [3, 3, 0, 0] } }],
+                  itemStyle: { color: i === 0 ? t.series[HUE.source] : t.panel2, borderColor: t.series[HUE.source], borderWidth: i === 0 ? 0 : 1, borderRadius: [3, 3, 0, 0] } }],
               })} />
           ) : <p className="py-6 text-sm text-ink-3">{tr(`No month reaches ${min} postings.`, `لا يبلغ أي شهر ${min} إعلانًا.`)}</p>}
           {p.hidden.length > 0 && (
@@ -186,9 +189,9 @@ export function MonthLines({ series, label, handle, yFmt = fmtInt, yName, height
         ...baseOption(t),
         color: categorical(t),
         grid: { left: 8, right: 24, top: series.length > 1 ? 34 : 16, bottom: 8, containLabel: true },
-        legend: series.length > 1 ? { top: 0, left: 0, itemWidth: 14, itemHeight: 3, textStyle: { color: t.ink2, fontSize: 11 } } : undefined,
-        xAxis: { type: "category", data: xs, boundaryGap: false, ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: string) => fmtMonth(v) } },
-        yAxis: { type: "value", ...axisStyle(t), name: yName, splitNumber: 4, axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: number) => yFmt(v) } },
+        legend: series.length > 1 ? { top: 0, left: 0, itemWidth: 14, itemHeight: 3, textStyle: { color: t.ink2, fontSize: 13 } } : undefined,
+        xAxis: { type: "category", data: xs, boundaryGap: false, ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: string) => fmtMonth(v) } },
+        yAxis: { type: "value", ...axisStyle(t), name: yName, splitNumber: 4, axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: number) => yFmt(v) } },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "axis",
           axisPointer: { type: "line", lineStyle: { color: t.lineStrong } },
@@ -206,7 +209,7 @@ export function MonthLines({ series, label, handle, yFmt = fmtInt, yName, height
           name: tv(s.name), type: "line", smooth: false, showSymbol: true, symbolSize: 6,
           connectNulls: false, lineStyle: { width: 2 }, emphasis: { focus: "series" },
           data: xs.map((x) => s.points.find((p) => p.x === x)?.y ?? null),
-          ...(i === 0 && markArea ? { markArea: { silent: true, itemStyle: { color: t.panel2 }, label: { color: t.ink3, fontSize: 11, position: "insideTop" },
+          ...(i === 0 && markArea ? { markArea: { silent: true, itemStyle: { color: t.panel2 }, label: { color: t.ink3, fontSize: 13, position: "insideTop" },
             data: [[{ xAxis: markArea.from, name: markArea.label }, { xAxis: markArea.to }]] } } : {}),
         })),
       })} />

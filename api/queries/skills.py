@@ -269,7 +269,7 @@ def career_gap(store: Store, f: Filters, role: str, have: list[str]) -> dict:
                         "top_skills": [k for k, _ in top_r[:5]]})
     related.sort(key=lambda r: -r["similarity"])
 
-    # Example postings: most matched first, newest first.
+    # Example postings: most of your skills first, then the larger share of the posting's list, newest first.
     hv = sorted(have_set) or [""]
     postings = store.rows(f"""{cte},
         m AS (SELECT s.jid, count(*) FILTER (WHERE s.skill IN ({', '.join('?' * len(hv))})) AS matched,
@@ -279,7 +279,7 @@ def career_gap(store: Store, f: Filters, role: str, have: list[str]) -> dict:
               FROM job_skills s JOIN f USING (jid) WHERE TRUE {target.skill_condition()} GROUP BY 1)
         SELECT f.job_id, f.title, f.company, f.country, f.market_type, f.posted_date, f.url, f.source_dataset,
                m.matched, m.listed, m.missing
-        FROM m JOIN f USING (jid) ORDER BY m.matched * 1.0 / m.listed DESC, f.posted_date DESC NULLS LAST
+        FROM m JOIN f USING (jid) ORDER BY m.matched DESC, m.matched * 1.0 / m.listed DESC, f.posted_date DESC NULLS LAST
         LIMIT 8""", [*params, *hv, *hv])
 
     result.update(status="ok", skills=skills, priorities=priorities,

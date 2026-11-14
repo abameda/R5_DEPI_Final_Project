@@ -1,0 +1,50 @@
+{
+  "brand": "Bosla",
+  "tagline": "Your tech career compass",
+  "brief": "Bosla (بوصلة, Egyptian Arabic for 'compass') shows Egyptian and Arab engineers where tech jobs are, which skills they ask for and what they pay, so they can decide what to learn next. It should feel clear, honest, oriented, local and warm.",
+  "adjectives": [
+    "clear",
+    "honest",
+    "oriented",
+    "warm"
+  ],
+  "criteria": "Success: says 'compass' and 'Bosla' at once, works at 16 px, in one colour and reversed, and avoids job-board clichés (briefcases, magnifiers, up-arrows).",
+  "mockups": [
+    "website",
+    "favicon-tab",
+    "app-icon",
+    "social",
+    "sticker",
+    "business-card"
+  ],
+  "nav": [
+    "Jobs",
+    "Skills",
+    "Salaries"
+  ],
+  "brand_color": "#d9891a",
+  "symbol_on_tile": "final/bosla-symbol-reversed.svg",
+  "lockup_on_dark": "final/bosla-horizontal-reversed.svg",
+  "tile_color": "#0f1b33",
+  "greyscale": false,
+  "designer": "abdelhmeed.com",
+  "round": 2,
+  "concepts": [
+    {
+      "name": "Compass b",
+      "symbol": "final/bosla-symbol.svg",
+      "lockup": "final/bosla-horizontal.svg",
+      "idea": "The b of bosla, its bowl a compass dial with the north half of the needle lit amber.",
+      "rationale": [
+        "Letter and compass in one shape: the name and the promise read together",
+        "The b becomes the first letter of the bosla wordmark, so the lockup never repeats itself",
+        "One stroke unit (30/256) shared by stem, dial and Readex Pro lettering; survives 16 px as a solid-needle cut"
+      ]
+    }
+  ],
+  "recommendation": "Compass b — chosen. Use the colour mark on light grounds, the white reversal on navy or dark, and the solid-needle tile for favicons.",
+  "next_steps": [
+    "Trademark search before public launch",
+    "Social preview image (og:image) built from the horizontal lockup"
+  ]
+}

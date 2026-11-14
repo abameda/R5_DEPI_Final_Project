@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Graphite Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#16181c;--p:#1d2026;--s:#2c3038;--t:#e6e8eb;--m:#9aa1ab;--b:#7aa2f7;--gr:#9ece6a;--a:#e0af68;--mg:#bb9af7}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--g);color:var(--t);font:400 13px/1.4 "Geist",system-ui,sans-serif}
+.mono,.n{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:56px 280px 1104px;width:1440px;height:900px;gap:1px;background:var(--s)}
+.rail{background:var(--g);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:6px}
+.logo{width:32px;height:32px;border:1px solid var(--s);display:grid;place-items:center;color:var(--a);font:500 12px "Geist Mono";margin-bottom:10px}
+.ic{width:36px;height:36px;display:grid;place-items:center;color:var(--m);position:relative}
+.ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5}
+.ic.on{color:var(--t);background:var(--p)}.ic.on:before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:2px;background:var(--a)}
+.hd{font:500 11px/1 "Geist";letter-spacing:.12em;text-transform:uppercase;color:var(--m)}
+.filters{background:var(--g);padding:16px 0;overflow:hidden}
+.ftop{display:flex;justify-content:space-between;align-items:center;padding:0 16px 14px}
+.ftop .clr{color:var(--a);font-size:12px}
+.fg{border-top:1px solid var(--s);padding:14px 16px 12px}
+.fg .hd{margin-bottom:10px;display:flex;justify-content:space-between}
+.fg .hd i{font:400 11px "Geist Mono";letter-spacing:0;color:var(--a);font-style:normal}
+.cb{display:flex;align-items:center;gap:10px;height:26px;color:var(--t)}
+.cb:before{content:"";width:13px;height:13px;border:1px solid #444a55;background:var(--p);flex:none}
+.cb.x:before{background:var(--c);border-color:var(--c);box-shadow:inset 0 0 0 2px var(--g)}
+.cb .n{margin-left:auto;color:var(--m);font-size:12px}
+.cb.d{color:var(--m)}
+.work{display:grid;grid-template-rows:44px 96px 372px 1fr;gap:1px;background:var(--s);min-height:0}
+.tabs{background:var(--g);display:flex;align-items:stretch;padding:0 8px}
+.tabs a{display:flex;align-items:center;padding:0 16px;color:var(--m);font-weight:500;position:relative}
+.tabs a.on{color:var(--t)}.tabs a.on:after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;background:var(--a)}
+.tabs .r{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--m);font:400 12px "Geist Mono"}
+.tabs .r b{color:var(--a);font-weight:400}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--s)}
+.fig{background:var(--p);padding:16px 20px}
+.fig .n{display:block;font-size:34px;font-weight:500;letter-spacing:-.02em;margin-top:12px;line-height:1}
+.fig .sub{color:var(--m);font-size:12px;margin-top:8px;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;background:var(--c);display:inline-block}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--s);min-height:0}
+.pan{background:var(--p);padding:16px 20px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.ph .hd{color:var(--m)}.ph .meta{font:400 11px "Geist Mono";color:var(--m)}
+.row{display:grid;grid-template-columns:150px 1fr 56px;align-items:center;gap:14px;height:38px;border-bottom:1px solid #23262d}
+.row:last-child{border:0}
+.row span:first-child{color:var(--t);white-space:nowrap}
+.bar{height:8px;background:#262a32;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
+.row .n{text-align:right;font-size:13px}
+.row.sel{background:linear-gradient(90deg,rgba(224,175,104,.08),transparent)}
+.row.sel span:first-child{color:var(--a)}
+.row small{color:var(--m);font:400 11px "Geist Mono";margin-left:6px}
+.geo{background:var(--p);padding:16px 20px;overflow:hidden}
+.crow{display:grid;grid-template-columns:28px 160px 1fr 56px;align-items:center;gap:14px;height:38px}
+.crow .k{color:var(--m);font:400 11px "Geist Mono"}
+</style></head><body>
+<div class="app">
+<nav class="rail">
+ <div class="logo">JM</div>
+ <div class="ic on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+ <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div>
+ <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a1.8 1.8 0 010 3.5h-3a1.8 1.8 0 000 3.5H15"/></svg></div>
+ <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div>
+ <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9M15 6h5v5"/></svg></div>
+</nav>
+<aside class="filters">
+ <div class="ftop"><span class="hd">Filters</span><span class="clr">Clear all</span></div>
+ <div class="fg"><div class="hd">Role <i>2 of 6</i></div>
+  <div class="cb x" style="--c:var(--b)">Data Engineering<span class="n">174.6k</span></div>
+  <div class="cb x" style="--c:var(--b)">Data Analysis &amp; BI<span class="n">170.9k</span></div>
+  <div class="cb">Data Science &amp; AI<span class="n">162.0k</span></div>
+  <div class="cb">Other Engineering<span class="n">23.9k</span></div>
+  <div class="cb">Software Engineering<span class="n">21.5k</span></div>
+  <div class="cb">DevOps &amp; Cloud<span class="n">12.0k</span></div></div>
+ <div class="fg"><div class="hd">Market</div>
+  <div class="cb x" style="--c:var(--mg)">International<span class="n">87.3%</span></div>
+  <div class="cb">Remote<span class="n">10.0%</span></div>
+  <div class="cb">Arab<span class="n">2.6%</span></div></div>
+ <div class="fg"><div class="hd">Seniority</div>
+  <div class="cb">Junior</div><div class="cb">Mid-level</div><div class="cb">Senior</div><div class="cb">Lead and above</div></div>
+ <div class="fg"><div class="hd">Skills <i>1 of 1,475</i></div>
+  <div class="cb x" style="--c:var(--gr)">Python<span class="n">61.0%</span></div>
+  <div class="cb">SQL<span class="n">59.9%</span></div>
+  <div class="cb">AWS<span class="n">24.2%</span></div>
+  <div class="cb d">Search 1,475 skills&hellip;</div></div>
+</aside>
+<main class="work">
+ <div class="tabs"><a class="on">Overview</a><a>Skills</a><a>Pay</a><a>Places</a><a>Career</a>
+  <div class="r"><span>2021&ndash;2026</span><span><b>2</b> roles &middot; <b>1</b> skill active</span></div></div>
+ <div class="strip">
+  <div class="fig"><span class="hd">Postings</span><span class="n">588,545</span></div>
+  <div class="fig"><span class="hd">Countries</span><span class="n">159</span></div>
+  <div class="fig"><span class="hd">Employers</span><span class="n">135,190</span></div>
+  <div class="fig"><span class="hd">Skills</span><span class="n">1,475</span></div>
+ </div>
+ <div class="duo">
+  <section class="pan"><div class="ph"><span class="hd">Postings by role</span><span class="meta">share of 588,545</span></div>
+   <div class="row sel" style="--c:var(--a)"><span>Data Engineering</span><div class="bar"><i style="width:100%"></i></div><span class="n">29.7%</span></div>
+   <div class="row" style="--c:var(--b)"><span>Data Analysis &amp; BI</span><div class="bar"><i style="width:97.6%"></i></div><span class="n">29.0%</span></div>
+   <div class="row" style="--c:var(--b)"><span>Data Science &amp; AI</span><div class="bar"><i style="width:92.6%"></i></div><span class="n">27.5%</span></div>
+   <div class="row" style="--c:var(--b)"><span>Other Engineering</span><div class="bar"><i style="width:13.8%"></i></div><span class="n">4.1%</span></div>
+   <div class="row" style="--c:var(--b)"><span>Software Engineering</span><div class="bar"><i style="width:12.5%"></i></div><span class="n">3.7%</span></div>
+   <div class="row" style="--c:var(--b)"><span>DevOps &amp; Cloud</span><div class="bar"><i style="width:6.7%"></i></div><span class="n">2.0%</span></div>
+  </section>
+  <section class="pan"><div class="ph"><span class="hd">Most requested skills</span><span class="meta">share of postings listing skills</span></div>
+   <div class="row sel" style="--c:var(--a)"><span>Python</span><div class="bar"><i style="width:100%"></i></div><span class="n">61.0%</span></div>
+   <div class="row" style="--c:var(--gr)"><span>SQL</span><div class="bar"><i style="width:98.2%"></i></div><span class="n">59.9%</span></div>
+   <div class="row" style="--c:var(--gr)"><span>AWS</span><div class="bar"><i style="width:39.7%"></i></div><span class="n">24.2%</span></div>
+   <div class="row" style="--c:var(--gr)"><span>Azure</span><div class="bar"><i style="width:33.4%"></i></div><span class="n">20.4%</span></div>
+   <div class="row" style="--c:var(--gr)"><span>R</span><div class="bar"><i style="width:31.3%"></i></div><span class="n">19.1%</span></div>
+   <div class="row" style="--c:var(--gr)"><span>Tableau</span><div class="bar"><i style="width:30.5%"></i></div><span class="n">18.6%</span></div>
+  </section>
+ </div>
+ <section class="geo"><div class="ph"><span class="hd">Top countries</span><span class="meta">share of postings</span></div>
+  <div class="crow" style="--c:var(--mg)"><span class="k">01</span><span>United States</span><div class="bar"><i style="width:100%"></i></div><span class="n">29.0%</span></div>
+  <div class="crow" style="--c:var(--mg)"><span class="k">02</span><span>India</span><div class="bar"><i style="width:24.1%"></i></div><span class="n">7.0%</span></div>
+  <div class="crow" style="--c:var(--mg)"><span class="k">03</span><span>United Kingdom</span><div class="bar"><i style="width:20%"></i></div><span class="n">5.8%</span></div>
+ </section>
+</main>
+</div>
+</body></html>

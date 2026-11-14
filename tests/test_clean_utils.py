@@ -179,3 +179,19 @@ def test_merged_observed_skills_uses_added_count_suffix():
     out = _merged_observed_skills(skills, source, pd.Series([3, 2, 1]))
     assert out[0] == "bash, python, aws"
     assert pd.isna(out[1]) and pd.isna(out[2])   # nothing original when not 'Original'/'Extracted'
+
+
+# --- platforms -----------------------------------------------------------------
+@pytest.mark.parametrize("raw, family", [
+    ("BeBee India", "BeBee"), ("Trabajo.org - Vacantes De Empleo, Trabajo", "Trabajo.org"),
+    ("Trabajo. Org", "Trabajo.org"), ("LinkedIn Hungary", "LinkedIn"), ("Linkedin", "LinkedIn"),
+    ("إنديد", "Indeed"), ("WUZZUF", "Wuzzuf"), ("Egypt.tanqeeb.com", "Tanqeeb"), ("تنقيب", "Tanqeeb"),
+    ("Jobs In Saudi Arabia - Jooble", "Jooble"), ("lever:veeva", "Employer careers page"),
+    ("greenhouse", "Employer careers page"), ("Vodafone Career Site", "Employer careers page"),
+    ("weworkremotely", "We Work Remotely"), ("remoteok", "Remote OK"), ("Founditgulf", "Foundit"),
+    ("arab_tech_jobs", "Not attributed"), ("manual collection", "Not attributed"), (None, "Not attributed"),
+    ("Sercanto", "Sercanto"), ("workable:robusta", "Employer careers page"), ("Jobs By Workable", "Workable job board"),
+    ("smartrecruiters:deliveryhero", "Employer careers page"),
+])
+def test_platform_family(raw, family):
+    assert cu.platform_family(raw) == family

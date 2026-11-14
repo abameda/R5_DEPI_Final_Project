@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Job Market Intelligence - Pound Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--note:#0f4c3a;--teal:#1d7a8c;--rose:#c2476b;--bronze:#9a6a2f;--green:#2e7d4f;--ink:#12201b;--ink2:#44544d;--ink3:#6b7a73;--line:#dde6e2;--ground:#f3f7f5}
+*{box-sizing:border-box;margin:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--ground)}
+body{font-family:"Readex Pro",system-ui,sans-serif;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums;position:relative}
+.top{height:64px;background:var(--note);display:flex;align-items:center;padding:0 40px;gap:32px;color:#fff}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:17px}
+.mark{width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,.5);display:grid;grid-template:1fr 1fr/1fr 1fr;gap:4px;padding:6px}
+.mark i{border-radius:50%;background:#fff}.mark i:nth-child(2){background:#7fd0df}.mark i:nth-child(3){background:#f0a3b8}.mark i:nth-child(4){background:#e0b878}
+.tabs{display:flex;gap:4px;margin-left:8px}
+.tab{display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:20px;font-size:15px;color:rgba(255,255,255,.8)}
+.tab.on{background:rgba(255,255,255,.14);color:#fff;font-weight:500}
+.dot{width:8px;height:8px;border-radius:50%}
+.right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{height:40px;padding:0 16px;border-radius:20px;border:1px solid rgba(255,255,255,.35);display:flex;align-items:center;font-size:15px}
+.btn.ic{width:40px;padding:0;justify-content:center}
+svg{display:block}
+.wrap{padding:24px 40px 0}
+.band{position:relative;height:192px;border-radius:16px;background:var(--note);color:#fff;display:flex;overflow:hidden}
+.band::before{content:"";position:absolute;right:-60px;top:-120px;width:640px;height:640px;border-radius:50%;
+background:repeating-radial-gradient(circle at 50% 50%,transparent 0 5px,rgba(255,255,255,.06) 5px 5.6px),repeating-conic-gradient(from 0deg,rgba(255,255,255,.05) 0 .4deg,transparent .4deg 6deg);opacity:1}
+.band>*{position:relative}
+.ctl{width:440px;padding:24px 32px;border-right:1px solid rgba(255,255,255,.18);display:flex;flex-direction:column;gap:8px;justify-content:center}
+.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);font-weight:500}
+.sel{height:48px;border-radius:10px;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-weight:500;font-size:16px;margin-bottom:8px}
+.seg{display:flex;background:rgba(0,0,0,.25);border-radius:10px;padding:4px;gap:2px}
+.seg span{flex:1;text-align:center;padding:8px 0;border-radius:7px;font-size:14px;color:rgba(255,255,255,.85)}
+.seg .on{background:#fff;color:var(--note);font-weight:600}
+.ans{flex:1;padding:24px 40px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.ans h1{font-size:40px;line-height:1.15;font-weight:600;letter-spacing:-.01em;max-width:700px}
+.ans h1 b{font-weight:700;font-size:56px;display:block;line-height:1.05}
+.ans p{font-size:17px;color:rgba(255,255,255,.85)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:24px}
+.card{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 24px 16px 28px;height:390px;overflow:hidden;display:flex;flex-direction:column}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.card h2{font-size:18px;font-weight:600}
+.micro{font-size:10px;letter-spacing:.04em;color:var(--ink3);margin:2px 0 16px;font-weight:400}
+.chip{align-self:flex-start;display:flex;gap:8px;align-items:center;background:#fbeaf0;color:#8e2e4e;border-radius:16px;padding:4px 12px;font-size:13px;font-weight:500;margin-bottom:16px}
+.row{display:grid;grid-template-columns:132px 1fr 44px;align-items:center;gap:12px;height:40px;font-size:15px;color:var(--ink2)}
+.row.nv{grid-template-columns:152px 1fr}
+.bar{height:12px;border-radius:6px;background:#eef3f1}.bar i{display:block;height:100%;border-radius:6px;background:var(--c)}
+.row em{font-style:normal;font-weight:600;color:var(--ink);text-align:right}
+.more{margin-top:auto;font-size:13px;color:var(--ink3);padding-top:8px;border-top:1px dashed var(--line)}
+.big{font-size:44px;font-weight:700;line-height:1;color:var(--bronze)}
+.hist{display:flex;align-items:flex-end;gap:6px;height:130px;margin:16px 0 8px}
+.hist i{flex:1;background:var(--c);border-radius:4px 4px 0 0;opacity:.45}.hist i.pk{opacity:1}
+.axis{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3)}
+.strip{position:absolute;left:40px;right:40px;top:820px;background:#fff;border:1px solid var(--line);border-radius:14px 14px 0 0;padding:16px 28px;height:120px}
+.strip h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.pr{display:flex;justify-content:space-between;height:36px;align-items:center;font-size:14px;color:var(--ink2);border-top:1px solid var(--line)}
+.pr b{color:var(--ink);font-weight:500}
+</style></head><body>
+<header class="top">
+ <div class="brand"><div class="mark"><i></i><i></i><i></i><i></i></div>Job Market Intelligence</div>
+ <nav class="tabs">
+  <span class="tab on"><i class="dot" style="background:#7fd0df"></i>Explore</span>
+  <span class="tab"><i class="dot" style="background:#f0a3b8"></i>Skills</span>
+  <span class="tab"><i class="dot" style="background:#e0b878"></i>Pay</span>
+  <span class="tab"><i class="dot" style="background:#8fd0a5"></i>Places</span>
+  <span class="tab"><i class="dot" style="background:transparent;border:1.5px solid #fff"></i>Career plan</span>
+ </nav>
+ <div class="right"><span class="btn">العربية</span>
+  <span class="btn ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span></div>
+</header>
+<main class="wrap">
+ <section class="band">
+  <div class="ctl">
+   <div class="lbl">Your role</div>
+   <div class="sel">Data Analysis &amp; BI <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+   <div class="lbl">Market</div>
+   <div class="seg"><span>Any</span><span class="on">Arab</span><span>International</span><span>Remote</span></div>
+  </div>
+  <div class="ans"><h1><b>4,455</b>Arab-market postings for Data Analysis &amp; BI</h1>
+   <p>SQL, Excel and Python are asked for in more than 9 of 10 of them.</p></div>
+ </section>
+ <section class="cards">
+  <article class="card" style="--c:var(--rose)">
+   <h2>Skills to learn next</h2><div class="micro">n = 4,455 postings · 2023 archive + 2024–26 boards</div>
+   <div class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>You have: SQL, Excel</div>
+   <div class="row"><span>Python</span><div class="bar"><i style="width:96%"></i></div><em>96%</em></div>
+   <div class="row"><span>Tableau</span><div class="bar"><i style="width:84%"></i></div><em>84%</em></div>
+   <div class="row"><span>Power BI</span><div class="bar"><i style="width:81%"></i></div><em>81%</em></div>
+   <div class="row"><span>R</span><div class="bar"><i style="width:18%"></i></div><em>18%</em></div>
+   <div class="row"><span>Documentation</span><div class="bar"><i style="width:15%"></i></div><em>15%</em></div>
+   <div class="more">+ 35 more skills</div>
+  </article>
+  <article class="card" style="--c:var(--green)">
+   <h2>Where the jobs are</h2><div class="micro">share of these postings · n = 4,455 · 2023 archive + 2024–26 boards</div>
+   <div class="row nv"><span>United Arab Emirates</span><div class="bar"><i style="width:88%"></i></div></div>
+   <div class="row nv"><span>Saudi Arabia</span><div class="bar"><i style="width:62%"></i></div></div>
+   <div class="row nv"><span>Egypt</span><div class="bar"><i style="width:41%"></i></div></div>
+   <div class="row nv"><span>Qatar</span><div class="bar"><i style="width:27%"></i></div></div>
+   <div class="row nv"><span>Kuwait</span><div class="bar"><i style="width:16%"></i></div></div>
+   <div class="more" style="margin-top:auto">Illustrative sketch</div>
+  </article>
+  <article class="card" style="--c:var(--bronze)">
+   <h2>What it pays</h2><div class="micro">n = 33,586 postings with salary · worldwide</div>
+   <div class="big">33,586</div><div style="color:var(--ink2);margin-top:8px">postings worldwide state a salary</div>
+   <div class="hist"><i style="height:10%"></i><i style="height:22%"></i><i style="height:40%"></i><i style="height:62%"></i><i style="height:84%"></i><i class="pk" style="height:100%"></i><i class="pk" style="height:96%"></i><i class="pk" style="height:78%"></i><i style="height:52%"></i><i style="height:34%"></i><i style="height:18%"></i><i style="height:9%"></i></div>
+   <div class="axis"><span>$0</span><span>$80k–$120k peak</span><span>$250k+</span></div>
+   <div class="more">advertised pay, annual USD, approximate</div>
+  </article>
+ </section>
+</main>
+<section class="strip" style="border-left:4px solid var(--teal)">
+ <h3>Closest-matching postings</h3>
+ <div class="pr"><b>Lead Data Analyst — WHR Solution</b><span>United Arab Emirates · 2/5 skills</span></div>
+ <div class="pr"><b>Data Analyst — Kitopi Mea</b><span>United Arab Emirates · 2/5 skills</span></div>
+</section>
+</body></html>

@@ -25,7 +25,7 @@ from .db import ROOT, cache, get_store
 from .filters import Filters, filters_from_query
 from .labels import (COHORT_LABELS, COHORT_NOTES, DIMENSION_LABELS, MIN_GROUP_POSTINGS, MIN_SALARY_N,
                      RELIABLE_SALARY_N, SOURCE_LABELS)
-from .queries import builder, compare, market, quality, salary, skills, trends
+from .queries import builder, compare, market, platforms, quality, roadmap, salary, skills, trends
 
 log = logging.getLogger("jmi.api")
 app = FastAPI(title="Job Market Intelligence API", version="1.0.0",
@@ -204,6 +204,14 @@ def career_gap(f: F, target_role: Annotated[str, Query(max_length=60)],
                   role=target_role, have=sorted(set(have)))
 
 
+
+@app.get("/api/career/roadmap")
+def career_roadmap(f: F, target_role: Annotated[str, Query(max_length=60)],
+                   have: Annotated[list[str], Query(max_length=60)] = []):  # noqa: B006
+    have = [h for h in have if 0 < len(h) <= 120]
+    return cached("roadmap", f, lambda: roadmap.career_roadmap(get_store(), f, target_role, have),
+                  role=target_role, have=sorted(set(have)))
+
 # --- salary ----------------------------------------------------------------
 Kind = Literal["advertised", "benchmark"]
 Periods = Annotated[list[str], Query(max_length=5)]
@@ -259,6 +267,12 @@ def companies(f: F, search: Annotated[str | None, Query(max_length=80)] = None,
 @app.get("/api/companies/profile")
 def company_profile(f: F, name: Annotated[str, Query(min_length=1, max_length=120)]):
     return cached("company", f, lambda: market.company_profile(get_store(), f, name), name=name)
+
+
+# --- where postings are listed ---------------------------------------------------
+@app.get("/api/platforms")
+def platforms_view(f: F):
+    return cached("platforms", f, lambda: platforms.where_to_search(get_store(), f))
 
 
 # --- methodology & builder -------------------------------------------------------

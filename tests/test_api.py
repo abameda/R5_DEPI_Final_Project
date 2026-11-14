@@ -31,7 +31,8 @@ def demo(tmp_path_factory):
     db.reset_store(store_path)
     jobs = pd.read_csv(folder / "jobs_clean.csv")
     skills = pd.read_csv(folder / "job_skills.csv")
-    yield {"jobs": jobs, "skills": skills, "client": TestClient(app)}
+    listings = pd.read_csv(folder / "job_listings.csv")
+    yield {"jobs": jobs, "skills": skills, "listings": listings, "client": TestClient(app)}
     db.reset_store(None)
 
 
@@ -201,6 +202,34 @@ def test_career_gap_too_few_postings(demo):
     assert res["status"] == "too_few_postings" and res["priorities"] == []
 
 
+def test_roadmap_stages_do_not_overlap(demo):
+    res = get(demo, "/api/career/roadmap", target_role="Data Analysis & BI", have=["SQL"])
+    assert res["status"] == "ok"
+    names = [s["skill"] for st in res["stages"] for s in st["skills"]]
+    assert len(names) == len(set(names))
+    assert [st["key"] for st in res["stages"]][:2] == ["foundations", "core"]
+    assert all(s["have"] == (s["skill"] == "SQL") for st in res["stages"] for s in st["skills"])
+    for st in res["stages"]:
+        if st["key"] == "stand_out":
+            assert all(s["share"] < 0.05 and s["premium"] > 0 and s["salary_n"] >= 30 for s in st["skills"])
+
+
+def test_roadmap_too_few_postings(demo):
+    res = get(demo, "/api/career/roadmap", target_role="Mobile", country="Egypt", seniority="Intern")
+    assert res["status"] == "too_few_postings" and res["stages"] == []
+
+
+def test_roadmap_drops_excluded_skills(demo, monkeypatch):
+    from api.queries import roadmap
+    monkeypatch.setitem(roadmap.EXCLUDE, "Data Analysis & BI", frozenset({"SQL"}))
+    res = get(demo, "/api/career/roadmap", target_role="Data Analysis & BI", country="Egypt")  # fresh cache key
+    assert "SQL" not in [s["skill"] for st in res["stages"] for s in st["skills"]]
+
+
+def test_roadmap_rejects_unknown_role(demo):
+    assert demo["client"].get("/api/career/roadmap", params={"target_role": "Astronaut"}).status_code == 422
+
+
 def test_trends_never_mix_cohorts_in_one_point(demo):
     res = get(demo, "/api/trends", series="Python")
     for p in res["skill_trend"]["series"][0]["points"]:
@@ -323,3 +352,98 @@ def test_spa_route_rejects_non_relative_paths():
     assert SAFE_PATH.fullmatch("assets/index-abc.js")
     assert not SAFE_PATH.fullmatch(r"\\10.0.0.1\share\x")
     assert not SAFE_PATH.fullmatch("C:/Windows/win.ini")
+
+
+# --- where postings are listed (platforms) ------------------------------------
+def _coverage(listings, ids):
+    attributed = listings[listings["job_id"].isin(ids) & listings["platform"].ne("Not attributed")]
+    per = attributed.groupby("platform")["job_id"].nunique()
+    boards = attributed.groupby("job_id")["platform"].nunique()
+    only = attributed[attributed["job_id"].isin(boards[boards == 1].index)].groupby("platform")["job_id"].nunique()
+    return attributed, per, only
+
+
+def test_platform_coverage_matches_pandas(demo):
+    j, lst = demo["jobs"], demo["listings"]
+    ids = set(j.loc[j["country"].eq("Egypt"), "job_id"])
+    res = get(demo, "/api/platforms", country="Egypt")
+    attributed, per, only = _coverage(lst, ids)
+    n_attr = attributed["job_id"].nunique()
+    assert res["postings"] == len(ids) and res["attributed"] == n_attr
+    assert res["not_attributed"] == len(ids) - n_attr
+    for r in res["platforms"]:
+        assert r["postings"] == per[r["platform"]]
+        assert r["share"] == pytest.approx(per[r["platform"]] / n_attr, abs=1e-6)
+        assert r["only_here"] == only.get(r["platform"], 0)
+    assert all(r["queried_directly"] is False for r in res["platforms"])  # synthetic boards
+    # a posting on several boards is credited to each, so shares can sum above 1
+    assert sum(r["postings"] for r in res["platforms"]) >= n_attr
+
+
+def test_platform_combination_is_greedy_and_reaches_union(demo):
+    j, lst = demo["jobs"], demo["listings"]
+    ids = set(j["job_id"])
+    res = get(demo, "/api/platforms")
+    attributed, per, _ = _coverage(lst, ids)
+    first = res["combination"][0]
+    assert first["platforms"] == [per.idxmax()] and first["reached"] == per.max()
+    for step in res["combination"]:
+        union = attributed.loc[attributed["platform"].isin(step["platforms"]), "job_id"].nunique()
+        assert step["reached"] == union
+    reached = [s["reached"] for s in res["combination"]]
+    assert reached == sorted(reached) and reached[-1] <= res["attributed"]
+
+
+def test_platform_coverage_flags_small_segments(demo):
+    res = get(demo, "/api/platforms", country="Germany", role="Mobile", seniority="Senior")
+    assert res["small_sample"] == (res["attributed"] < 30)
+
+
+def test_job_detail_lists_every_platform(demo):
+    lst = demo["listings"]
+    multi = lst.groupby("job_id")["platform"].nunique()
+    job_id = multi[multi > 1].index[0]
+    d = get(demo, f"/api/jobs/{job_id}")
+    assert sorted(x["platform"] for x in d["listings"]) == sorted(lst.loc[lst["job_id"] == job_id, "platform"])
+    assert d["duplicate_count"] == len(d["listings"])
+
+
+# --- employer report card ------------------------------------------------------
+def test_report_card_matches_pandas(demo):
+    j = demo["jobs"]
+    company = j["company"].value_counts().index[0]
+    card = get(demo, "/api/companies/profile", name=company)["report_card"]
+    emp = j[j["company"] == company]
+    pay = lambda d: (d["salary_min"].notna() & ~d["salary_is_estimate"]).sum()  # noqa: E731
+    items = {i["key"]: i for i in card["items"]}
+    assert card["postings"] == len(emp) and card["market_postings"] == len(j)
+    assert items["pay"]["k"] == pay(emp)
+    assert items["pay"]["market_share"] == pytest.approx(pay(j) / len(j), abs=1e-6)
+    assert items["skills"]["k"] == (emp["skills_observed_count"] > 0).sum()
+    assert items["seniority"]["k"] == emp["seniority"].ne("Not specified").sum()
+    for i in card["items"]:
+        assert i["low"] <= i["share"] <= i["high"]
+        expect = ("above" if i["market_share"] < i["low"] else "below" if i["market_share"] > i["high"]
+                  else "similar")
+        assert i["verdict"] == expect
+
+
+def test_report_card_does_not_judge_tiny_employers(demo):
+    j = demo["jobs"]
+    small = j.loc[j["country"].eq("Germany"), "company"].value_counts()
+    company = small[small < 10].index[0]
+    card = get(demo, "/api/companies/profile", name=company, country="Germany")["report_card"]
+    assert all(i["verdict"] == "too_few" for i in card["items"])
+
+
+def test_report_card_market_ignores_company_filter(demo):
+    j = demo["jobs"]
+    a, b = j["company"].value_counts().index[:2]
+    card = demo["client"].get("/api/companies/profile", params=[("name", a), ("company", a), ("company", b)]).json()
+    assert card["report_card"]["market_postings"] == len(j)
+
+
+def test_companies_sort_by_pay_stated(demo):
+    rows = get(demo, "/api/companies", sort="pay_stated", page_size=100)["rows"]
+    ranked = [r["pay_stated"] / r["postings"] for r in rows if r["postings"] >= 10]
+    assert ranked == sorted(ranked, reverse=True)

@@ -2,7 +2,7 @@
 # and the files are larger than GitHub's 100 MB limit. Share them via Drive.
 data/raw/
 data/processed/
-data/processed_staging/
+data/processed_*/
 # generated: analytical store and the synthetic demo data (scripts/make_demo_data.py)
 data/analytics/
 data/demo/
@@ -21,3 +21,10 @@ frontend/dist/
 frontend/test-results/
 frontend/playwright-report/
 frontend/*.tsbuildinfo
+
+.vercel
+.env*
+.superpowers/
+# generated: graphify's AST cache and design review screenshots
+graphify-out/cache/
+.impeccable/review/

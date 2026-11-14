@@ -16,11 +16,15 @@ Figures are from the pipeline run of 2026-10-25 (`reports/pipeline_stats.json`,
 | 6 | `remote_tech_jobs_foreign[_after_adding_skills].csv` | 1,075 | 1,006 | RemoteOK, WWR, Himalayas, Arbeitnow, Jobicy, Remotive | 2024–2026 | Remote postings with full descriptions |
 | 7 | `arab_tech_jobs_skills_enriched_AFTER_ADDING_SKILLS_439.csv` | 439 | 416 | Wuzzuf-style boards, ATS exports, ArabJobs corpus | 2024–2026 | Arabic text, local salaries (EGP/SAR/AED…) |
 | 8 | `cybersecurity_jobs_expanded_6_columns.csv` | 58 | 58 | Manual collection (Gulf, Egypt) | undated | Cybersecurity roles |
+| 9 | `fresh/<date>/<source>.csv` (`src/collectors.py`) | 2,676 | 2,600 | Official public job APIs: Arbeitnow, Himalayas, Jobicy, Remote OK, Remotive, and employers' careers pages on Greenhouse, Lever, Ashby, SmartRecruiters ([DATA_SOURCES.md](DATA_SOURCES.md)) | Nov 2026, re-runnable | Current postings with full descriptions; skills found in the posting text; mostly Europe and remote (9 in Egypt, 28 Arab-market) |
 
-Raw total 775,155 rows → 773,374 after dropping 5 untitled and 1,776 non-tech rows →
-770,956 after exact de-duplication → **588,545 unique postings** after near-duplicate
-merging (104,715 postings were found on more than one board; `duplicate_count`,
-`sources` keep that evidence).
+Raw total 777,831 rows → 776,050 after dropping untitled and non-tech rows →
+773,632 after exact de-duplication → **591,142 unique postings** after near-duplicate
+merging (104,781 postings were found on more than one listing; `duplicate_count`,
+`sources` and the `job_listings` table keep that evidence).
+
+Before the fresh collection (14 Nov 2026) the figures were 775,155 raw rows and 588,545
+unique postings.
 
 Licensing: raw third-party data is **not** redistributed (NFR-08). `data/raw`,
 `data/processed`, `data/analytics` are git-ignored; the dashboard only exports aggregates.
@@ -34,8 +38,8 @@ approximations except where marked exact).
 
 | Column | Type | Null | Distinct | Meaning |
 |---|---|---:|---:|---|
-| `jid` | int | 0% | 588,545 (exact) | Store-only integer key used for joins |
-| `job_id` | text | 0% | 588,545 (exact) | Stable 16-char hash id from the pipeline |
+| `jid` | int | 0% | 591,142 (exact) | Store-only integer key used for joins |
+| `job_id` | text | 0% | 591,142 (exact) | Stable 16-char hash id from the pipeline |
 | `title` | text | 0% | ~215k | Cleaned title (encoding fixed, Arabic normalized, gender tags removed) |
 | `company` | text | 0% | ~137k | Employer as given; may be a job board or "Confidential" (see `company_is_placeholder`) |
 | `role_category` | text | 0% | 17 (exact) | Keyword rule on the title (`clean_utils.ROLE_RULES`), source hint as fallback |
@@ -90,6 +94,21 @@ Kaggle Arab-search rows the recovered list equals the dataset's own `job_type_sk
 | `category` | 17 categories, e.g. Programming & query languages, Cloud & data platforms, Security & compliance, Soft skills & management |
 | `category_source` | `kaggle` (233 skills, 93.5% of mentions) — Kaggle's own `job_type_skills` grouping; `kaggle (corrected)` (4: Oracle/NoSQL → Databases, GDPR → Security); `curated` (156, 3.8%) — documented list in `src/skill_taxonomy.py`; `none` (1,082 long-tail skills, 0.13% of mentions) — left Uncategorized, not guessed |
 | `is_technical` | False only for Soft skills & management and Spoken languages |
+
+### `job_listings.csv` → store table `job_listings` (one row per posting × platform)
+
+Every board a posting was found on, kept when cross-source de-duplication merged the copies.
+It feeds "Also posted on" (job detail) and "Where to search" (Career planner).
+
+| Column | Meaning |
+|---|---|
+| `job_id` (store: `jid`) | The kept posting |
+| `platform` | Board name grouped by `clean_utils.platform_family` ("BeBee India" → BeBee, "lever:veeva" → Employer careers page). File names and collection methods → `Not attributed` |
+| `source_platform`, `source_dataset` | The raw spelling and the file it came from |
+| `url`, `posted_date` | That listing's own link and date (a posting listed twice on one board keeps the linked, dated copy) |
+
+A store built from an older processed folder without this file falls back to one row per
+posting (its kept listing).
 
 ### `reports/pipeline_stats.json` → store table `meta`
 

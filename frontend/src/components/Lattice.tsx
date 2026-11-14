@@ -93,13 +93,12 @@ export function Lattice({ matrix, rowLabel, onSelect, caption, rowName = tv }: {
                     aria-label={t(`${s} in ${rowName(g.key)}: ${fmtPct(v.share)} of ${fmtInt(g.denominator)} postings`, `${s} في ${rowName(g.key)}: ${fmtPct(v.share)} من ${fmtInt(g.denominator)} إعلانًا`)}
                     onMouseEnter={() => setActive([r, c])} onFocus={() => { setActive([r, c]); setStop([r, c]); }} onKeyDown={(e) => onKey(e, r, c)}
                     onClick={() => onSelect?.(g.key, s)}
-                    className={clsx("relative grid min-h-8 place-items-center border-[3px] sm:aspect-square border-[var(--rail)] bg-[var(--rail-2)] shadow-[0_0_0_1px_var(--rail)] transition-opacity duration-200",
-                      g.small_sample && "border-dashed", dim && "opacity-35", "focus-visible:z-10 focus-visible:outline-offset-0")}>
+                    className={clsx("relative m-px grid min-h-8 place-items-center rounded-md bg-panel-2 transition-opacity duration-200 sm:aspect-square",
+                      g.small_sample && "outline-1 -outline-offset-1 outline-dashed outline-warn-fill", dim && "opacity-30", "focus-visible:z-10 focus-visible:outline-offset-0")}>
                     <span aria-hidden className="block rounded-full transition-transform duration-200"
                       style={{
                         width: `${Math.max(8, Math.sqrt(lit) * 86)}%`, aspectRatio: "1", maxHeight: "86%",
-                        background: `color-mix(in oklab, var(--accent) ${Math.round(18 + lit * 82)}%, var(--rail-2))`,
-                        boxShadow: lit > 0.5 ? "0 0 0 1px color-mix(in oklab, var(--accent) 40%, transparent)" : undefined,
+                        background: `color-mix(in oklab, var(--accent) ${Math.round(30 + lit * 70)}%, var(--panel-2))`,
                         transform: active?.[0] === r && active?.[1] === c ? "scale(1.08)" : undefined,
                       }} />
                   </button>
@@ -110,17 +109,17 @@ export function Lattice({ matrix, rowLabel, onSelect, caption, rowName = tv }: {
         </div>
       </div>
       <figcaption className="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-3">
-        <span className="flex items-center gap-2">{t("Opening area = share of the row’s postings:", "مساحة الفتحة = نسبة إعلانات الصف:")}
+        <span className="flex items-center gap-2">{t("Dot area = share of the row’s postings:", "مساحة النقطة = نسبة إعلانات الصف:")}
           {[0.1, 0.4, 1].map((k) => (
             <span key={k} className="inline-flex items-center gap-1">
-              <span className="grid size-5 place-items-center bg-[var(--rail-2)] ring-2 ring-[var(--rail)]">
-                <span className="block rounded-full" style={{ width: `${Math.sqrt(k) * 86}%`, height: `${Math.sqrt(k) * 86}%`, background: `color-mix(in oklab, var(--accent) ${Math.round(18 + k * 82)}%, var(--rail-2))` }} />
+              <span className="grid size-5 place-items-center rounded bg-panel-2">
+                <span className="block rounded-full" style={{ width: `${Math.sqrt(k) * 86}%`, height: `${Math.sqrt(k) * 86}%`, background: `color-mix(in oklab, var(--accent) ${Math.round(30 + k * 70)}%, var(--panel-2))` }} />
               </span>
               {fmtPct(k * max, 0)}
             </span>
           ))}
         </span>
-        <span>{t(`Dashed frame = fewer than ${matrix.min_group} postings with skill data.`, `الإطار المتقطع = أقل من ${matrix.min_group} إعلانًا فيها بيانات مهارات.`)}</span>
+        <span>{t(`Dashed amber frame = fewer than ${matrix.min_group} postings with skill data.`, `الإطار المتقطع = أقل من ${matrix.min_group} إعلانًا فيها بيانات مهارات.`)}</span>
       </figcaption>
     </figure>
   );

@@ -5,7 +5,7 @@ Egyptian and Arab engineers see where tech opportunities are (Arab, internationa
 which skills they require, what pay is advertised and what to learn next.
 Full planning and requirements: `Project Documentation33_final.pdf`.
 
-The dashboard works on **588,545 unique postings** from 8 sources (159 countries, 1,475
+The dashboard works on **591,142 unique postings** from 9 sources (159 countries, 1,475
 skills). Every figure shows its population and provenance: skills written in the posting vs
 added by the team, advertised salaries vs market benchmarks, the 2023 Kaggle archive vs the
 2024–26 collection. Findings describe the collected sample, not the whole labour market.
@@ -24,6 +24,9 @@ cd frontend && npm ci && npm run build && cd ..        # -> frontend/dist
 uvicorn api.main:app --port 8000                       # open http://localhost:8000
 ```
 
+Fresh postings: `python src/collectors.py` (official public job APIs only, at most once a
+day) before the pipeline. See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) for each source's terms.
+
 No raw data? `python scripts/make_demo_data.py` builds a clearly-labelled **synthetic**
 store; run the API with `JMI_DB=data/analytics/demo.duckdb`. Development mode, hosting and
 troubleshooting: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
@@ -33,14 +36,14 @@ troubleshooting: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | | |
 |---|---|
 | **Overview** | KPIs with denominators, roles, skills (written vs team-added), the role × skill *lattice*, countries, markets, seniority, pay, collections, sources |
-| **Job explorer** | server-side search, every filter, sort, pagination, posting detail with skill provenance and the original link |
+| **Job explorer** | server-side search, every filter, sort, pagination, posting detail with skill provenance, the original link and every other board it was posted on |
 | **Skills** | demand, technical vs soft, segment lattices, co-occurrence heatmap + network, skill profiles |
 | **Salaries** | advertised pay by role/country/seniority/skill/employer with quartiles; benchmarks in a separate view |
 | **Geography** | choropleth, concentration, country table, Arab League markets, role mix by country |
-| **Employers** | directory and profiles (job boards flagged; sample counts, not company size) |
+| **Employers** | directory and profiles (job boards flagged; sample counts, not company size); a report card of how often each employer's postings state pay, skills, seniority and work mode, against the market |
 | **Time & cohorts** | monthly trends within 2023 only; the two collections as side-by-side snapshots |
 | **Compare markets** | two segments, normalized, with sample-size / cohort / source warnings |
-| **Career planner** | target role + your skills → alignment, what to learn next, adjacent roles, matching postings |
+| **Career planner** | target role + your skills → alignment, what to learn next, adjacent roles, matching postings, and where to search: the boards that listed the role's postings |
 | **Guided insights / Insight builder** | query-grounded sentences; build and export your own aggregates |
 | **Data & methodology** | pipeline counts, completeness, provenance, the Sudan correction, definitions, limits |
 
@@ -53,7 +56,8 @@ light and dark themes, keyboard accessible, responsive down to phones.
 [Metrics](docs/METRICS.md) · [Features](docs/DASHBOARD_FEATURES.md) ·
 [Limitations](docs/DATA_LIMITATIONS.md) · [Design system](docs/DESIGN_SYSTEM.md) ·
 [Testing](docs/TESTING.md) · [Deployment](docs/DEPLOYMENT.md) ·
-[Requirement coverage](docs/FEATURE_COVERAGE.md)
+[Requirement coverage](docs/FEATURE_COVERAGE.md) ·
+[Data sources](docs/DATA_SOURCES.md) · [Competitors & next features](docs/COMPETITORS.md)
 
 ## Repository layout
 
@@ -62,6 +66,7 @@ data/raw/            raw source files (not in git, see "Data" below)
 data/processed/      pipeline outputs (not in git)
 src/clean_utils.py   reusable cleaning rules (text, PII, country, market, skills, salary)
 src/loaders.py       one loader per source -> shared staging columns
+src/collectors.py    fresh postings from official public job APIs -> data/raw/fresh/
 src/pipeline.py      runs everything: load -> clean -> deduplicate -> save + report
 scripts/00_peek_raw.py   quick column profile of every raw file
 notebooks/01_EDA_and_cleaning.ipynb   EDA of the raw data (problems) and the clean data (findings)
