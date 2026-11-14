@@ -29,7 +29,7 @@ export default function Career() {
     const urlRole = params.get("target");
     const urlHave = params.getAll("have");
     if (!urlRole && !urlHave.length) return;
-    replace({ role: urlRole ?? profile.role, skills: urlHave.length ? [...profile.skills, ...urlHave] : profile.skills });
+    replace({ ...profile, role: urlRole ?? profile.role, skills: urlHave.length ? [...profile.skills, ...urlHave] : profile.skills });
     setParams((prev) => { const sp = new URLSearchParams(prev); sp.delete("target"); sp.delete("have"); return sp; }, { replace: true });
   }, [params]); // eslint-disable-line react-hooks/exhaustive-deps
 
