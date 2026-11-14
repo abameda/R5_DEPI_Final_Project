@@ -293,7 +293,7 @@ function Dumbbell({ rows, handle }: { rows: Result["skills"]; handle: React.Muta
         grid: { left: 8, right: 8, top: 8, bottom: 8, containLabel: true },
         xAxis: { type: "value", min: 0, max: (v: { max: number }) => Math.min(1, Math.ceil(v.max * 10 + 0.5) / 10), ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 13, formatter: (v: number) => fmtPct(v, 0) } },
         yAxis: [
-          { type: "category", data: r.map((x) => x.skill), ...axisStyle(tk), axisLine: { show: false }, axisLabel: { color: tk.ink2, fontSize: 12 } },
+          { type: "category", data: r.map((x) => x.skill), ...axisStyle(tk), axisLine: { show: false }, axisLabel: { color: tk.ink2, fontSize: 13 } },
           // gap labels in their own end column so they never sit on the marks
           { type: "category", position: "right", data: r.map((x) => `${fmtPp(x.diff_pp)}${x.mainly ? t(`  mainly ${x.mainly.toUpperCase()}`, `  غالبًا في ${x.mainly.toUpperCase()}`) : ""}`),
             axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: tk.ink2, fontSize: 13 } },

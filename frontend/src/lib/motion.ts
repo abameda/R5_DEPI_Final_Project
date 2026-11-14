@@ -38,5 +38,5 @@ export function useCountUp(target: number | undefined, ms = 600, fromZero = fals
     return () => cancelAnimationFrame(raf);
   }, [target, ms, reduced]);
 
-  return shown;
+  return target === undefined ? undefined : shown; // never a starting 0 before there is a value
 }

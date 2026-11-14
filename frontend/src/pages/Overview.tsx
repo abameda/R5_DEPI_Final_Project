@@ -156,7 +156,7 @@ export default function Overview() {
           </MoreBreakdowns>
 
           <p className="mt-6 flex items-center gap-1 text-sm text-ink-3">
-            {t("Want to know what to learn for a role?", "تريد معرفة ما تتعلمه لدور معيّن؟")} <TextLink to={link("/compass")}>{t("Open your skills and plan", "افتح مهاراتك وخطتك")}</TextLink> <ArrowRight size={14} className="rtl:rotate-180" />
+            {t("Want to know what to learn for a role?", "تريد معرفة ما تتعلمه لدور معيّن؟")} <TextLink to={link("/compass")}>{t("Open your compass", "افتح بوصلتك")}</TextLink> <ArrowRight size={14} className="rtl:rotate-180" />
           </p>
         </>)}
       </Guard>

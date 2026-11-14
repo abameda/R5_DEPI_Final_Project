@@ -456,3 +456,108 @@ for (const path of ["/", "/compass?have=SQL"]) {
     expect(serious.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
   });
 }
+
+// ---- final-review fixes ----------------------------------------------------------
+const payRegion = (page: Page) => page.getByRole("region", { name: /Where your pay lands/ });
+const summary = (o: Record<string, unknown>) => JSON.stringify({ kind: "advertised", dimension: "country", periods: [], groups: [], groups_hidden_small_n: 0, min_n: 10,
+  overall: { n: 40, min: 1, max: 9, p10: 40000, p25: 50000, median: 60000, p75: 70000, p90: 80000, mean: 60000, currencies: 1, confidence: "ok", ...o } });
+
+test("pay never names a missing country as the source", async ({ page }) => {
+  await page.route("**/api/breakdown?*", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify([{ key: null, n: 72, share: 0.6 }, { key: "United States", n: 30, share: 0.25 }]) }));
+  await page.goto("/compass?target=Data%20Analysis%20%26%20BI&where=any");
+  await expect(payRegion(page).getByText(/median a year/)).toBeVisible();
+  await expect(payRegion(page)).not.toContainText("null");
+  await expect(payRegion(page).getByText(/60% have no single country/)).toBeVisible();
+});
+
+test("pay shows no figures under a new place while that place loads", async ({ page }) => {
+  await page.goto("/compass?target=Data%20Analysis%20%26%20BI&where=any");
+  await expect(payRegion(page).getByText(/median a year/)).toBeVisible();
+  await page.route("**/api/salary/summary?*", async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); await r.continue(); });
+  await page.getByRole("radio", { name: "Egypt" }).click();
+  await expect(payRegion(page).getByRole("heading", { name: /in Egypt/ })).toBeVisible();
+  await expect(payRegion(page).getByText(/median a year/)).toHaveCount(0);
+});
+
+test("pay honours the other page filters, like seniority", async ({ page }) => {
+  const req = page.waitForRequest((r) => r.url().includes("/api/salary/summary") && r.url().includes("seniority=Senior"));
+  await page.goto("/compass?target=Backend&seniority=Senior");
+  await req;
+});
+
+test("pay explains a sample with no usable median without contradicting itself", async ({ page }) => {
+  await page.route("**/api/salary/summary?*", (r) => r.fulfill({ contentType: "application/json", body: summary({ n: 15, median: null, p10: null, p25: null, p75: null, p90: null, confidence: "insufficient" }) }));
+  await page.goto("/compass?target=Backend&where=egypt");
+  await expect(payRegion(page).getByText(/Only 15/)).toHaveCount(0);
+  await expect(payRegion(page).getByText(/15 .* state their pay, but not in a form we can compare/)).toBeVisible();
+});
+
+test("pay reports a failed request instead of loading forever", async ({ page }) => {
+  await page.route("**/api/salary/summary?*", (r) => r.fulfill({ status: 503, body: "down" }));
+  await page.goto("/compass?target=Backend");
+  await expect(payRegion(page).getByRole("alert")).toBeVisible({ timeout: 20_000 });
+});
+
+test("a widened place resets when the role changes", async ({ page }) => {
+  await page.goto("/compass?target=Mobile&where=egypt");
+  await payRegion(page).getByRole("button", { name: "See Arab countries instead" }).click();
+  await expect(payRegion(page).getByRole("heading", { name: /in Arab countries/ })).toBeVisible();
+  await page.getByLabel("Role you want").selectOption("Data Analysis & BI");
+  await expect(payRegion(page).getByRole("heading", { name: /in Egypt/ })).toBeVisible();
+});
+
+test("the match states which skills it counts", async ({ page }) => {
+  await page.goto("/compass?target=Backend");
+  await expect(page.getByRole("region", { name: "Where you stand" }).getByText(/^Counting skills written in postings/)).toBeVisible();
+});
+
+test("a too-small sample is not called recent when all postings are used", async ({ page }) => {
+  await page.goto("/compass?target=Mobile&seniority=Intern");
+  await expect(page.getByText(/^Only \d+ Mobile postings list skills/)).toBeVisible();
+  await expect(page.getByText(/recent Mobile postings/)).toHaveCount(0);
+});
+
+test("a full compass link replaces the receiver's skills", async ({ page }) => {
+  await page.addInitScript(() => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("jmi-profile", JSON.stringify({ role: "Backend", skills: ["Python"], where: "any" })); } });
+  await page.goto("/compass?target=Mobile&have=SQL&where=egypt");
+  await expect(page.getByRole("button", { name: "Remove SQL" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove Python" })).toHaveCount(0);
+});
+
+test("Home step 1 ticks for the role already shown", async ({ page }) => {
+  await page.goto("/");
+  const steps = page.getByRole("list", { name: "Get your compass" });
+  // nothing is preselected, so the role shown first can be chosen (and ticked) too
+  await expect(steps.getByLabel("Role you want")).toHaveValue("");
+  await expect(steps.getByLabel("Step 1", { exact: true })).toBeVisible();
+  await steps.getByLabel("Role you want").selectOption("Data Analysis & BI");
+  await expect(steps.getByLabel("Step 1 done")).toBeVisible();
+});
+
+test("Home counts never show an invented zero while loading", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" }); // the count-up only runs with motion on
+  await page.route((u) => u.pathname === "/api/overview", async (r) => { await new Promise((ok) => setTimeout(ok, 4000)); await r.continue(); });
+  await page.goto("/");
+  const counts = page.locator("dl").filter({ hasText: "job postings" });
+  await expect(counts).toBeVisible();
+  await expect(counts).toContainText("–");
+  await expect(counts).not.toContainText(/\b0\b/);
+});
+
+test("Home's job count link opens the same place it counts", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("list", { name: "Get your compass" }).getByRole("radio", { name: "Egypt" }).click();
+  await expect(page.getByRole("link", { name: /^All [\d,]+$/ })).toHaveAttribute("href", /country=Egypt/);
+});
+
+test("the Skills finding keeps its sample size with few rows", async ({ page }) => {
+  await page.route("**/api/skills/top?*", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ denominator: 120, provenance: "all",
+    rows: [{ skill: "SQL", category: "Databases", is_technical: true, postings: 60, observed: 60, added: 0, share: 0.5, observed_share: 0.5 }] }) }));
+  await page.goto("/skills");
+  await expect(page.getByRole("region", { name: "Key findings" }).getByText(/n = 120/)).toBeVisible();
+});
+
+test("the market page names the Compass correctly", async ({ page }) => {
+  await page.goto("/market");
+  await expect(page.getByRole("link", { name: "Open your compass" })).toHaveAttribute("href", /\/compass/);
+});

@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/app.spec.ts": {
-    "mtime": 1794666309.8246446,
-    "seen": 1794666782.851001,
-    "ast_hash": "aa0b986d85d55d878f69ef5d2d996662",
+    "mtime": 1794666822.3009982,
+    "seen": 1794667081.1313403,
+    "ast_hash": "c353fa52e69066abe6cfdd88b282eb14",
     "semantic_hash": ""
   },
   "frontend/e2e/mobile.spec.ts": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "DESIGN.md": {
-    "mtime": 1793295128.494895,
-    "seen": 1793296072.7537003,
-    "ast_hash": "b5665d26947060f5e72e08c7dfd5519c",
+    "mtime": 1794666903.765767,
+    "seen": 1794667081.1313403,
+    "ast_hash": "29f208561adad79ffa4cff54d298b3cd",
     "semantic_hash": ""
   },
   "PRODUCT.md": {
@@ -570,9 +570,9 @@
     "semantic_hash": ""
   },
   "docs/DASHBOARD_FEATURES.md": {
-    "mtime": 1794662651.4037802,
-    "seen": 1794663233.3744,
-    "ast_hash": "d3f9860f4889a36f4b1587c559e1e5a3",
+    "mtime": 1794666890.9130816,
+    "seen": 1794667081.1313403,
+    "ast_hash": "bfafa60ed60c694aa83779ed61322dc6",
     "semantic_hash": ""
   },
   "docs/DATA_CATALOG.md": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "docs/METRICS.md": {
-    "mtime": 1794662732.6627588,
-    "seen": 1794663233.3744,
-    "ast_hash": "4af574f4e30b1aee3ded5e9416952222",
+    "mtime": 1794666890.9140882,
+    "seen": 1794667081.1313403,
+    "ast_hash": "be850247cce27f6a4b1bf8423e766fbf",
     "semantic_hash": ""
   },
   "docs/TESTING.md": {

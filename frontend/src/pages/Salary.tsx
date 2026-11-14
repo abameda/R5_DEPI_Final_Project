@@ -89,7 +89,7 @@ export default function Salary() {
                   grid: { left: 8, right: 96, top: 8, bottom: 28, containLabel: true },
                   xAxis: { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 13, formatter: (v: number) => fmtUsd(v) } },
                   yAxis: { type: "category", data: g.map((x) => name(x.key ?? "")), ...axisStyle(tk), axisLine: { show: false },
-                    axisLabel: { color: tk.ink2, fontSize: 12, formatter: (v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v) } },
+                    axisLabel: { color: tk.ink2, fontSize: 13, formatter: (v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v) } },
                   tooltip: { ...baseOption(tk).tooltip, trigger: "item", formatter: (p: { dataIndex: number }) => {
                     const x = g[p.dataIndex];
                     return `<b>${esc(name(x.key ?? ""))}</b> · n = ${fmtInt(x.n)}${x.confidence === "low" ? ` <i style="color:${tk.warn}">${t("(small sample)", "(عينة صغيرة)")}</i>` : ""}<br/>`

@@ -7,7 +7,7 @@ import { CoverageStrip } from "../components/Coverage";
 import { SkillPicker } from "../components/SkillPicker";
 import { Advanced, Segmented, Skeleton, TextLink } from "../components/ui";
 import { useApi } from "../lib/api";
-import { EMPTY_FILTERS } from "../lib/filters";
+import { drillHref, EMPTY_FILTERS } from "../lib/filters";
 import { fmtCompact, fmtDate, fmtInt, fmtPct, fmtUsdFull } from "../lib/format";
 import { useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
@@ -101,8 +101,9 @@ function Steps({ role, roles, suggestions }: { role: string; roles: string[]; su
       <p className="mt-0.5 text-sm text-ink-3">{t("Three quick answers. Saved in this browser only.", "تلات إجابات سريعة. بتتحفظ في المتصفح ده بس.")}</p>
       <ol aria-label={t("Get your compass", "اعرف بوصلتك")} className="mt-5 space-y-5">
         <Step n={1} done={!!profile.role} title={t("Role you want", "الدور الذي تريده")}>
-          <select aria-label={t("Role you want", "الدور الذي تريده")} value={role} onChange={(e) => setRole(e.target.value)}
+          <select aria-label={t("Role you want", "الدور الذي تريده")} value={profile.role} onChange={(e) => setRole(e.target.value)}
             className="h-10 w-full max-w-xs rounded-lg border border-line-strong bg-panel px-3 text-sm text-ink">
+            {!profile.role && <option value="" disabled>{t(`Choose a role (showing ${tv(role)})`, `اختر دورًا (المعروض: ${tv(role)})`)}</option>}
             {roles.map((r) => <option key={r} value={r}>{tv(r)}</option>)}
           </select>
         </Step>
@@ -235,7 +236,7 @@ function NewestJobs({ role, where, weights }: { role: string; where: Where; weig
     <section aria-labelledby="newest-h">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 id="newest-h" className="text-lg font-semibold tracking-[-0.01em] text-ink">{where === "any" ? t(`Newest ${tv(role)} jobs`, `أحدث وظائف ${tv(role)}`) : t(`Newest ${tv(role)} jobs in ${placeName(where)}`, `أحدث وظائف ${tv(role)} في ${placeName(where)}`)}</h2>
-        <TextLink to={`/explorer?role=${encodeURIComponent(role)}`}>{q.data ? t(`All ${fmtInt(q.data.total)}`, `الكل (${fmtInt(q.data.total)})`) : t("All jobs", "كل الوظائف")}</TextLink>
+        <TextLink to={drillHref("/explorer", { ...EMPTY_FILTERS, ...whereFilters(where) }, { role })}>{q.data ? t(`All ${fmtInt(q.data.total)}`, `الكل (${fmtInt(q.data.total)})`) : t("All jobs", "كل الوظائف")}</TextLink>
       </div>
       <div className="overflow-hidden rounded-xl border border-line bg-panel">
         {!q.data ? <div className="p-4"><Skeleton h={300} /></div> : (

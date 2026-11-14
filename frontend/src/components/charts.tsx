@@ -30,7 +30,7 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
         xAxis: { type: "value", show: false },
         yAxis: {
           type: "category", data: rows.map((r) => r.label), ...axisStyle(t), axisLine: { show: false },
-          axisLabel: { color: t.ink2, fontSize: 12, formatter: (v: string) => trunc(tv(v), maxLabel) },
+          axisLabel: { color: t.ink2, fontSize: 13, formatter: (v: string) => trunc(tv(v), maxLabel) },
         },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "item",
@@ -76,7 +76,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly, h
           data: [WRITTEN(), ADDED()],
         },
         xAxis: { type: "value", show: false, max: Math.max(...r.map((x) => x.share ?? 0)) * 1.02 },
-        yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(t), axisLine: { show: false }, axisLabel: { color: t.ink2, fontSize: 12 } },
+        yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(t), axisLine: { show: false }, axisLabel: { color: t.ink2, fontSize: 13 } },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: t.accentSoft, opacity: 0.4 } },
           formatter: (ps: { dataIndex: number }[]) => {

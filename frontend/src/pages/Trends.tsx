@@ -124,7 +124,7 @@ export default function TrendsPage() {
                       } },
                       series: [{ type: "bar", barMaxWidth: 12, data: r.map((x) => ({ value: x.change_pp,
                         itemStyle: { color: x.change_pp >= 0 ? tk.series[0] : tk.series[5], borderRadius: x.change_pp >= 0 ? [0, 3, 3, 0] : [3, 0, 0, 3] } })),
-                        label: { show: true, position: "right", color: tk.ink3, fontSize: 12, formatter: (p: { value: number }) => fmtPp(p.value) } }],
+                        label: { show: true, position: "right", color: tk.ink3, fontSize: 13, formatter: (p: { value: number }) => fmtPp(p.value) } }],
                     })} />
                 </>) : <p className="text-sm text-ink-3">{t("Not enough dated 2023 postings in this selection.", "لا توجد إعلانات مؤرخة كافية من 2023 في هذا الاختيار.")}</p>;
               }}

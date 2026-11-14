@@ -73,7 +73,7 @@ function Findings() {
   if (b && c) points.push({ text: t(`${b.skill} and ${c.skill} follow, at ${fmtPct(b.share, 0)} and ${fmtPct(c.share, 0)}.`, `تليها ${b.skill} و${c.skill} بنسبة ${fmtPct(b.share, 0)} و${fmtPct(c.share, 0)}.`), n });
   const top10 = rows.slice(0, 10);
   if (any) points.push({ text: t(`You have ${top10.filter((r) => has(r.skill)).length} of the 10 most requested.`, `لديك ${top10.filter((r) => has(r.skill)).length} من أكثر 10 مهارات طلبًا.`), n });
-  return <KeyPoints finding={t(`${a.skill} is asked for in ${fmtPct(a.share, 0)} of postings that list skills`, `${a.skill} مطلوبة في ${fmtPct(a.share, 0)} من الإعلانات التي تذكر مهارات`)} points={points} />;
+  return <KeyPoints n={n} finding={t(`${a.skill} is asked for in ${fmtPct(a.share, 0)} of postings that list skills`, `${a.skill} مطلوبة في ${fmtPct(a.share, 0)} من الإعلانات التي تذكر مهارات`)} points={points} />;
 }
 
 function Demand({ onPick }: { onPick: (s: string) => void }) {

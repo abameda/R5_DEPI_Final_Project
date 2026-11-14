@@ -14,7 +14,7 @@ unique postings are in view, their collection mix and how skills are being count
 | | Salaries | `/salary` | What pay is actually advertised, and how does it vary? |
 | | Time & cohorts | `/trends` | How did demand move within 2023, and how do the two collections differ? |
 | | Compare markets | `/compare` | How do two segments differ, normalized and with warnings? |
-| Plan | Career planner | `/career` | What should I learn next for a target role and market? |
+| Plan | Your compass | `/compass` | How do my skills match a role, what should I learn next, and what does it pay where I want to work? |
 | | Guided insights | `/insights` | What stands out in this selection, in plain sentences? |
 | | Insight builder | `/builder` | Let me build my own aggregate view and export it |
 | Trust | Data & methodology | `/quality` | How was this built and what can it not tell me? |

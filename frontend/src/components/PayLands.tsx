@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { useFilters } from "../lib/hooks";
 import { useApi } from "../lib/api";
 import { fmtInt, fmtPct, fmtUsd } from "../lib/format";
 import { useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
-import { placeName } from "../lib/match";
-import { broaderWhere, whereFilters, type Where } from "../lib/profile";
+import { matchFilters, placeName } from "../lib/match";
+import { broaderWhere, type Where } from "../lib/profile";
 import type { Count, SalarySummary } from "../lib/types";
-import { Empty, InfoTip, Pill, Skeleton } from "./ui";
+import { Empty, ErrorState, InfoTip, Pill, Skeleton } from "./ui";
 
 /**
  * Advertised pay for one role in one place. The place in the heading is always
@@ -14,9 +15,12 @@ import { Empty, InfoTip, Pill, Skeleton } from "./ui";
  * says so and offers the next wider place as a button, never silently.
  */
 export function PayLands({ role, where }: { role: string; where: Where }) {
-  const [picked, setPicked] = useState<{ from: Where; to: Where } | null>(null);
-  const shown = picked && picked.from === where ? picked.to : where; // a new profile place resets the choice
-  const f = { role: [role], ...whereFilters(shown) };
+  const { filters } = useFilters();
+  const [picked, setPicked] = useState<{ from: Where; role: string; to: Where } | null>(null);
+  // a new profile place or a new role resets a widened view
+  const shown = picked && picked.from === where && picked.role === role ? picked.to : where;
+  // the page's other filters (seniority, source, dates…) apply here too, as on the rest of the Compass
+  const f = { ...matchFilters(filters, "local", shown, "all"), role: [role] };
   const meta = useMeta();
   const sum = useApi<SalarySummary>("/salary/summary", f, { dim: "country", kind: "advertised", limit: 3 }, !!role);
   const from = useApi<Count[]>("/breakdown", { ...f, salary: "advertised" }, { dim: "country", limit: 3 }, !!role);
@@ -25,6 +29,8 @@ export function PayLands({ role, where }: { role: string; where: Where }) {
   const s = sum.data?.overall;
   const wider = broaderWhere(shown);
   const top = from.data?.[0];
+  // placeholder data belongs to the previous place: never show it under this place's heading
+  const settling = sum.isLoading || sum.isPlaceholderData || from.isPlaceholderData;
 
   return (
     <section aria-label={t("Where your pay lands", "أين يقع أجرك")} className="rounded-xl border border-line bg-panel p-5">
@@ -33,11 +39,16 @@ export function PayLands({ role, where }: { role: string; where: Where }) {
         <InfoTip>{t("Pay written in the postings themselves, converted to US dollars a year at fixed rates. Team benchmarks are never mixed in. The bar runs from the 10th to the 90th percentile; the box holds the middle half; the line is the median.",
           "الأجر كما كُتب في الإعلانات نفسها، محوَّلًا إلى دولار أمريكي سنويًا بأسعار ثابتة، ولا تُخلط به القيم المرجعية للفريق. يمتد الشريط من المئين العاشر إلى التسعين، ويضم الصندوق النصف الأوسط، والخط هو الوسيط.")}</InfoTip>
       </h2>
-      {!s || sum.isLoading ? <Skeleton h={120} className="mt-4" /> : s.confidence === "insufficient" || s.n < min || s.median == null ? (
-        <Empty title={t(`Only ${fmtInt(s.n)} ${tv(role)} postings in ${place} state their pay`, `${fmtInt(s.n)} إعلانًا فقط لدور ${tv(role)} في ${place} تذكر الأجر`)}
-          hint={t(`We need at least ${min} to show a range, so we show nothing rather than guess.`, `نحتاج ${min} على الأقل لعرض نطاق، لذا لا نعرض شيئًا بدل التخمين.`)}
+      {sum.error && !sum.data ? <div className="mt-4"><ErrorState error={sum.error} retry={() => sum.refetch()} /></div>
+        : !s || settling ? <Skeleton h={120} className="mt-4" /> : s.confidence === "insufficient" || s.n < min || s.median == null ? (
+        <Empty title={s.n < min
+            ? t(`Only ${fmtInt(s.n)} ${tv(role)} postings in ${place} state their pay`, `${fmtInt(s.n)} إعلانًا فقط لدور ${tv(role)} في ${place} تذكر الأجر`)
+            : t(`${fmtInt(s.n)} ${tv(role)} postings in ${place} state their pay, but not in a form we can compare`, `${fmtInt(s.n)} إعلانًا لدور ${tv(role)} في ${place} تذكر الأجر، لكن ليس بصيغة يمكن مقارنتها`)}
+          hint={s.n < min
+            ? t(`We need at least ${min} to show a range, so we show nothing rather than guess.`, `نحتاج ${min} على الأقل لعرض نطاق، لذا لا نعرض شيئًا بدل التخمين.`)
+            : t("So we show no range rather than guess.", "لذا لا نعرض نطاقًا بدل التخمين.")}
           action={wider ? (
-            <button type="button" onClick={() => setPicked({ from: where, to: wider })}
+            <button type="button" onClick={() => setPicked({ from: where, role, to: wider })}
               className="h-9 rounded-lg border border-line-strong bg-panel px-3.5 text-sm font-medium text-ink hover:bg-panel-2">
               {t(`See ${placeName(wider).replace(/^./, (c) => c.toUpperCase())} instead`, `شوف ${placeName(wider)} بدلًا من ذلك`)}
             </button>
@@ -53,7 +64,9 @@ export function PayLands({ role, where }: { role: string; where: Where }) {
         </p>
         <Band s={s} />
         {top && top.share != null && top.share >= 0.5 && (
-          <p className="mt-3 text-sm text-ink-2">{t(`Mostly ${tv(top.key)} postings (${fmtPct(top.share, 0)}), so read it as ${tv(top.key)} pay.`, `معظمها إعلانات من ${tv(top.key)} (${fmtPct(top.share, 0)})، فاقرأها كأجور ${tv(top.key)}.`)}</p>
+          <p className="mt-3 text-sm text-ink-2">{top.key == null
+            ? t(`${fmtPct(top.share, 0)} have no single country (remote or not stated), so read it as pay from many places.`, `${fmtPct(top.share, 0)} منها بلا دولة محددة (عن بُعد أو غير مذكورة)، فاقرأها كأجور من أماكن متعددة.`)
+            : t(`${fmtPct(top.share, 0)} are ${tv(top.key)} postings, so read it mostly as ${tv(top.key)} pay.`, `${fmtPct(top.share, 0)} منها إعلانات من ${tv(top.key)}، فاقرأها غالبًا كأجور ${tv(top.key)}.`)}</p>
         )}
         {shown !== where && (
           <button type="button" onClick={() => setPicked(null)} className="mt-3 text-sm font-medium text-accent-ink hover:underline">

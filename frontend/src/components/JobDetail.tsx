@@ -189,7 +189,7 @@ function About({ j }: { j: Job }) {
         {rows.map(([k, v]) => <div key={k}><dt className="text-xs text-ink-3">{k}</dt><dd className="m-0 mt-0.5 text-ink">{v}</dd></div>)}
       </dl>
       {j.role_category !== "Other / Unclassified" && (
-        <Link to={`/career?target=${encodeURIComponent(j.role_category)}`}
+        <Link to={`/compass?target=${encodeURIComponent(j.role_category)}`}
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent-ink no-underline hover:underline">
           {t(`Plan your path to ${tv(j.role_category)}`, `خطّط طريقك إلى ${tv(j.role_category)}`)} <ArrowRight size={14} className="rtl:rotate-180" />
         </Link>

@@ -40,9 +40,11 @@ export default function Compass() {
     const urlHave = params.getAll("have");
     const urlWhere = params.get("where");
     if (!urlRole && !urlHave.length && !urlWhere) return;
+    // a full compass link (role + place) restores the sharer's skills; a lone ?have= adds to yours
+    const full = !!urlRole && !!urlWhere;
     replace({
       role: urlRole ?? profile.role,
-      skills: urlHave.length ? [...profile.skills, ...urlHave] : profile.skills,
+      skills: full ? urlHave : urlHave.length ? [...profile.skills, ...urlHave] : profile.skills,
       where: urlWhere && (WHERE_VALUES as readonly string[]).includes(urlWhere) ? urlWhere as Where : profile.where,
     });
     setParams((prev) => { const sp = new URLSearchParams(prev); sp.delete("target"); sp.delete("have"); sp.delete("where"); return sp; }, { replace: true });
@@ -95,7 +97,9 @@ export default function Compass() {
         <div className="min-w-0 space-y-6">
           <Guard q={q} h={420}>
             {(g) => g.status === "too_few_postings" ? (
-              <Empty title={t(`Only ${fmtInt(g.denominator)} recent ${tv(g.role)} postings list skills`, `${fmtInt(g.denominator)} إعلانًا حديثًا فقط لدور ${tv(g.role)} تذكر مهارات`)}
+              <Empty title={recency === "recent"
+                ? t(`Only ${fmtInt(g.denominator)} recent ${tv(g.role)} postings list skills`, `${fmtInt(g.denominator)} إعلانًا حديثًا فقط لدور ${tv(g.role)} تذكر مهارات`)
+                : t(`Only ${fmtInt(g.denominator)} ${tv(g.role)} postings list skills`, `${fmtInt(g.denominator)} إعلانًا فقط لدور ${tv(g.role)} تذكر مهارات`)}
                 hint={t(`At least ${g.min_group} are needed for a reliable match.`, `يلزم ${g.min_group} إعلانًا على الأقل لتوافق موثوق.`)}
                 action={recency === "recent" ? <button type="button" onClick={() => setRecency("all")} className="h-9 rounded-lg border border-line-strong bg-panel px-3.5 text-sm font-medium text-ink hover:bg-panel-2">{t("Use all postings", "استخدم كل الإعلانات")}</button> : undefined} />
             ) : <Results g={g} recency={recency} onRecency={setRecency} onRole={setRole} onHave={addSkill} />}
@@ -180,6 +184,9 @@ function Results({ g, recency, onRecency, onRole, onHave }: { g: CareerGap; rece
           <ul className="mt-3 space-y-1 text-sm leading-6 text-rail-ink-2">
             <li>{t(`Based on ${fmtInt(g.denominator)} ${tv(g.role)} postings that list skills`, `استنادًا إلى ${fmtInt(g.denominator)} إعلانًا لدور ${tv(g.role)} تذكر مهارات`)}</li>
             {freshness && <li>{freshness}</li>}
+            <li>{g.provenance === "observed"
+              ? t("Counting only skills written in postings.", "تُحتسب المهارات المذكورة في الإعلانات فقط.")
+              : t("Counting skills written in postings and skills the team added after collection.", "تُحتسب المهارات المذكورة في الإعلانات والمهارات التي أضافها الفريق بعد الجمع.")}</li>
             <li>{scope.note}</li>
             <Advanced>{g.posting_match && profile.skills.length > 0 && (() => {
               const m = g.posting_match!;
@@ -314,8 +321,8 @@ function LearnNext({ g, onHave }: { g: CareerGap; onHave: (s: string) => void })
 function FitJobs({ role, recency }: { role: string; recency: Recency }) {
   const { filters } = useFilters();
   const { profile } = useProfile();
-  const [picked, setPicked] = useState<{ from: Where; to: Where } | null>(null);
-  const shown = picked && picked.from === profile.where ? picked.to : profile.where;
+  const [picked, setPicked] = useState<{ from: Where; role: string; to: Where } | null>(null);
+  const shown = picked && picked.from === profile.where && picked.role === role ? picked.to : profile.where;
   const local = matchFilters(filters, "local", shown, recency);
   const q = useApi<CareerGap>("/career/gap", local, { target_role: role, have: profile.skills }, !!role);
   const wider = broaderWhere(shown);
@@ -327,7 +334,7 @@ function FitJobs({ role, recency }: { role: string; recency: Recency }) {
         {(lg) => lg.status === "too_few_postings" || lg.postings.length === 0 ? (
           <Empty title={t(`Only ${fmtInt(lg.denominator)} ${tv(role)} postings in ${placeName(shown)} list skills`, `${fmtInt(lg.denominator)} إعلانًا فقط لدور ${tv(role)} في ${placeName(shown)} تذكر مهارات`)}
             hint={t("Too few to rank them by your skills.", "عددها قليل جدًا لترتيبها حسب مهاراتك.")}
-            action={wider ? <button type="button" onClick={() => setPicked({ from: profile.where, to: wider })} className="h-9 rounded-lg border border-line-strong bg-panel px-3.5 text-sm font-medium text-ink hover:bg-panel-2">
+            action={wider ? <button type="button" onClick={() => setPicked({ from: profile.where, role, to: wider })} className="h-9 rounded-lg border border-line-strong bg-panel px-3.5 text-sm font-medium text-ink hover:bg-panel-2">
               {t(`See ${placeName(wider)} instead`, `شوف ${placeName(wider)} بدلًا من ذلك`)}</button> : undefined} />
         ) : <PostingList g={lg} />}
       </Guard>

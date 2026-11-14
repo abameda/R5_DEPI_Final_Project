@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/app.spec.ts": {
-    "mtime": 1794666822.3009982,
-    "seen": 1794667081.1313403,
-    "ast_hash": "c353fa52e69066abe6cfdd88b282eb14",
+    "mtime": 1794668044.8476336,
+    "seen": 1794668181.7614367,
+    "ast_hash": "170d60b34d798fffbb2ed45cff7951d7",
     "semantic_hash": ""
   },
   "frontend/e2e/mobile.spec.ts": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/JobDetail.tsx": {
-    "mtime": 1794662921.2025862,
-    "seen": 1794663233.3744,
-    "ast_hash": "067a1d01f450897e04d7ea0c6bfa8200",
+    "mtime": 1794667987.2766767,
+    "seen": 1794668181.7614367,
+    "ast_hash": "034a489244a2491181d99ec83cc6c0f9",
     "semantic_hash": ""
   },
   "frontend/src/components/Kpi.tsx": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/charts.tsx": {
-    "mtime": 1794665096.1354926,
-    "seen": 1794665150.7075148,
-    "ast_hash": "56c3d7dd095a6f496b4b69a57e7aa7f3",
+    "mtime": 1794667987.3101573,
+    "seen": 1794668181.7614367,
+    "ast_hash": "45961dbe30e9feacec639af364f55dd4",
     "semantic_hash": ""
   },
   "frontend/src/components/ui.tsx": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/Compare.tsx": {
-    "mtime": 1794666623.0581582,
-    "seen": 1794666782.851001,
-    "ast_hash": "af971d25f74bea7f6b69998b88b03fc2",
+    "mtime": 1794667987.311663,
+    "seen": 1794668181.7614367,
+    "ast_hash": "d3b8f0b70e82a8248fe390931f582887",
     "semantic_hash": ""
   },
   "frontend/src/pages/Employers.tsx": {
@@ -378,15 +378,15 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/Geography.tsx": {
-    "mtime": 1794666444.674852,
-    "seen": 1794666782.851001,
-    "ast_hash": "84b72571f5d2060f425a9e7484ca4784",
+    "mtime": 1794667987.3347855,
+    "seen": 1794668181.7614367,
+    "ast_hash": "02b93eb7777ebc8bb52ec09de982f6d5",
     "semantic_hash": ""
   },
   "frontend/src/pages/Home.tsx": {
-    "mtime": 1794666118.902638,
-    "seen": 1794666309.6331708,
-    "ast_hash": "9eadfb903b0557f2690efba54a826bc5",
+    "mtime": 1794667987.272304,
+    "seen": 1794668181.7614367,
+    "ast_hash": "007fa71f61f234c1ecfdbf2c283e181f",
     "semantic_hash": ""
   },
   "frontend/src/pages/Insights.tsx": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/Overview.tsx": {
-    "mtime": 1794665508.4005697,
-    "seen": 1794665925.5354168,
-    "ast_hash": "55d3d4fd04ba6088d6ec5b2f10bd32c2",
+    "mtime": 1794667987.2766767,
+    "seen": 1794668181.7614367,
+    "ast_hash": "a7d025c09777b709e86efc9171bebc59",
     "semantic_hash": ""
   },
   "frontend/src/pages/Quality.tsx": {
@@ -414,21 +414,21 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/Salary.tsx": {
-    "mtime": 1794666429.773429,
-    "seen": 1794666782.851001,
-    "ast_hash": "69c9ff0f9e81c968485455dde34e5805",
+    "mtime": 1794667987.3133056,
+    "seen": 1794668181.7614367,
+    "ast_hash": "dcdaa761aa4df848e6fd28e5badf353b",
     "semantic_hash": ""
   },
   "frontend/src/pages/Skills.tsx": {
-    "mtime": 1794666429.771006,
-    "seen": 1794666782.851001,
-    "ast_hash": "4c02ec759f1597d19ff39b15192649c1",
+    "mtime": 1794667987.2757256,
+    "seen": 1794668181.7614367,
+    "ast_hash": "6368a8dd1758830e40a76c9c16890379",
     "semantic_hash": ""
   },
   "frontend/src/pages/Trends.tsx": {
-    "mtime": 1794665096.25386,
-    "seen": 1794665150.7075148,
-    "ast_hash": "ee79e566402a205d153abcd955393dcd",
+    "mtime": 1794667987.314533,
+    "seen": 1794668181.7614367,
+    "ast_hash": "fa2fe8c5bc57eb45d3b8b05b7cdbabae",
     "semantic_hash": ""
   },
   "frontend/tsconfig.json": {
@@ -570,9 +570,9 @@
     "semantic_hash": ""
   },
   "docs/DASHBOARD_FEATURES.md": {
-    "mtime": 1794666890.9130816,
-    "seen": 1794667081.1313403,
-    "ast_hash": "bfafa60ed60c694aa83779ed61322dc6",
+    "mtime": 1794667987.286195,
+    "seen": 1794668181.7614367,
+    "ast_hash": "a484d3891d02da6a79b1e1da5c4c8c1f",
     "semantic_hash": ""
   },
   "docs/DATA_CATALOG.md": {
@@ -1062,9 +1062,9 @@
     "semantic_hash": ""
   },
   "frontend/src/lib/motion.ts": {
-    "mtime": 1794665111.9181893,
-    "seen": 1794665150.7075148,
-    "ast_hash": "c027e163e8a8695c3995decbd9de655c",
+    "mtime": 1794667987.272304,
+    "seen": 1794668181.7614367,
+    "ast_hash": "a2b2d4407f18f30eedc24c791e9845a6",
     "semantic_hash": ""
   },
   "frontend/src/lib/tokens.test.ts": {
@@ -1080,21 +1080,27 @@
     "semantic_hash": ""
   },
   "frontend/src/components/PayLands.tsx": {
-    "mtime": 1794665387.2052686,
-    "seen": 1794665925.534402,
-    "ast_hash": "3055fa16a6dae68ec589873c6a07938e",
+    "mtime": 1794667999.7518585,
+    "seen": 1794668181.7614367,
+    "ast_hash": "2352f66cd2edb2a469c4bf1fbca27be2",
     "semantic_hash": ""
   },
   "frontend/src/pages/Compass.tsx": {
-    "mtime": 1794666458.8329666,
-    "seen": 1794666782.851001,
-    "ast_hash": "5d331f428ed35ef123032d81136aa299",
+    "mtime": 1794667987.272304,
+    "seen": 1794668181.7614367,
+    "ast_hash": "9d22931bd984816be77a6c6be47e7a71",
     "semantic_hash": ""
   },
   "frontend/src/components/KeyPoints.tsx": {
-    "mtime": 1794666426.3654099,
-    "seen": 1794666782.851001,
-    "ast_hash": "95cd41c8d804fdb80bad16b1c407f0df",
+    "mtime": 1794667999.8139777,
+    "seen": 1794668181.7614367,
+    "ast_hash": "c24077ec4281ce6eca084dff182c8d3a",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/chartfonts.test.ts": {
+    "mtime": 1794667671.7658012,
+    "seen": 1794668181.7614367,
+    "ast_hash": "f2c5efd4f9db598dde64d5a97a6bf1cf",
     "semantic_hash": ""
   }
 }
