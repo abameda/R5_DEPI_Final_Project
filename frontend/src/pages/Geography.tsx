@@ -105,15 +105,15 @@ export default function Geography() {
               build={(tk) => ({
                 ...baseOption(tk),
                 grid: { left: 8, right: 8, top: 8, bottom: 56, containLabel: true },
-                xAxis: { type: "category", data: d.cols, position: "top", ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 11, interval: 0, width: 90, overflow: "break", formatter: tv } },
+                xAxis: { type: "category", data: d.cols, position: "top", ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 13, interval: 0, width: 90, overflow: "break", formatter: tv } },
                 yAxis: { type: "category", data: rows, inverse: true, ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 12, formatter: tv } },
                 visualMap: { dimension: 2, min: 0, max: top, text: [fmtPct(top, 0), "0%"], orient: "horizontal", left: "center", bottom: 0, itemHeight: 160,
-                  inRange: { color: [tk.panel2, tk.series[0]] }, textStyle: { color: tk.ink2, fontSize: 11 }, formatter: (v: number) => fmtPct(v, 0) },
+                  inRange: { color: [tk.panel2, tk.series[0]] }, textStyle: { color: tk.ink2, fontSize: 13 }, formatter: (v: number) => fmtPct(v, 0) },
                 tooltip: { ...baseOption(tk).tooltip, formatter: (p: { value: number[] }) =>
                   `<b>${esc(tv(rows[p.value[1]]))}</b> · ${esc(tv(d.cols[p.value[0]]))}<br/>`
                   + t(`${fmtPct(p.value[2])} of the country's postings (${fmtInt(p.value[3])})`, `${fmtPct(p.value[2])} من إعلانات الدولة (${fmtInt(p.value[3])})`) },
                 series: [{ type: "heatmap", data: data.map((v) => ({ value: v, label: { color: (v[2] as number) > top * 0.55 ? "#ffffff" : tk.ink } })),
-                  label: { show: true, fontSize: 10, formatter: (p: { value: number[] }) => (p.value[2] >= 0.01 ? fmtPct(p.value[2], 0) : "") },
+                  label: { show: true, fontSize: 12, formatter: (p: { value: number[] }) => (p.value[2] >= 0.01 ? fmtPct(p.value[2], 0) : "") },
                   itemStyle: { borderColor: tk.panel, borderWidth: 2, borderRadius: 2 } }],
               })} />
           );
@@ -217,7 +217,7 @@ function WorldMap({ rows, metric, handle, onPick }: { rows: CountryRow[]; metric
           left: 8, bottom: 8, itemHeight: 120, calculable: false,
           text: metric === "n" ? [t("more", "أكثر"), t("fewer (log scale)", "أقل (مقياس لوغاريتمي)")] : undefined,
           inRange: { color: [tk.place0, tk.series[HUE.place]] },
-          textStyle: { color: tk.ink2, fontSize: 11 },
+          textStyle: { color: tk.ink2, fontSize: 13 },
           formatter: (v: number) => (metric === "n" ? fmtInt(10 ** v) : metric === "remote" ? fmtPct(v, 0) : fmtUsd(v)),
         },
         series: [{

@@ -182,13 +182,13 @@ function BuilderChart({ r, handle, line, fmt, name, metricLabel, dimLabel }: { r
     <Chart label={t(`${r.metric_label} by ${r.dimension_label}`, `${metricLabel} حسب ${dimLabel}`)} handleRef={handle} deps={[r, line]}
       height={horizontal ? Math.max(220, shown.length * (r.split_by ? 14 * splits.length + 10 : 26) + 50) : 320}
       build={(tk) => {
-        const catAxis = { type: "category", data: shown.map((c) => name(r.dimension, c)), ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 11, formatter: (v: string) => (v.length > 28 ? `${v.slice(0, 27)}…` : v) } };
-        const valAxis = { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 11, formatter: (v: number) => fmt(v) } };
+        const catAxis = { type: "category", data: shown.map((c) => name(r.dimension, c)), ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 13, formatter: (v: string) => (v.length > 28 ? `${v.slice(0, 27)}…` : v) } };
+        const valAxis = { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 13, formatter: (v: number) => fmt(v) } };
         return {
           ...baseOption(tk),
           color: categorical(tk),
           grid: { left: 8, right: 60, top: splits.length > 1 ? 34 : 10, bottom: 8, containLabel: true },
-          legend: splits.length > 1 ? { top: 0, left: 0, textStyle: { color: tk.ink2, fontSize: 11 }, itemWidth: 12, itemHeight: 10 } : undefined,
+          legend: splits.length > 1 ? { top: 0, left: 0, textStyle: { color: tk.ink2, fontSize: 13 }, itemWidth: 12, itemHeight: 10 } : undefined,
           xAxis: horizontal ? valAxis : catAxis,
           yAxis: horizontal ? catAxis : valAxis,
           tooltip: { ...baseOption(tk).tooltip, trigger: "axis", formatter: (ps: { seriesName: string; seriesIndex: number; dataIndex: number; value: number | null }[]) => {
@@ -202,7 +202,7 @@ function BuilderChart({ r, handle, line, fmt, name, metricLabel, dimLabel }: { r
             name: r.split_by ? name(r.split_by, s) : metricLabel, type: line ? "line" : "bar",
             barMaxWidth: 14, emphasis: { focus: "series" }, showSymbol: true,
             itemStyle: horizontal ? { borderRadius: [0, 3, 3, 0] } : undefined,
-            label: splits.length === 1 && horizontal ? { show: true, position: "right", color: tk.ink2, fontSize: 11, formatter: (p: { value: number | null }) => fmt(p.value) } : undefined,
+            label: splits.length === 1 && horizontal ? { show: true, position: "right", color: tk.ink2, fontSize: 13, formatter: (p: { value: number | null }) => fmt(p.value) } : undefined,
             data: shown.map((c) => {
               const row = r.rows.find((x) => x.d0 === c && (x.d1 ?? "") === s);
               // small groups stay visible but recede, outlined in the caution colour

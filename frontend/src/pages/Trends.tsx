@@ -116,15 +116,15 @@ export default function TrendsPage() {
                     build={(tk) => ({
                       ...baseOption(tk),
                       grid: { left: 8, right: 56, top: 8, bottom: 8, containLabel: true },
-                      xAxis: { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 11, formatter: (v: number) => `${v > 0 ? "+" : ""}${v} ${t("pp", "نقطة")}` } },
-                      yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(tk), axisLine: { show: false }, axisLabel: { color: tk.ink2, fontSize: 11 } },
+                      xAxis: { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 13, formatter: (v: number) => `${v > 0 ? "+" : ""}${v} ${t("pp", "نقطة")}` } },
+                      yAxis: { type: "category", data: r.map((x) => x.skill), ...axisStyle(tk), axisLine: { show: false }, axisLabel: { color: tk.ink2, fontSize: 13 } },
                       tooltip: { ...baseOption(tk).tooltip, trigger: "item", formatter: (p: { dataIndex: number }) => {
                         const x = r[p.dataIndex];
                         return `<b>${esc(x.skill)}</b><br/>${t("Jan–Jun", "يناير–يونيو")} ${fmtPct(x.h1_share)} ${t("→", "←")} ${t("Jul–Dec", "يوليو–ديسمبر")} ${fmtPct(x.h2_share)}<br/>${fmtPp(x.change_pp)}`;
                       } },
                       series: [{ type: "bar", barMaxWidth: 12, data: r.map((x) => ({ value: x.change_pp,
                         itemStyle: { color: x.change_pp >= 0 ? tk.series[0] : tk.series[5], borderRadius: x.change_pp >= 0 ? [0, 3, 3, 0] : [3, 0, 0, 3] } })),
-                        label: { show: true, position: "right", color: tk.ink3, fontSize: 10, formatter: (p: { value: number }) => fmtPp(p.value) } }],
+                        label: { show: true, position: "right", color: tk.ink3, fontSize: 12, formatter: (p: { value: number }) => fmtPp(p.value) } }],
                     })} />
                 </>) : <p className="text-sm text-ink-3">{t("Not enough dated 2023 postings in this selection.", "لا توجد إعلانات مؤرخة كافية من 2023 في هذا الاختيار.")}</p>;
               }}

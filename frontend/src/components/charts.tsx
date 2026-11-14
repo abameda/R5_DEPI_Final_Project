@@ -46,7 +46,7 @@ export function HBar({ data, handle, onSelect, label, valueFmt = fmtInt, color =
           emphasis: { focus: "self" },
           blur: { itemStyle: { opacity: 0.45 } },
           label: {
-            show: true, position: "right", color: t.ink2, fontSize: 11,
+            show: true, position: "right", color: t.ink2, fontSize: 13,
             formatter: (p: { dataIndex: number }) => {
               const r = rows[p.dataIndex];
               return r.share != null ? `${fmtPct(r.share)}  ${fmtCompact(r.value)}` : valueFmt(r.value);
@@ -72,7 +72,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly, h
         ...baseOption(t),
         grid: { left: 8, right: 64, top: observedOnly ? 4 : 28, bottom: 4, containLabel: true },
         legend: observedOnly ? undefined : {
-          top: 0, left: 0, itemWidth: 12, itemHeight: 10, textStyle: { color: t.ink2, fontSize: 11 },
+          top: 0, left: 0, itemWidth: 12, itemHeight: 10, textStyle: { color: t.ink2, fontSize: 13 },
           data: [WRITTEN(), ADDED()],
         },
         xAxis: { type: "value", show: false, max: Math.max(...r.map((x) => x.share ?? 0)) * 1.02 },
@@ -88,7 +88,7 @@ export function SkillBars({ rows, denominator, handle, onSelect, observedOnly, h
           },
         },
         series: (() => {
-          const endLabel = { show: true, position: "right", color: t.ink2, fontSize: 11,
+          const endLabel = { show: true, position: "right", color: t.ink2, fontSize: 13,
             formatter: (p: { dataIndex: number }) => fmtPct(r[p.dataIndex].share) };
           const observed = {
             name: WRITTEN(), type: "bar", stack: "s", barMaxWidth: 16, barCategoryGap: "38%",
@@ -155,8 +155,8 @@ export function CohortMonths({ months, cohortLabel, handle, min = 30 }: {
                 ...baseOption(t),
                 grid: { left: 4, right: 12, top: 12, bottom: 4, containLabel: true },
                 xAxis: { type: "category", data: p.shown.map((m) => m.month.slice(0, 7)), ...axisStyle(t),
-                  axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: string) => fmtMonth(v).replace(" 20", " ’") } },
-                yAxis: { type: "value", ...axisStyle(t), splitNumber: 3, axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: number) => fmtCompact(v) } },
+                  axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: string) => fmtMonth(v).replace(" 20", " ’") } },
+                yAxis: { type: "value", ...axisStyle(t), splitNumber: 3, axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: number) => fmtCompact(v) } },
                 tooltip: { ...baseOption(t).tooltip, trigger: "axis", formatter: (ps: { dataIndex: number }[]) =>
                   `<b>${fmtMonth(p.shown[ps[0].dataIndex].month)}</b><br/>${tr(`${fmtInt(p.shown[ps[0].dataIndex].n)} postings`, `${fmtInt(p.shown[ps[0].dataIndex].n)} إعلانًا`)}` },
                 series: [{ type: "bar", data: p.shown.map((m) => m.n), barMaxWidth: 22,
@@ -189,9 +189,9 @@ export function MonthLines({ series, label, handle, yFmt = fmtInt, yName, height
         ...baseOption(t),
         color: categorical(t),
         grid: { left: 8, right: 24, top: series.length > 1 ? 34 : 16, bottom: 8, containLabel: true },
-        legend: series.length > 1 ? { top: 0, left: 0, itemWidth: 14, itemHeight: 3, textStyle: { color: t.ink2, fontSize: 11 } } : undefined,
-        xAxis: { type: "category", data: xs, boundaryGap: false, ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: string) => fmtMonth(v) } },
-        yAxis: { type: "value", ...axisStyle(t), name: yName, splitNumber: 4, axisLabel: { color: t.ink3, fontSize: 11, formatter: (v: number) => yFmt(v) } },
+        legend: series.length > 1 ? { top: 0, left: 0, itemWidth: 14, itemHeight: 3, textStyle: { color: t.ink2, fontSize: 13 } } : undefined,
+        xAxis: { type: "category", data: xs, boundaryGap: false, ...axisStyle(t), axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: string) => fmtMonth(v) } },
+        yAxis: { type: "value", ...axisStyle(t), name: yName, splitNumber: 4, axisLabel: { color: t.ink3, fontSize: 13, formatter: (v: number) => yFmt(v) } },
         tooltip: {
           ...baseOption(t).tooltip, trigger: "axis",
           axisPointer: { type: "line", lineStyle: { color: t.lineStrong } },
@@ -209,7 +209,7 @@ export function MonthLines({ series, label, handle, yFmt = fmtInt, yName, height
           name: tv(s.name), type: "line", smooth: false, showSymbol: true, symbolSize: 6,
           connectNulls: false, lineStyle: { width: 2 }, emphasis: { focus: "series" },
           data: xs.map((x) => s.points.find((p) => p.x === x)?.y ?? null),
-          ...(i === 0 && markArea ? { markArea: { silent: true, itemStyle: { color: t.panel2 }, label: { color: t.ink3, fontSize: 11, position: "insideTop" },
+          ...(i === 0 && markArea ? { markArea: { silent: true, itemStyle: { color: t.panel2 }, label: { color: t.ink3, fontSize: 13, position: "insideTop" },
             data: [[{ xAxis: markArea.from, name: markArea.label }, { xAxis: markArea.to }]] } } : {}),
         })),
       })} />

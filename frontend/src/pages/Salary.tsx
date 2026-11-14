@@ -87,7 +87,7 @@ export default function Salary() {
                 build={(tk) => ({
                   ...baseOption(tk),
                   grid: { left: 8, right: 96, top: 8, bottom: 28, containLabel: true },
-                  xAxis: { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 11, formatter: (v: number) => fmtUsd(v) } },
+                  xAxis: { type: "value", ...axisStyle(tk), axisLabel: { color: tk.ink3, fontSize: 13, formatter: (v: number) => fmtUsd(v) } },
                   yAxis: { type: "category", data: g.map((x) => name(x.key ?? "")), ...axisStyle(tk), axisLine: { show: false },
                     axisLabel: { color: tk.ink2, fontSize: 12, formatter: (v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v) } },
                   tooltip: { ...baseOption(tk).tooltip, trigger: "item", formatter: (p: { dataIndex: number }) => {
@@ -104,7 +104,7 @@ export default function Salary() {
                   }, {
                     type: "scatter", symbolSize: 0, silent: true, tooltip: { show: false },
                     data: g.map((x, i) => ({ value: [x.p90, i], label: { color: x.confidence === "low" ? tk.warn : tk.ink3 } })),
-                    label: { show: true, position: "right", fontSize: 11,
+                    label: { show: true, position: "right", fontSize: 13,
                       formatter: (p: { dataIndex: number }) => `n=${fmtInt(g[p.dataIndex].n)}${g[p.dataIndex].confidence === "low" ? t(" · small", " · صغيرة") : ""}` },
                   }],
                 })} />

@@ -188,14 +188,14 @@ function Pairings({ onPick }: { onPick: (s: string) => void }) {
               build={(tk) => ({
                 ...baseOption(tk),
                 grid: { left: 8, right: 8, top: 8, bottom: 70, containLabel: true },
-                xAxis: { type: "category", data: names, ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 11, rotate: 50 }, splitArea: { show: false } },
-                yAxis: { type: "category", data: names, inverse: true, ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 11 } },
+                xAxis: { type: "category", data: names, ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 13, rotate: 50 }, splitArea: { show: false } },
+                yAxis: { type: "category", data: names, inverse: true, ...axisStyle(tk), axisLabel: { color: tk.ink2, fontSize: 13 } },
                 visualMap: diverging
-                  ? { type: "piecewise", orient: "horizontal", left: "center", bottom: 0, itemWidth: 14, textStyle: { color: tk.ink2, fontSize: 11 },
+                  ? { type: "piecewise", orient: "horizontal", left: "center", bottom: 0, itemWidth: 14, textStyle: { color: tk.ink2, fontSize: 13 },
                       pieces: [{ lt: 0.8, color: tk.series[4], label: t("< 0.8 (avoid each other)", "< 0.8 (تتجنب إحداهما الأخرى)") }, { gte: 0.8, lt: 1.25, color: tk.panel2, label: t("0.8–1.25 (no link)", "0.8–1.25 (لا ارتباط)") },
                         { gte: 1.25, lt: 2, color: tk.s3Soft, label: "1.25–2" }, { gte: 2, color: tk.series[HUE.skill], label: t("≥ 2 (strong pair)", "≥ 2 (ثنائي قوي)") }] }
                   : { min: 0, max: Math.max(...vals, 0.01), orient: "horizontal", left: "center", bottom: 0, itemHeight: 140, calculable: false,
-                      inRange: { color: [tk.panel2, tk.series[HUE.skill]] }, textStyle: { color: tk.ink2, fontSize: 11 }, formatter: (v: number) => fmtPct(v, 0) },
+                      inRange: { color: [tk.panel2, tk.series[HUE.skill]] }, textStyle: { color: tk.ink2, fontSize: 13 }, formatter: (v: number) => fmtPct(v, 0) },
                 tooltip: { ...baseOption(tk).tooltip, formatter: (p: { data: [number, number, number | null] }) => {
                   const [x, y, v] = p.data;
                   const l = d.links.find((k) => (k.a === names[y] && k.b === names[x]) || (k.a === names[x] && k.b === names[y]));
@@ -227,7 +227,7 @@ function Pairings({ onPick }: { onPick: (s: string) => void }) {
                 series: [{
                   type: "graph", layout: "force", roam: true, draggable: true,
                   force: { repulsion: 1100, edgeLength: [90, 230], gravity: 0.05, layoutAnimation: false },
-                  label: { show: true, position: "right", color: tk.ink, fontSize: 11 },
+                  label: { show: true, position: "right", color: tk.ink, fontSize: 13 },
                   emphasis: { focus: "adjacency", lineStyle: { width: 3 } },
                   blur: { itemStyle: { opacity: 0.25 }, lineStyle: { opacity: 0.08 } },
                   lineStyle: { color: tk.lineStrong, curveness: 0.1 },

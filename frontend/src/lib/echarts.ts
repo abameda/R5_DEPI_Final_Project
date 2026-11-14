@@ -50,13 +50,13 @@ export function baseOption(t: Tokens) {
     animation: !matchMedia("(prefers-reduced-motion: reduce)").matches,
     animationDuration: 250,
     animationDurationUpdate: 250,
-    textStyle: { fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, sans-serif", color: t.ink2, fontSize: 12 },
+    textStyle: { fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, sans-serif", color: t.ink2, fontSize: 14 },
     // the container carries a written label and every panel has a table view;
     // ECharts' generated description would replace that label with raw numbers
     aria: { enabled: false },
     tooltip: {
       backgroundColor: t.panel, borderColor: t.lineStrong, borderWidth: 1, padding: [8, 10],
-      textStyle: { color: t.ink, fontSize: 12 }, extraCssText: "box-shadow: var(--shadow); border-radius: 8px;",
+      textStyle: { color: t.ink, fontSize: 14 }, extraCssText: "box-shadow: var(--shadow); border-radius: 8px;",
       confine: true,
     },
   };
@@ -66,9 +66,9 @@ export function axisStyle(t: Tokens) {
   return {
     axisLine: { lineStyle: { color: t.lineStrong } },
     axisTick: { show: false },
-    axisLabel: { color: t.ink3, fontSize: 11 },
+    axisLabel: { color: t.ink3, fontSize: 13 },
     splitLine: { lineStyle: { color: t.line } },
-    nameTextStyle: { color: t.ink3, fontSize: 11 },
+    nameTextStyle: { color: t.ink3, fontSize: 13 },
   };
 }
 

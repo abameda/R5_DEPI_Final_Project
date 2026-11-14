@@ -18,7 +18,7 @@
   --line-strong: #cfcfc6;
   --ink: #0e1525;
   --ink-2: #434b5d;
-  --ink-3: #5f6678;
+  --ink-3: #545b6d;
   /* navy emphasis surface (answer bands, primary emphasis) */
   --rail: #0f1b33;
   --rail-2: #1a2a4d;
@@ -128,14 +128,14 @@
   --color-crit: var(--crit);
   --color-crit-soft: var(--crit-soft);
   --color-info-soft: var(--info-soft);
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.8125rem;
-  --text-sm--line-height: 1.25rem;
-  --text-base: 0.875rem;
-  --text-base--line-height: 1.375rem;
-  --text-lg: 1rem;
-  --text-lg--line-height: 1.5rem;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.3125rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.625rem;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.75rem;
   --text-2xl: 1.5rem;
