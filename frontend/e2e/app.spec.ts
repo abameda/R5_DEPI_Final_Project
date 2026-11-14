@@ -431,3 +431,28 @@ test("the Compass links to the evidence for your role and place", async ({ page 
   await expect(page).toHaveURL(/\/salary\?.*role=Backend/);
   await expect(page).toHaveURL(/market=Remote/);
 });
+
+test("the Arabic Compass mirrors the dial and honours reduced motion", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jmi-lang", "ar"));
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/compass?target=Backend&have=SQL");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  const meter = page.getByRole("meter", { name: "التوافق العالمي للمهارات" });
+  await expect(meter).toBeVisible();
+  await expect(meter.locator("svg > g").first()).toHaveAttribute("transform", /scale\(-1 1\)/);
+  const needle = meter.locator("[data-needle]");
+  // the global reduced-motion rule shortens every transition to ~0 s (1e-06s)
+  expect(parseFloat(await needle.evaluate((el) => getComputedStyle(el).transitionDuration))).toBeLessThan(0.01);
+  await expect(page.getByText("المهارات المطلوبة في كل الأسواق، وليست خاصة بمصر أو بالمكان الذي اخترته.")).toBeVisible();
+});
+
+for (const path of ["/", "/compass?have=SQL"]) {
+  test(`no serious accessibility violations on ${path} in Arabic`, async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("jmi-lang", "ar"));
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    const res = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    const serious = res.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(serious.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
+  });
+}

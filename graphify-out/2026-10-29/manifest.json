@@ -1145,12 +1145,6 @@
     "ast_hash": "a0c0bfc506a892e2564021d95ddb366f",
     "semantic_hash": ""
   },
-  "frontend/playwright.alt.config.ts": {
-    "mtime": 1793299273.812297,
-    "seen": 1793299321.038792,
-    "ast_hash": "90aceccd50069be43c43594f5f0eac61",
-    "semantic_hash": ""
-  },
   "frontend/src/lib/profile.test.ts": {
     "mtime": 1793298660.3325517,
     "seen": 1793299321.038792,

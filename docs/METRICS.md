@@ -82,9 +82,27 @@ Warnings: segment < 30 postings-with-skills (ranking hidden), < 30 salaries (ind
 or < 10 (hidden), salaries converted from several currencies, segments dominated by
 different cohorts (≥ 50% each), segments with no common major source (≥ 20%).
 
+## Your compass (Global Skill Match)
+
+* **Scope.** The match, the gap list and adjacent roles use every posting for the role:
+  `country`, `region` and `market` are removed (`matchFilters(…, "global", …)` in
+  `frontend/src/lib/match.ts`). The visitor's place scopes only pay, the jobs list and where
+  to search (`"local"` scope). A future *Local Skill Match* would use the local scope and be
+  shown only when its sample passes `MIN_GROUP_POSTINGS` (the API's `too_few_postings`).
+* **Recency.** *All postings* clears the cohort filter; *Recent (2024–26)* keeps only
+  `collected_2026`. Below 30 postings with skills the page offers *Use all postings*.
+* **Freshness line** = first and last posting date plus the `kaggle_2023` share of the same
+  population (`/api/overview`), shown to one decimal above 99% or below 1%.
+* **Pay** = `/api/salary/summary` (advertised only) for the role in the chosen place; below
+  `MIN_SALARY_N` nothing is shown and the next wider place (Egypt → Arab countries → all
+  markets) is offered. The leading country and its share come from `/api/breakdown`
+  (`dim=country`, `salary=advertised`) and are named when it holds 50% or more.
+
+The formulas below are unchanged.
+
 ## Career planner
 
-For a target role in the chosen market (other filters apply too):
+For a target role (location filters are removed, see above; other filters apply):
 
 * Skills ranked by share among the role's postings with skills (top 40); missing skills
   are listed in the same order ("what to learn next").

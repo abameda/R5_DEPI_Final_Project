@@ -112,16 +112,28 @@ Warnings first (too few postings, small or mixed-currency salaries, different co
 different sources, different skill counting); side-by-side metrics with differences; skill
 dumbbell chart with gaps in pp and "mainly in A/B"; role and seniority mix.
 
-### Career planner
-Target role, market and current skills (searchable picker; URL `?target=&have=`). Shows
-skill alignment (share-weighted coverage of the top 15, with its formula and limits),
-postings already matched (all / half / one listed skill), what to learn next (ranked, with
-"at least X%" bounds and "mostly team-added" flags), all requested skills, adjacent roles
-(cosine similarity of skill profiles, plus your alignment with each) and the
-closest-matching postings with their missing skills, and **where to search**: the job boards
-that listed the role's postings, the share each reached, postings found only there, and the
-best combination of up to three boards. Too-small populations get the UC-04 alternative flow
-("broaden the filters").
+### Your compass (`/compass`; `/career` redirects with its query string)
+The visitor's role, skills and **where they'd work** (Egypt, Arab countries, Remote,
+International or Anywhere, saved in the browser profile; shareable as
+`/compass?target=&have=&where=`). It shows:
+
+* the **Global Skill Match** dial (share-weighted coverage of the top 15 skills over every
+  posting for the role, wherever it is), with its sample size, posting dates, the share
+  from the 2023 archive, an *All postings / Recent (2024–26)* switch, and the note that it is
+  not specific to Egypt or the chosen place;
+* **what to learn next** as chips, each with "I have this" and a link to that step on the
+  Roadmap;
+* **where your pay lands**: advertised pay for the role in the chosen place (p10–p90 band,
+  middle half, median, per year and per month), naming the leading country and flagging
+  low confidence. When the place has too few salaries, it says so and offers the next wider
+  place as a button. It never widens on its own;
+* **jobs that fit you best** in the chosen place (the same widening rule), adjacent roles,
+  **where to search** for the role in that place, every requested skill (Advanced), and links
+  to the evidence (Skills, Salaries, Locations) opened on the role and place.
+
+Home starts the same journey in three steps (role, skills, place) beside a small dial, with
+live counts of postings, countries and skills and the date of the newest posting. Skills,
+Salaries and Locations open with a finding sentence and its sample size ("Key findings").
 
 ### Guided insights
 Template sentences computed from the same queries as the charts, each with n, denominator,

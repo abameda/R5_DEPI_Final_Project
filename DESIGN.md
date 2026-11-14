@@ -9,7 +9,7 @@ colors:
   line-strong: "#cfcfc6"
   ink: "#0e1525"
   ink-2: "#434b5d"
-  ink-3: "#5f6678"
+  ink-3: "#545b6d"
   rail: "#0f1b33"
   rail-2: "#1a2a4d"
   rail-line: "#2b3d66"
@@ -68,19 +68,19 @@ typography:
     letterSpacing: "-0.005em"
   body:
     fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    fontSize: "0.9375rem"
     fontWeight: 400
-    lineHeight: "1.375rem"
+    lineHeight: "1.5rem"
   body-sm:
     fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, system-ui, sans-serif"
-    fontSize: "0.8125rem"
+    fontSize: "0.875rem"
     fontWeight: 400
-    lineHeight: "1.25rem"
+    lineHeight: "1.3125rem"
   label:
     fontFamily: "Geist Variable, Readex Pro Variable, Segoe UI, system-ui, sans-serif"
-    fontSize: "0.75rem"
+    fontSize: "0.8125rem"
     fontWeight: 500
-    lineHeight: "1rem"
+    lineHeight: "1.125rem"
 rounded:
   sm: "4px"
   md: "6px"
@@ -253,9 +253,9 @@ A quiet neutral field with one blue voice and two semantic hues that speak only 
 - **Answer** (600, 1.25rem/2rem mobile, 1.5rem/2.25rem from 640px, -0.015em, balanced): the sentence on the navy answer band.
 - **Figure** (600, 1.5rem/2rem, -0.02em, tabular): KPI values and a posting's salary.
 - **Title** (600, 0.9375rem/1.5rem, -0.005em): panel titles; section titles on Home step up to 1rem/1.5rem at -0.01em.
-- **Body** (400, 0.875rem/1.375rem): default copy and table text; prose paragraphs cap near 42–48rem and use `text-wrap: pretty`.
-- **Body small** (400/500, 0.8125rem/1.25rem): controls, nav items, meta lines, readouts.
-- **Label** (400/500, 0.75rem/1rem, sentence case): KPI labels, nav group names, captions, legends, "n =" notes.
+- **Body** (400, 0.9375rem/1.5rem; 15px so text survives screen-share compression): default copy and table text; prose paragraphs cap near 42–48rem and use `text-wrap: pretty`.
+- **Body small** (400/500, 0.875rem/1.3125rem): controls, nav items, meta lines, readouts.
+- **Label** (400/500, 0.8125rem/1.125rem, sentence case; never below 13px, chart axes included): KPI labels, nav group names, captions, legends, "n =" notes.
 
 ### Named Rules
 **The Tabular Figures Rule.** Every number that can sit beside another (KPIs, tables, counts, shares, salaries) uses tabular numerals (`.tnum`, `.kpi`, all tables).
@@ -329,7 +329,16 @@ Restrained and solid; the blue button is the one call to action in a region.
 - **Mobile:** menu button and brand mark replace the sidebar; the sheet fills below the top bar and closes on Escape or navigation.
 
 ### Navy Answer Band
-The page's answer as a sentence on `rail`, 16px radius, 24px / 28px padding (32px on Home): an `answer`-style sentence, a 14px `rail-ink-2` line with n and caveats (warn pills allowed), an optional white inset panel (12px radius, 16px padding) holding a coverage strip, and next steps as on-navy buttons over a `rail-line` divider. Used on Home (match preview), My skills & plan (where you stand), Salaries (median with n), and a skill's profile.
+The page's answer as a sentence on `rail`, 16px radius, 24px / 28px padding (32px on Home): an `answer`-style sentence, a 14px `rail-ink-2` line with n and caveats (warn pills allowed), an optional white inset panel (12px radius, 16px padding) holding a coverage strip, and next steps as on-navy buttons over a `rail-line` divider. Used on Home (match preview), Your compass (where you stand), Salaries (median with n), and a skill's profile.
+
+### Compass Dial (signature)
+The Global Skill Match on the navy band: a 180° arc (14px stroke, round caps) on `rail-line` that fills with `good-fill` to the score, five ticks in `rail-ink-2`, and a compass-diamond needle (bright `rail-ink` tip, `rail-ink-2` tail) on a hub. Below it, the percentage in figure type (36px on the Compass, 24px on Home) and the scope name in a small uppercase label, the one place uppercase is allowed. The needle and arc move in 600ms `cubic-bezier(.2,.8,.2,1)` and the number counts up; both are instant under reduced motion. In Arabic the drawing mirrors so it fills from the right. `role="meter"` carries the value.
+
+### Pay Band
+A role's advertised pay in one place: a light `accent-soft` bar from p10 to p90, a solid `accent` box for the middle half, a 3px `ink` median line, the median as a figure with "≈ $X a month" beside it, and the ends labelled underneath. The heading always names the place the numbers come from.
+
+### Key Findings
+A page's answer before its charts: one sentence in answer type as the section's h2, then up to three points, each ending in "· n = …" in `ink-3`.
 
 ### Coverage Strip (signature)
 A role's or a posting's requested skills as one segmented bar.
