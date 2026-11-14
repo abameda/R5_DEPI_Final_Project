@@ -30,6 +30,17 @@ export function scopeText(scope: MatchScope): { name: string; note: string } {
     : { name: t("Local Skill Match", "التوافق المحلي للمهارات"), note: "" };
 }
 
+/** A place as people say it, for headings and buttons ("in Egypt", "See Arab countries instead"). */
+export function placeName(w: Where): string {
+  switch (w) {
+    case "egypt": return t("Egypt", "مصر");
+    case "arab": return t("Arab countries", "الدول العربية");
+    case "remote": return t("remote jobs", "الوظائف عن بُعد");
+    case "international": return t("international markets", "الأسواق الدولية");
+    default: return t("all markets", "كل الأسواق");
+  }
+}
+
 /** Maps a match share (0–1) to the needle's angle: -90° at 0%, 90° at 100%. */
 export function dialAngle(score: number): number {
   if (!Number.isFinite(score)) return -90;

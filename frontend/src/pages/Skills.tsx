@@ -309,7 +309,7 @@ function SkillAnswer({ d, skill }: { d: SkillDetail; skill: string }) {
           <Link to={drillHref("/explorer", filters, { skill })} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-panel px-3.5 text-sm font-medium text-ink no-underline hover:bg-panel-2">
             {t(`See the ${fmtInt(d.postings)} postings`, `اعرض ${fmtInt(d.postings)} إعلانًا`)} <ArrowRight size={15} className="rtl:rotate-180" />
           </Link>
-          <Link to={drillHref("/career", filters, {}, { have: skill })} className="inline-flex h-9 items-center rounded-lg border border-rail-line px-3.5 text-sm font-medium text-rail-ink no-underline hover:bg-rail-2">
+          <Link to={drillHref("/compass", filters, {}, { have: skill })} className="inline-flex h-9 items-center rounded-lg border border-rail-line px-3.5 text-sm font-medium text-rail-ink no-underline hover:bg-rail-2">
             {t("Plan a career with it", "خطط مسارًا مهنيًا بها")}
           </Link>
         </div>

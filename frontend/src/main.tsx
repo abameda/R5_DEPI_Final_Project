@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Fragment, lazy, StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { RouteErrorBoundary } from "./components/ErrorBoundary";
 import { Shell } from "./components/Shell";
 import { Loading } from "./components/ui";
@@ -14,7 +14,7 @@ const Explorer = lazy(() => import("./pages/Explorer"));
 const Skills = lazy(() => import("./pages/Skills"));
 const Salary = lazy(() => import("./pages/Salary"));
 const Geography = lazy(() => import("./pages/Geography"));
-const Career = lazy(() => import("./pages/Career"));
+const Compass = lazy(() => import("./pages/Compass"));
 const Roadmap = lazy(() => import("./pages/Roadmap"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Employers = lazy(() => import("./pages/Employers"));
@@ -36,6 +36,12 @@ const fontReady = Promise.race([
   ])),
   new Promise((r) => setTimeout(r, 1500)),
 ]).catch(() => undefined);
+
+/** Links shared before the Compass existed keep working, with their query string. */
+function CareerRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: "/compass", search }} replace />;
+}
 
 /** Switching language remounts the views so every string, number and chart is rebuilt in it. */
 function LangScope({ children }: { children: ReactNode }) {
@@ -59,7 +65,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/skills" element={<Skills />} />
               <Route path="/salary" element={<Salary />} />
               <Route path="/geography" element={<Geography />} />
-              <Route path="/career" element={<Career />} />
+              <Route path="/compass" element={<Compass />} />
+              <Route path="/career" element={<CareerRedirect />} />
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/compare" element={<Compare />} />
               <Route path="/employers" element={<Employers />} />

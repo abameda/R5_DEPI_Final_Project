@@ -57,7 +57,7 @@ export default function Explorer() {
         <Select label={t("Sort", "الترتيب")} value={sort} onChange={(v) => update({ sort: v === "newest" ? null : v, page: null })} options={sorts()} />
       </PageHeader>
       {!profile.skills.length && (
-        <Link to="/career" className="mb-4 flex items-center gap-3 rounded-xl border border-accent-line/70 bg-info-soft px-4 py-3 text-sm text-ink no-underline hover:border-accent">
+        <Link to="/compass" className="mb-4 flex items-center gap-3 rounded-xl border border-accent-line/70 bg-info-soft px-4 py-3 text-sm text-ink no-underline hover:border-accent">
           <Route size={18} className="shrink-0 text-accent" />
           <span><span className="font-medium">{t("Add your skills to see how each job matches.", "أضف مهاراتك لترى مدى توافق كل وظيفة معك.")}</span>{" "}
             <span className="text-ink-2">{t("It takes a minute and stays in this browser.", "يستغرق ذلك دقيقة ويبقى في هذا المتصفح.")}</span></span>

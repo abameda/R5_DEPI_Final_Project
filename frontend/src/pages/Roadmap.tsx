@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Check, ExternalLink, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Callout, Empty, Guard, PageHeader, Segmented } from "../components/ui";
 import { useApi } from "../lib/api";
 import { drillHref } from "../lib/filters";
@@ -8,7 +9,7 @@ import { fmtInt, fmtPct } from "../lib/format";
 import { useFilters, useMeta } from "../lib/hooks";
 import { t, tv } from "../lib/i18n";
 import { haveSet, useProfile } from "../lib/profile";
-import { roadmapLinks } from "../lib/roadmaps";
+import { roadmapLinks, skillAnchor } from "../lib/roadmaps";
 import type { Roadmap as RoadmapData, RoadmapSkill } from "../lib/types";
 
 const STAGES = {
@@ -62,6 +63,14 @@ function Path({ g }: { g: RoadmapData }) {
   const all = g.stages.flatMap((st) => st.skills);
   const done = all.filter(owned).length;
   const links = roadmapLinks(g.role);
+  // links from the Compass point at one skill (#skill-…): bring it into view once the path exists
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash.startsWith("#skill-")) return;
+    const el = document.getElementById(decodeURIComponent(hash.slice(1)));
+    el?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    el?.querySelector("button")?.focus({ preventScroll: true });
+  }, [hash, g.role]);
   return (
     <div className="max-w-4xl space-y-6">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -116,7 +125,7 @@ function Chip({ s, role, have }: { s: RoadmapSkill; role: string; have: boolean 
   const addedShare = s.postings ? s.added / s.postings : 0;
   const markets = (s.markets ?? []).map(tv).join(t(", ", "، "));
   return (
-    <li className={clsx("flex min-h-11 items-center gap-2 rounded-lg border px-2 py-1.5", have ? "border-good/40 bg-good-soft" : "border-line bg-panel")}>
+    <li id={skillAnchor(s.skill)} className={clsx("flex min-h-11 scroll-mt-28 items-center gap-2 rounded-lg border px-2 py-1.5 target:ring-2 target:ring-accent", have ? "border-good/40 bg-good-soft" : "border-line bg-panel")}>
       <button type="button" onClick={() => (have ? removeSkill(s.skill) : addSkill(s.skill))}
         aria-label={have ? t(`Remove ${s.skill}`, `إزالة ${s.skill}`) : t(`I have ${s.skill}`, `لدي ${s.skill}`)}
         className={clsx("grid size-7 shrink-0 place-items-center rounded-md", have ? "text-good hover:bg-panel/70" : "text-ink-3 hover:bg-panel-2 hover:text-ink")}>

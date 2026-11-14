@@ -5,7 +5,7 @@ const ROUTES: [string, string][] = [
   ["/", "Understand the job market. See where you fit. Know what comes next."], ["/market", "Market overview"],
   ["/explorer", "Jobs"], ["/geography", "Locations"], ["/employers", "Employers"],
   ["/skills", "Skills in demand"], ["/salary", "Salaries"], ["/trends", "Over time"], ["/compare", "Compare markets"],
-  ["/career", "My skills & plan"], ["/roadmap", "Roadmap"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
+  ["/compass", "Your compass"], ["/roadmap", "Roadmap"], ["/insights", "Guided insights"], ["/builder", "Insight builder"], ["/quality", "Data & methodology"],
 ];
 
 /** Fails the test on any console error or failed API call. */
@@ -155,7 +155,7 @@ test("Simple mode keeps the job seeker's pages and hides the analysis", async ({
   await page.getByRole("radio", { name: "Simple" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(menu.getByRole("link", { name: "Market overview" })).toHaveCount(0);
-  await expect(menu.getByRole("link", { name: "My skills & plan" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Your compass" })).toBeVisible();
   await page.goto("/skills");
   await expect(page.getByRole("radiogroup", { name: "Skills view" })).toHaveCount(0);
   await expect(page.getByRole("radio", { name: "Written in posting" })).toHaveCount(0);
@@ -198,8 +198,8 @@ test("skill profile opens from the URL and closes", async ({ page }) => {
 
 test("the plan ranks missing skills and remembers your skills", async ({ page }) => {
   await page.goto("/career?target=Data%20Analysis%20%26%20BI");
-  // the shared link seeds the profile, then the URL is tidied
-  await expect(page).toHaveURL(/\/career$/);
+  // old shared links land on the Compass, seed the profile, then the URL is tidied
+  await expect(page).toHaveURL(/\/compass$/);
   await expect(page.getByLabel("Role you want")).toHaveValue("Data Analysis & BI");
   await expect(page.getByRole("heading", { name: "What to learn next" })).toBeVisible();
   await page.getByRole("button", { name: "Add skill" }).click();
@@ -221,7 +221,7 @@ test("the roadmap orders skills and shares your profile with the plan", async ({
   await page.getByRole("button", { name: /^I have / }).first().click();
   await expect(done).not.toHaveText(before!);
   await expect(page.getByRole("link", { name: /roadmap\.sh/ }).first()).toHaveAttribute("target", "_blank");
-  await page.goto("/career");
+  await page.goto("/compass");
   await expect(page.getByRole("button", { name: /^Remove / }).first()).toBeVisible();
 });
 
@@ -297,7 +297,7 @@ test("skip link reaches the main content", async ({ page }) => {
 
 test("the plan shows where to search for the target role", async ({ page }) => {
   const errors = watchErrors(page);
-  await page.goto("/career?target=Data%20Engineering");
+  await page.goto("/compass?target=Data%20Engineering");
   const panel = page.getByRole("region", { name: "Where to search for these jobs" });
   await expect(panel.getByText(/would have reached \d+% of the [\d,]+ postings we can trace to a board/)).toBeVisible();
   await panel.getByRole("button", { name: "Show as table" }).click();
@@ -331,7 +331,7 @@ test("an employer profile compares what its postings state with the market", asy
   expect(errors).toEqual([]);
 });
 
-for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQL", "/roadmap", "/quality", "/employers?name=Synthetic%20Employer%2001"]) {
+for (const path of ["/", "/market", "/explorer?job=demo000001", "/compass?have=SQL", "/roadmap", "/quality", "/employers?name=Synthetic%20Employer%2001"]) {
   test(`no serious accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState("networkidle");
@@ -340,3 +340,57 @@ for (const path of ["/", "/market", "/explorer?job=demo000001", "/career?have=SQ
     expect(serious.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
   });
 }
+
+// ---- Compass journey ------------------------------------------------------------
+const dial = (page: Page) => page.getByRole("meter", { name: "Global Skill Match" });
+
+test("an old /career link redirects to the Compass and applies the profile", async ({ page }) => {
+  await page.goto("/career?target=Data%20Engineering&have=SQL");
+  await expect(page).toHaveURL(/\/compass$/);
+  await expect(page.getByLabel("Role you want")).toHaveValue("Data Engineering");
+  await expect(page.getByRole("button", { name: "Remove SQL" })).toBeVisible();
+  await expect(dial(page)).toBeVisible();
+});
+
+test("the Global Skill Match ignores location filters", async ({ page }) => {
+  await page.goto("/compass?target=Data%20Analysis%20%26%20BI&have=SQL");
+  await expect(dial(page)).toHaveAttribute("aria-valuenow", /\d+/);
+  const global = await dial(page).getAttribute("aria-valuenow");
+  await page.goto("/compass?market=Arab&country=Egypt");
+  await expect(dial(page)).toHaveAttribute("aria-valuenow", global!);
+  await expect(page.getByText("Skills asked for across all markets. Not specific to Egypt or your chosen location.")).toBeVisible();
+});
+
+test("adding a skill moves the dial", async ({ page }) => {
+  await page.goto("/compass?target=Data%20Analysis%20%26%20BI");
+  await expect(dial(page)).toHaveAttribute("aria-valuenow", "0");
+  await page.getByRole("button", { name: /^I have / }).first().click();
+  await expect(dial(page)).not.toHaveAttribute("aria-valuenow", "0");
+});
+
+test("the match states its sample size and how recent it is", async ({ page }) => {
+  await page.goto("/compass?target=Data%20Analysis%20%26%20BI");
+  const band = page.getByRole("region", { name: "Where you stand" });
+  await expect(band.getByText(/Based on [\d,]+ Data Analysis & BI postings that list skills/)).toBeVisible();
+  await expect(band.getByText(/Posted .+ · \d+(\.\d)?% from the 2023 archive/)).toBeVisible();
+  await band.getByRole("radio", { name: "Recent (2024–26)" }).click();
+  await expect(band.getByText(/· 0% from the 2023 archive/)).toBeVisible();
+});
+
+test("pay never hides its location and widens only when asked", async ({ page }) => {
+  await page.goto("/compass?target=Mobile&where=egypt");
+  const pay = page.getByRole("region", { name: /Where your pay lands/ });
+  await expect(pay.getByText(/Only \d+ Mobile postings in Egypt state their pay/)).toBeVisible();
+  await pay.getByRole("button", { name: "See Arab countries instead" }).click();
+  await expect(pay.getByText(/Advertised pay in \d+ Mobile postings in Arab countries/)).toBeVisible();
+  await expect(pay.getByText("Low confidence")).toBeVisible();
+});
+
+test("share my compass copies a link that restores the profile", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/compass?target=Backend&have=SQL&where=remote");
+  await page.getByRole("button", { name: "Share my compass" }).click();
+  await expect(page.getByText("Link copied")).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toMatch(/\/compass\?target=Backend&have=SQL&where=remote$/);
+});

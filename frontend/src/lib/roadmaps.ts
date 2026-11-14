@@ -22,3 +22,10 @@ const MAP: Record<string, [slug: string, label: string][]> = {
 export function roadmapLinks(role: string): { label: string; href: string }[] {
   return (MAP[role] ?? []).map(([slug, label]) => ({ label, href: BASE + slug }));
 }
+
+/** The id of a skill's row on the Roadmap page, so other pages can link straight to it. */
+export function skillAnchor(skill: string): string {
+  const slug = skill.trim().toLowerCase().replace(/\+/g, "plus").replace(/#/g, "sharp")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `skill-${slug}`;
+}

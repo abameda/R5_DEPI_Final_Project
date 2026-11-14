@@ -66,6 +66,12 @@ function warningAr(w: Result["warnings"][number], r: Result): string {
   }
 }
 
+/** A group as the URL defines it; a URL with no groups yet shows the first preset. */
+function currentSegment(sp: URLSearchParams, p: Side): Filters {
+  const fresh = !sp.has("cmp") && ![...sp.keys()].some((k) => k.startsWith("a.") || k.startsWith("b."));
+  return fresh ? { ...EMPTY_FILTERS, ...PRESETS[0][p] } : readSegment(sp, p);
+}
+
 function readSegment(sp: URLSearchParams, p: Side): Filters {
   const f: Filters = { ...EMPTY_FILTERS };
   for (const k of LIST_KEYS) f[k] = sp.getAll(`${p}.${k}`);
@@ -77,9 +83,8 @@ export default function Compare() {
   const [sp, setSp] = useSearchParams();
   // explicit marker: two empty segments mean "all vs all", not "start over"; a link that
   // already carries a./b. parameters (e.g. from Guided insights) is read as given
-  const fresh = !sp.has("cmp") && ![...sp.keys()].some((k) => k.startsWith("a.") || k.startsWith("b."));
-  const a = fresh ? { ...EMPTY_FILTERS, ...PRESETS[0].a } : readSegment(sp, "a");
-  const b = fresh ? { ...EMPTY_FILTERS, ...PRESETS[0].b } : readSegment(sp, "b");
+  const a = currentSegment(sp, "a");
+  const b = currentSegment(sp, "b");
   const body = useMemo(() => ({ a: filterBody(a), b: filterBody(b) }), [JSON.stringify(a), JSON.stringify(b)]); // eslint-disable-line react-hooks/exhaustive-deps
   const q = usePost<Result>("/compare", body);
   const labels = useLabels();
@@ -90,14 +95,16 @@ export default function Compare() {
   };
   // Segments live under a./b.; the global filters stay in the URL untouched
   // (ignored here) so they are still there when the visitor goes back.
-  const write = (na: Partial<Filters>, nb: Partial<Filters>) => setSp((prev) => {
+  const build = (prev: URLSearchParams, na: Partial<Filters>, nb: Partial<Filters>) => {
     const next = new URLSearchParams();
     prev.forEach((v, k) => { if (!k.startsWith("a.") && !k.startsWith("b.") && k !== "cmp") next.append(k, v); });
     next.set("cmp", "1");
     for (const [p, seg] of [["a", na], ["b", nb]] as const) LIST_KEYS.forEach((k) => (seg[k] ?? []).forEach((v) => next.append(`${p}.${k}`, v)));
     return next;
-  });
-  const setSeg = (p: Side, f: Partial<Filters>) => (p === "a" ? write(f, b) : write(a, f));
+  };
+  const write = (na: Partial<Filters>, nb: Partial<Filters>) => setSp((prev) => build(prev, na, nb));
+  // the other group is read from the latest URL, not this render, so two quick edits never undo each other
+  const setSeg = (p: Side, f: Partial<Filters>) => setSp((prev) => (p === "a" ? build(prev, f, currentSegment(prev, "b")) : build(prev, currentSegment(prev, "a"), f)));
   const names: Record<Side, string> = { a: describe(a), b: describe(b) };
   const tone = (w: Result["warnings"][number]) => (w.level === "error" ? "crit" : w.level === "warn" ? "warn" : "info") as "crit" | "warn" | "info";
 

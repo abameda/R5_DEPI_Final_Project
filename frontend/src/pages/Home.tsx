@@ -157,7 +157,7 @@ function MatchPreview({ role, gap, loading }: { role: string; gap?: CareerGap; l
           )}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-rail-line pt-5">
             <Advanced><span className="text-xs text-rail-ink-2">{t(`Based on ${fmtInt(gap.denominator)} postings that list skills`, `استنادًا إلى ${fmtInt(gap.denominator)} إعلانًا تذكر مهارات`)}</span></Advanced>
-            <Link to="/career" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-panel px-3.5 text-sm font-medium text-ink no-underline hover:bg-panel-2">
+            <Link to="/compass" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-panel px-3.5 text-sm font-medium text-ink no-underline hover:bg-panel-2">
               {t("Open your plan", "افتح خطتك")} <ArrowRight size={15} className="rtl:rotate-180" />
             </Link>
           </div>

@@ -1,8 +1,8 @@
 import * as Popover from "@radix-ui/react-popover";
 import clsx from "clsx";
 import {
-  BarChart3, Briefcase, Building2, ChevronDown, Clock3, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
-  Menu, Milestone, Moon, Route, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
+  BarChart3, Briefcase, Building2, ChevronDown, Clock3, Compass, FlaskConical, GitCompareArrows, Globe2, Home, Languages, LayoutGrid,
+  Menu, Milestone, Moon, Search, ShieldCheck, Sparkles, Sun, Wallet, X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -24,7 +24,7 @@ export const nav = (): { group: string; items: NavItem[] }[] => [
     { to: "/explorer", label: t("Jobs", "الوظائف"), icon: Briefcase },
   ] },
   { group: t("You", "أنت"), items: [
-    { to: "/career", label: t("My skills & plan", "مهاراتي وخطتي"), icon: Route, filters: false },
+    { to: "/compass", label: t("Your compass", "بوصلتك"), icon: Compass, filters: false },
     { to: "/roadmap", label: t("Roadmap", "خارطة الطريق"), icon: Milestone, filters: false },
   ] },
   { group: t("Market", "السوق"), items: [
@@ -156,8 +156,8 @@ function TopBar({ open, onMenu }: { open: boolean; onMenu: () => void }) {
       <JobSearch />
       <div className="ms-auto flex shrink-0 items-center gap-1">
         {/* from xl the menu already links to the plan; the chip returns once there is room */}
-        <NavLink to="/career" className="hidden h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 no-underline hover:bg-panel-2 hover:text-ink sm:inline-flex xl:hidden 2xl:inline-flex">
-          <Route size={15} className="text-accent" />
+        <NavLink to="/compass" className="hidden h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 no-underline hover:bg-panel-2 hover:text-ink sm:inline-flex xl:hidden 2xl:inline-flex">
+          <Compass size={15} className="text-accent" />
           {profile.role || profile.skills.length
             ? <span className="max-w-[220px] truncate"><span className="font-medium text-ink">{profile.role ? tv(profile.role) : t("Your profile", "ملفك")}</span>
               <span className="tnum text-ink-3"> · {t(`${profile.skills.length} skills`, `${profile.skills.length} مهارات`)}</span></span>
